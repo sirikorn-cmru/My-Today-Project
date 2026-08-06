@@ -5,25 +5,26 @@ import { TodayTasks } from '../components/TodayTasks'
 import { TodaySchedule } from '../components/TodaySchedule'
 import { Upcoming } from '../components/Upcoming'
 import { TaskFormModal } from '../components/TaskFormModal'
-import { mockSchedule } from '../data/mockData'
-import { isDueToday, daysUntil } from '../lib/taskUtils'
-import type { Task, TaskInput, TaskStatus } from '../types'
+import { isDueToday, daysUntil, todayISO } from '../lib/taskUtils'
+import type { CalendarEvent, Task, TaskInput, TaskStatus } from '../types'
 
 interface DashboardPageProps {
   tasks: Task[]
   addTask: (input: TaskInput) => void
   setStatus: (id: string, status: TaskStatus) => void
+  events: CalendarEvent[]
 }
 
 const UPCOMING_WINDOW_DAYS = 3
 
-export function DashboardPage({ tasks, addTask, setStatus }: DashboardPageProps) {
+export function DashboardPage({ tasks, addTask, setStatus, events }: DashboardPageProps) {
   const [quickAddOpen, setQuickAddOpen] = useState(false)
 
   const todayTasks = tasks.filter((t) => isDueToday(t))
   const completed = todayTasks.filter((t) => t.status === 'Done').length
   const total = todayTasks.length
   const pending = total - completed
+  const todayEvents = events.filter((e) => e.date === todayISO())
 
   const upcomingTasks = tasks
     .filter((t) => {
@@ -37,7 +38,7 @@ export function DashboardPage({ tasks, addTask, setStatus }: DashboardPageProps)
       <Header today={new Date()} />
       <SummaryCards total={total} completed={completed} pending={pending} dueSoon={upcomingTasks.length} />
       <TodayTasks tasks={todayTasks} onStatusChange={setStatus} />
-      <TodaySchedule schedule={mockSchedule} />
+      <TodaySchedule events={todayEvents} />
       <Upcoming tasks={upcomingTasks} />
 
       <button

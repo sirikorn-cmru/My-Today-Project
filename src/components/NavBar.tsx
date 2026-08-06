@@ -13,6 +13,9 @@ export function NavBar() {
       <NavLink to="/tasks" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : linkInactive}`}>
         งานทั้งหมด
       </NavLink>
+      <NavLink to="/calendar" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : linkInactive}`}>
+        ปฏิทิน
+      </NavLink>
     </nav>
   )
 }
