@@ -14,38 +14,29 @@ Not yet documented — `01-spec/` has no real content yet, only the folder-descr
 
 The project is in its earliest phase. Work here should concentrate on `.docs/01-requirements/`, specifically:
 
-- `01-spec/` — the source-of-truth requirements doc: features, user stories, business rules, in/out of scope. Write here first before anything else.
-- `03-task/` — doubles as the **Product Backlog**: the breakdown of spec items into concrete, prioritized, actionable work items.
+- `01-spec/` — the source-of-truth requirements docs, one file per requirement: `{YYYYMMDD}-{RUNNING_NO}-{topic-slug}.md` (English slug, Thai content). `RUNNING_NO` is a single global sequence across all spec docs (zero-padded to 3 digits), not reset per day.
+- `backlog.md` — a flat file directly under `01-requirements/` that is the **Product Backlog**: one entry per spec doc, linking back to it. This is generated/maintained alongside spec docs, not hand-authored from scratch.
 
-`02-plan/` (roadmap/milestones) sits between the two and can be filled in as priorities firm up, but is secondary to spec and backlog right now.
+`02-plan/` (roadmap/milestones) and `03-task/` (task breakdown) are secondary right now and not the backlog — don't conflate them with `backlog.md`.
 
 The later stages — `02-design/`, `03-testing/`, `04-retrospectives/` — are not active yet; don't create content there unless explicitly asked, since there's no design or test work to document until the requirements/backlog stabilize.
 
-### Backlog item template
+### Requirement intake workflow
 
-Use this shape for each item added under `03-task/` so entries stay consistent:
-
-```
-### [ID] Title
-- Status: not started / in progress / done
-- Priority: high / medium / low
-- Owner: (if known)
-- Deadline: (if known)
-- Description: what needs to be done
-- Acceptance criteria: how we know it's done
-- Linked spec: [[../01-spec/index#relevant-section]]
-```
+New requirements should go through the `requirement-intake` skill (`.claude/skills/requirement-intake/SKILL.md`) rather than being hand-written ad hoc. It takes a raw requirement from the user, asks clarifying questions (always with ≥3 suggested approaches to pick from) when anything is ambiguous, decides whether to create a new spec doc or amend an existing one, then delegates the actual file writes to the `requirement-writer` subagent (`.claude/agents/requirement-writer.md`), which creates/amends the spec file, updates `backlog.md`, and appends a summary to today's `.docs/05-log/{YYYYMMDD}-log.md`.
 
 ### Language
 
-All existing docs in `.docs/` are written in Thai. Write new spec and backlog content in Thai to stay consistent — don't switch to English mid-vault.
+All existing docs in `.docs/` are written in Thai. Write new spec and backlog content in Thai to stay consistent — don't switch to English mid-vault. Filenames/slugs stay in English for cross-platform safety.
 
 ## Repository structure
 
 `.docs/` is an Obsidian vault (see `.docs/.obsidian/`) that tracks the full project lifecycle as a sequence of numbered stages, each flowing into the next:
 
 - `01-requirements/` — source of truth for what the system must do (**current focus**, see above)
-  - `01-spec/`, `02-plan/`, `03-task/` (Product Backlog)
+  - `01-spec/` — individual requirement docs
+  - `backlog.md` — Product Backlog (flat file, not a subfolder)
+  - `02-plan/`, `03-task/` — roadmap and task breakdown (secondary right now)
 - `02-design/` — design built on top of requirements (not yet active)
   - `01-prototypes/` — UI/UX mockups and wireframes
   - `02-technical/` — architecture, database, and API design
