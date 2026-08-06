@@ -4,11 +4,34 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project state
 
-This repository currently contains **no application code** — only a documentation vault under `.docs/`. There is nothing to build, lint, or test yet. When code is added, update this file with the relevant commands and architecture notes.
+The application (`my-today`) is a React + TypeScript + Vite + Tailwind CSS web app, being built sprint-by-sprint per the specs in `.docs/01-requirements/01-spec/`. It is client-side only by design (see Project purpose) — no backend directory exists or should be added.
+
+### Commands
+
+- `npm install` — install dependencies
+- `npm run dev` — start the Vite dev server (default port 5173)
+- `npm run build` — type-check (`tsc --noEmit`) then production build to `dist/`
+- `npm run preview` — serve the production build locally
+- `npm run lint` — run ESLint
+
+No test runner is configured yet (no Sprint so far has required one). When Sprint work adds tests, record the test command here.
+
+### Architecture
+
+- Entry: `index.html` → `src/main.tsx` → `src/App.tsx`
+- `src/components/` — one component per Dashboard section (`Header`, `SummaryCards`, `TodayTasks`, `TodaySchedule`, `Upcoming`, `QuickActionModal`); each takes plain props, no shared state/context library
+- `src/types.ts` — shared domain types (`Task`, `ScheduleItem`, `UpcomingTask`, etc.)
+- `src/data/mockData.ts` — Sprint 1 mock data; per [20260806-001-my-today-sprint1-today-dashboard.md](.docs/01-requirements/01-spec/20260806-001-my-today-sprint1-today-dashboard.md) this is temporary and gets replaced by real LocalStorage-backed data in Sprint 2 — don't build new features on top of assuming mock data is permanent
+- Styling is Tailwind utility classes only (see `tailwind.config.js` / `postcss.config.js`) — no CSS-in-JS or component library
+- `tsconfig.json` covers both `src/` and `vite.config.ts` in one project (no TS project references) — keep it that way; splitting into `tsconfig.node.json` with project references previously caused `tsc -b` to emit stray `vite.config.js`/`.tsbuildinfo` files into the repo root
+
+### Sprint discipline
+
+Each `.docs/01-requirements/01-spec/*.md` file is one Sprint's contract. Before writing code, read the matching spec's In-scope/Out-of-scope sections and stay inside them — don't implement a later Sprint's features early (e.g. don't wire up real Task persistence while Sprint 1 is still mock-data-only), and don't remove/break a completed Sprint's functionality while building the next one (non-regression rule, stated explicitly in each spec from Sprint 2 onward).
 
 ## Project purpose
 
-Not yet documented — `01-spec/` has no real content yet, only the folder-description placeholder. **Update this section with a short summary of what "My Today Project" actually is (what it does, who it's for) as soon as `01-spec` gains real content**, so future Claude instances don't have to re-derive business context from scratch.
+**My Today** — a web app (no backend, client-side only) that helps students manage daily tasks/schedule/files, designed around Human-Centered Design so that opening the app immediately answers "what do I need to do today?". Built sprint-by-sprint (see `.docs/01-requirements/01-spec/`): Sprint 1 Today Dashboard (mock data) → Sprint 2 Task Management (real data, LocalStorage) → Sprint 3 Calendar & Schedule → Sprint 4 File Organizer (IndexedDB) → Sprint 5 Notification & Deadline Awareness → Sprint 6 Integration/UX/legal-compliance polish + Vercel deploy. Explicitly out of scope for the whole Version 1: AI, backend/server-side code, and integration with any external service (Google Calendar, Teams, Classroom, university systems).
 
 ## Current focus: Requirements & Product Backlog
 
