@@ -2,7 +2,7 @@
 
 เชื่อมโยงกลับ: [[index]]
 
-เอกสารที่เกี่ยวข้อง: [[20260806-001-my-today-sprint1-today-dashboard]], [[20260806-002-my-today-sprint2-task-management]], [[20260806-003-my-today-sprint3-calendar-schedule]]
+เอกสารที่เกี่ยวข้อง: [[20260806-001-my-today-sprint1-today-dashboard]], [[20260806-002-my-today-sprint2-task-management]], [[20260806-003-my-today-sprint3-calendar-schedule]], [[20260806-007-my-today-sprint7-category-profile]]
 
 ## เป้าหมาย
 
@@ -13,12 +13,12 @@
 - ผู้ใช้เพิ่มไฟล์ได้
 - ผู้ใช้ตั้งชื่อไฟล์ได้
 - ผู้ใช้จัดหมวดหมู่ไฟล์ได้
-- ผู้ใช้ระบุรายวิชาของไฟล์ได้
+- ผู้ใช้ระบุ Life Area ของไฟล์ได้ (Life Area entity เดียวกับที่ Task ใช้)
 - ผู้ใช้ Search ไฟล์ได้
 - ผู้ใช้ Preview ไฟล์ที่ Browser รองรับได้
 - ผู้ใช้ Download ไฟล์ได้
 - ผู้ใช้ Delete ไฟล์ได้
-- สร้างหน้า "Files" ที่มี Search, Filter ตามรายวิชา, Recent Files
+- สร้างหน้า "Files" ที่มี Search, Filter ตาม Life Area, Recent Files
 - **สำคัญที่สุด:** ไฟล์ต้องเชื่อมโยงกับ Task ได้ (Related Files) — เมื่อเปิด Task ผู้ใช้ต้องเห็นไฟล์ที่เกี่ยวข้องทันที เช่น Task "ส่งรายงาน STEM" มี Related Files: report.docx, rubric.pdf, reference.pdf
 
 ## Business Rules
@@ -32,9 +32,9 @@
 
 ### In scope (Sprint 4)
 
-- CRUD ไฟล์ (เพิ่ม/ตั้งชื่อ/จัดหมวดหมู่/ระบุรายวิชา/ลบ) เก็บด้วย IndexedDB
+- CRUD ไฟล์ (เพิ่ม/ตั้งชื่อ/จัดหมวดหมู่/ระบุ Life Area/ลบ) เก็บด้วย IndexedDB
 - Search, Preview (เท่าที่ Browser รองรับ), Download
-- หน้า Files (Search, Filter ตามรายวิชา, Recent Files)
+- หน้า Files (Search, Filter ตาม Life Area, Recent Files)
 - เชื่อมโยงไฟล์กับ Task (Related Files แสดงในหน้า Task)
 
 ### Out of scope (ห้ามสร้างใน Sprint นี้)
@@ -55,3 +55,7 @@
 ## Gate (เกณฑ์ผ่าน Sprint)
 
 **Gate 4:** ให้นักศึกษาพิสูจน์ Scenario: เห็นงาน → เปิดงาน → เจอไฟล์ที่ต้องใช้ทันที ถ้าทำได้ ผ่าน
+
+## เพิ่มเติม (20260806): Generalize Target User
+
+field "Life Area" ในทุกจุดข้างต้นมาแทนที่ "รายวิชา" (subject) เดิม เพื่อรองรับผู้ใช้ทั่วไป — ไฟล์ตอนนี้เชื่อมกับ Life Area entity เดียวกับ Task (นิยามใน [[20260806-007-my-today-sprint7-category-profile]]) แทนการผูกกับวิชาเรียนโดยเฉพาะ ตัวอย่างเช่นไฟล์ "ใบแจ้งหนี้ค่าไฟ.pdf" อยู่ Life Area "Finance" ได้เหมือนกับไฟล์ "HCI Assignment.pdf" อยู่ Life Area "Study"

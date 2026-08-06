@@ -1,8 +1,8 @@
-# My Today — Sprint 6: Integration, UX & Final Testing (Final Sprint ของ My Today Version 1)
+# My Today — Sprint 6: Integration, UX & Final Testing (Final Sprint ของ My Today Version 1 / Core)
 
 เชื่อมโยงกลับ: [[index]]
 
-เอกสารที่เกี่ยวข้อง: [[20260806-001-my-today-sprint1-today-dashboard]], [[20260806-002-my-today-sprint2-task-management]], [[20260806-003-my-today-sprint3-calendar-schedule]], [[20260806-004-my-today-sprint4-file-organizer]], [[20260806-005-my-today-sprint5-notification-deadline-awareness]]
+เอกสารที่เกี่ยวข้อง: [[20260806-001-my-today-sprint1-today-dashboard]], [[20260806-002-my-today-sprint2-task-management]], [[20260806-003-my-today-sprint3-calendar-schedule]], [[20260806-004-my-today-sprint4-file-organizer]], [[20260806-005-my-today-sprint5-notification-deadline-awareness]], [[20260806-007-my-today-sprint7-category-profile]]
 
 ## เป้าหมาย
 
@@ -105,3 +105,15 @@
 ### Gate 6 (เพิ่มเติม)
 
 ก่อนถือว่า Sprint 6 ผ่านและพร้อม deploy บน Vercel ต้องตรวจสอบเพิ่มว่า Privacy Notice/Terms of Use แสดงผลถูกต้องและเข้าถึงได้จริงจากทุกหน้า
+
+## เพิ่มเติม (20260806): Generalize Target User — Final Acceptance Criteria คู่ Persona
+
+**บริบท:** ตาม requirement revision ที่อนุมัติแล้ว My Today เปลี่ยนจาก "แอปสำหรับนักศึกษาเท่านั้น" เป็น "Personal Daily Workspace สำหรับบุคคลทั่วไป โดยยังรองรับนักศึกษาเป็นหนึ่งในกลุ่มผู้ใช้" (ดู [[20260806-007-my-today-sprint7-category-profile]] สำหรับ Life Area/Profile ที่เป็นกลไกรองรับการ generalize นี้) Final Gate ของ Sprint 6 จึงต้องพิสูจน์ว่า Core ระบบเดียวกันรองรับทั้งสอง persona ได้ ไม่ใช่แค่ persona นักศึกษา
+
+**Final User Journey เดิม (นักศึกษา — ยังคงใช้ทดสอบได้เหมือนเดิม):** นักศึกษาได้รับงาน STEM ที่ต้องส่งวันศุกร์ 23:59 น. → บันทึกเป็น Task ใน Life Area "Study" → แนบไฟล์งาน → เห็น Deadline ใน Calendar → เปิด My Today ตอนเช้าเห็นงานบน Dashboard → ระบบเตือนเมื่อใกล้หมดเวลา → นักศึกษาทำงานเสร็จและกด Done → Dashboard อัปเดตสถานะโดยอัตโนมัติ
+
+**Final User Journey ใหม่ (บุคคลทั่วไป — persona คู่ขนานที่ต้องผ่านด้วย):** บุคคลทั่วไปมีบิลค่าไฟที่ต้องจ่ายก่อนสิ้นเดือน → บันทึกเป็น Task "จ่ายค่าไฟ" ใน Life Area "Finance" → แนบไฟล์ใบแจ้งหนี้ → เห็น Deadline ใน Calendar → เปิด My Today ตอนเช้าเห็นงานบน Dashboard → ระบบเตือนเมื่อใกล้หมดเวลา → จ่ายเงินเสร็จและกด Done → Dashboard อัปเดตสถานะโดยอัตโนมัติ
+
+**Gate 6 เพิ่มเติม:** Requirement ใหม่ถือว่าผ่านเมื่อทั้งสอง Journey ข้างต้นใช้ Task + Life Area + Calendar + File + Notification + Dashboard ชุดเดียวกันได้ โดยไม่ต้องสร้างระบบ/โค้ดแยกสำหรับแต่ละ persona — ถ้าต้องแยก logic พิเศษสำหรับ "นักศึกษา" ออกจาก "บุคคลทั่วไป" ที่ไหนก็ตาม แสดงว่า Requirement นี้ยังไม่ผ่าน
+
+**หมายเหตุ (20260806):** Sprint 6 นี้คือจุดปิดจบของ **My Today Version 1 / Core** (Sprint 1-6) เท่านั้น ไม่ใช่จุดจบของโปรเจกต์ทั้งหมด — หลังจากนี้มี **Competition Track (Sprint 7-12, "My Today — One Life, One Workspace")** ต่อยอดอีก เริ่มที่ [[20260806-007-my-today-sprint7-category-profile]] ซึ่งเพิ่ม Life Area/Workspace, Personal Profile, Universal Inbox, Quick Capture, Timeline และ Task-Event-File Linking แบบเต็มรูปแบบ

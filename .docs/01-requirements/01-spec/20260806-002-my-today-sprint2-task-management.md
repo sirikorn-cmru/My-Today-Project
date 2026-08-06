@@ -2,7 +2,7 @@
 
 เชื่อมโยงกลับ: [[index]]
 
-เอกสารที่เกี่ยวข้อง: [[20260806-001-my-today-sprint1-today-dashboard]]
+เอกสารที่เกี่ยวข้อง: [[20260806-001-my-today-sprint1-today-dashboard]], [[20260806-007-my-today-sprint7-category-profile]]
 
 ## เป้าหมาย
 
@@ -21,7 +21,7 @@
 
 ## Business Rules
 
-1. Task แต่ละรายการต้องมี field: Task ID, ชื่องาน, รายละเอียด, รายวิชา, วันที่กำหนดส่ง, เวลา, Priority (High/Medium/Low), Status (To Do/Doing/Done), วันที่สร้าง
+1. Task แต่ละรายการต้องมี field: Task ID, ชื่องาน, รายละเอียด, Life Area, วันที่กำหนดส่ง, เวลา, Priority (High/Medium/Low), Status (To Do/Doing/Done), วันที่สร้าง
 2. เก็บข้อมูล Task ด้วย LocalStorage ข้อมูลต้องยังอยู่หลัง Refresh Browser
 3. ข้อมูล Task ต้องเชื่อมเข้ากับ Today Dashboard ของ Sprint 1 — Dashboard ต้องคำนวณอัตโนมัติจากข้อมูล Task จริง: งานวันนี้, งานเสร็จแล้ว, งานค้าง, งานใกล้ครบกำหนด
 4. พัฒนาต่อจาก Codebase เดิมของ Sprint 1 ห้ามสร้าง Project ใหม่ (Non-regression: ต้องรักษาหน้า Today Dashboard และโครงสร้างเดิมของ Sprint 1 ให้ทำงานได้ครบถ้วน)
@@ -54,3 +54,9 @@
 ## Gate (เกณฑ์ผ่าน Sprint)
 
 **Gate 2:** ให้นักศึกษาเพิ่มงานจริง 5 งานแล้วลองใช้งาน 1 วัน ถ้า Add → Edit → Done → Dashboard Update ทำงานครบ จึงผ่าน
+
+## เพิ่มเติม (20260806): Generalize Target User
+
+field "Life Area" ในข้อ 1 (Business Rules) ด้านบน มาแทนที่ field เดิม "รายวิชา" (subject, free text) — Task ตอนนี้เชื่อมกับ Life Area entity ที่นิยามใน [[20260806-007-my-today-sprint7-category-profile]] แทนการเป็น free text เพื่อรองรับผู้ใช้ทั่วไปไม่ใช่แค่นักศึกษา (เช่น Life Area "Finance", "Work" ไม่ใช่แค่ชื่อวิชาเรียน)
+
+หมายเหตุ: การแก้โค้ดจริง (เปลี่ยน `Task.subject` เป็น `Task.lifeAreaId` ใน `src/types.ts` และ UI ที่เกี่ยวข้อง) จะทำในขั้นตอนพัฒนาแยกต่างหาก ไม่ใช่ส่วนของการแก้เอกสารนี้
