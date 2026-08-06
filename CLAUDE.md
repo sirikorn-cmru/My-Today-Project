@@ -18,10 +18,14 @@ No test runner is configured yet (no Sprint so far has required one). When Sprin
 
 ### Architecture
 
-- Entry: `index.html` → `src/main.tsx` → `src/App.tsx`
-- `src/components/` — one component per Dashboard section (`Header`, `SummaryCards`, `TodayTasks`, `TodaySchedule`, `Upcoming`, `QuickActionModal`); each takes plain props, no shared state/context library
-- `src/types.ts` — shared domain types (`Task`, `ScheduleItem`, `UpcomingTask`, etc.)
-- `src/data/mockData.ts` — Sprint 1 mock data; per [20260806-001-my-today-sprint1-today-dashboard.md](.docs/01-requirements/01-spec/20260806-001-my-today-sprint1-today-dashboard.md) this is temporary and gets replaced by real LocalStorage-backed data in Sprint 2 — don't build new features on top of assuming mock data is permanent
+- Entry: `index.html` → `src/main.tsx` (wraps `<App>` in `BrowserRouter`) → `src/App.tsx` (owns the single `useTasks()` instance, passes `tasks`/CRUD callbacks down as props, renders `<Routes>` + `<NavBar>`)
+- `src/pages/` — one component per route: `DashboardPage` (`/`, the Today Dashboard) and `TasksPage` (`/tasks`, full list with search/filter/sort). Both receive task data and CRUD callbacks as props from `App.tsx` — there's no context/store, since `App.tsx` is the single owner of task state and both routes are its direct children
+- `src/components/` — presentational pieces used by the pages: `Header`, `SummaryCards`, `TodayTasks`, `TodaySchedule`, `Upcoming`, `NavBar`, `TaskCard` (shared row renderer for both Today's Tasks and the Tasks page — compact vs. full view is just which optional props/callbacks are passed in), `TaskFormModal` (shared create/edit form)
+- `src/hooks/useTasks.ts` — the one hook that owns Task state: loads from LocalStorage (seeding `src/data/seedTasks.ts` on first run), persists on every change, exposes `addTask`/`updateTask`/`deleteTask`/`setStatus`. Only `App.tsx` calls this hook — don't call `useTasks()` again elsewhere, it would create a second out-of-sync copy of the data
+- `src/lib/storage.ts` — generic typed LocalStorage read/write JSON helpers
+- `src/lib/taskUtils.ts` — pure functions for date/deadline logic (`todayISO`, `daysUntil`, `isDueToday`, `dueLabel`), filtering/sorting (`filterTasks`, `sortByDeadline`), and the shared priority/status badge color maps
+- `src/types.ts` — shared domain types (`Task`, `TaskInput`, `ScheduleItem`, etc.)
+- `src/data/seedTasks.ts` — one-time seed data for a fresh install (dates computed relative to "today" so it never looks stale); `src/data/mockData.ts` now holds only `mockSchedule`, which stays mock until Sprint 3 implements real Calendar/Schedule storage
 - Styling is Tailwind utility classes only (see `tailwind.config.js` / `postcss.config.js`) — no CSS-in-JS or component library
 - `tsconfig.json` covers both `src/` and `vite.config.ts` in one project (no TS project references) — keep it that way; splitting into `tsconfig.node.json` with project references previously caused `tsc -b` to emit stray `vite.config.js`/`.tsbuildinfo` files into the repo root
 

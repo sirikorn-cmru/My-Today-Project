@@ -1,39 +1,31 @@
-import { useState } from 'react'
-import { Header } from './components/Header'
-import { SummaryCards } from './components/SummaryCards'
-import { TodayTasks } from './components/TodayTasks'
-import { TodaySchedule } from './components/TodaySchedule'
-import { Upcoming } from './components/Upcoming'
-import { QuickActionModal } from './components/QuickActionModal'
-import { mockSchedule, mockTasks, mockUpcoming } from './data/mockData'
+import { Route, Routes } from 'react-router-dom'
+import { NavBar } from './components/NavBar'
+import { DashboardPage } from './pages/DashboardPage'
+import { TasksPage } from './pages/TasksPage'
+import { useTasks } from './hooks/useTasks'
 
 function App() {
-  const [quickActionOpen, setQuickActionOpen] = useState(false)
-  const today = new Date()
-
-  const total = mockTasks.length
-  const completed = mockTasks.filter((task) => task.status === 'Done').length
-  const pending = total - completed
-  const dueSoon = mockUpcoming.length
+  const { tasks, addTask, updateTask, deleteTask, setStatus } = useTasks()
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
-      <Header today={today} />
-      <SummaryCards total={total} completed={completed} pending={pending} dueSoon={dueSoon} />
-      <TodayTasks tasks={mockTasks} />
-      <TodaySchedule schedule={mockSchedule} />
-      <Upcoming items={mockUpcoming} />
-
-      <button
-        type="button"
-        onClick={() => setQuickActionOpen(true)}
-        className="fixed bottom-5 right-5 z-10 flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg"
-      >
-        + เพิ่มงาน
-      </button>
-
-      <QuickActionModal open={quickActionOpen} onClose={() => setQuickActionOpen(false)} />
-    </div>
+    <>
+      <Routes>
+        <Route path="/" element={<DashboardPage tasks={tasks} addTask={addTask} setStatus={setStatus} />} />
+        <Route
+          path="/tasks"
+          element={
+            <TasksPage
+              tasks={tasks}
+              addTask={addTask}
+              updateTask={updateTask}
+              deleteTask={deleteTask}
+              setStatus={setStatus}
+            />
+          }
+        />
+      </Routes>
+      <NavBar />
+    </>
   )
 }
 

@@ -4,18 +4,16 @@ export type TaskStatus = 'To Do' | 'Doing' | 'Done'
 export interface Task {
   id: string
   title: string
+  description: string
   subject: string
-  deadlineTime: string
+  dueDate: string
+  dueTime: string
   priority: Priority
   status: TaskStatus
+  createdAt: string
 }
 
-export interface UpcomingTask {
-  id: string
-  title: string
-  subject: string
-  dueLabel: string
-}
+export type TaskInput = Omit<Task, 'id' | 'createdAt'>
 
 export interface ScheduleItem {
   id: string

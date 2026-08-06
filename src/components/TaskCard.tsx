@@ -1,0 +1,68 @@
+import type { Task, TaskStatus } from '../types'
+import { priorityBadge, statusBadge } from '../lib/taskUtils'
+
+interface TaskCardProps {
+  task: Task
+  metaLabel: string
+  showDescription?: boolean
+  onStatusChange?: (status: TaskStatus) => void
+  onEdit?: () => void
+  onDelete?: () => void
+}
+
+const statusOptions: TaskStatus[] = ['To Do', 'Doing', 'Done']
+
+export function TaskCard({ task, metaLabel, showDescription, onStatusChange, onEdit, onDelete }: TaskCardProps) {
+  return (
+    <li className="rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="truncate font-medium text-slate-900">{task.title}</p>
+          <p className="text-xs text-slate-500">
+            {task.subject} · {metaLabel}
+          </p>
+          {showDescription && task.description && (
+            <p className="mt-1 text-xs text-slate-500">{task.description}</p>
+          )}
+        </div>
+        <div className="flex shrink-0 flex-col items-end gap-1">
+          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${priorityBadge[task.priority]}`}>
+            {task.priority}
+          </span>
+          {onStatusChange ? (
+            <select
+              value={task.status}
+              onChange={(e) => onStatusChange(e.target.value as TaskStatus)}
+              className={`rounded-full border-none px-2 py-0.5 text-xs font-medium ${statusBadge[task.status]}`}
+            >
+              {statusOptions.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusBadge[task.status]}`}>
+              {task.status}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {(onEdit || onDelete) && (
+        <div className="mt-2 flex justify-end gap-3 border-t border-slate-100 pt-2">
+          {onEdit && (
+            <button type="button" onClick={onEdit} className="text-xs font-medium text-blue-600">
+              แก้ไข
+            </button>
+          )}
+          {onDelete && (
+            <button type="button" onClick={onDelete} className="text-xs font-medium text-rose-600">
+              ลบ
+            </button>
+          )}
+        </div>
+      )}
+    </li>
+  )
+}
