@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { TaskCard } from '../components/TaskCard'
 import { TaskFormModal } from '../components/TaskFormModal'
+import { Footer } from '../components/Footer'
 import { filterTasks, sortByDeadline, dueLabel } from '../lib/taskUtils'
 import type { TaskFilters } from '../lib/taskUtils'
 import type { FileRecord, Task, TaskInput, TaskStatus, Priority } from '../types'
@@ -147,6 +148,7 @@ export function TasksPage({
           )}
         </ul>
       </section>
+      <Footer />
 
       <button
         type="button"

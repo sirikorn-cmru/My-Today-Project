@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { NotificationList } from '../components/NotificationList'
+import { Footer } from '../components/Footer'
 import type { NotificationItem } from '../types'
 
 interface NotificationsPageProps {
@@ -70,6 +71,7 @@ export function NotificationsPage({
       <section className="px-4 sm:px-6">
         <NotificationList items={notifications} onSelect={handleSelect} emptyLabel="ไม่มีการแจ้งเตือนตอนนี้" />
       </section>
+      <Footer />
     </div>
   )
 }

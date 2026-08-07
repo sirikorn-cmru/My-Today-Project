@@ -5,6 +5,7 @@ import { TasksPage } from './pages/TasksPage'
 import { CalendarPage } from './pages/CalendarPage'
 import { FilesPage } from './pages/FilesPage'
 import { NotificationsPage } from './pages/NotificationsPage'
+import { PrivacyPage } from './pages/PrivacyPage'
 import { useTasks } from './hooks/useTasks'
 import { useEvents } from './hooks/useEvents'
 import { useFiles } from './hooks/useFiles'
@@ -13,7 +14,16 @@ import { useNotifications } from './hooks/useNotifications'
 function App() {
   const { tasks, addTask, updateTask, deleteTask, setStatus } = useTasks()
   const { events, addEvent, updateEvent, deleteEvent } = useEvents()
-  const { files, loaded: filesLoaded, addFile, deleteFile, linkFileToTask, unlinkFileFromTask } = useFiles()
+  const {
+    files,
+    loaded: filesLoaded,
+    error: filesError,
+    clearError: clearFilesError,
+    addFile,
+    deleteFile,
+    linkFileToTask,
+    unlinkFileFromTask,
+  } = useFiles()
   const { notifications, unreadCount, markRead, markAllRead, permission, requestPermission } = useNotifications(
     tasks,
     events,
@@ -66,7 +76,15 @@ function App() {
         <Route
           path="/files"
           element={
-            <FilesPage files={files} loaded={filesLoaded} tasks={tasks} addFile={addFile} deleteFile={deleteFile} />
+            <FilesPage
+              files={files}
+              loaded={filesLoaded}
+              error={filesError}
+              clearError={clearFilesError}
+              tasks={tasks}
+              addFile={addFile}
+              deleteFile={deleteFile}
+            />
           }
         />
         <Route
@@ -81,6 +99,7 @@ function App() {
             />
           }
         />
+        <Route path="/privacy" element={<PrivacyPage />} />
       </Routes>
       <NavBar unreadCount={unreadCount} />
     </>

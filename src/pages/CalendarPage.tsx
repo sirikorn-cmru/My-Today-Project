@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { DayAgenda } from '../components/DayAgenda'
 import { EventFormModal } from '../components/EventFormModal'
+import { Footer } from '../components/Footer'
 import { getDayItems, getMonthGrid, getWeekDates, weekdayLabels } from '../lib/calendarUtils'
 import { todayISO } from '../lib/taskUtils'
 import type { CalendarEvent, CalendarEventInput, CalendarViewMode, Task } from '../types'
@@ -187,6 +188,7 @@ export function CalendarPage({ events, tasks, addEvent, updateEvent, deleteEvent
           </div>
         )}
       </div>
+      <Footer />
 
       <button
         type="button"

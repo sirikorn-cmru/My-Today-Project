@@ -1,17 +1,20 @@
 import { useState } from 'react'
 import { FileCard } from '../components/FileCard'
 import { FileFormModal } from '../components/FileFormModal'
+import { Footer } from '../components/Footer'
 import type { FileRecord, FileRecordInput, Task } from '../types'
 
 interface FilesPageProps {
   files: FileRecord[]
   loaded: boolean
+  error: string | null
+  clearError: () => void
   tasks: Task[]
   addFile: (input: FileRecordInput) => void
   deleteFile: (id: string) => void
 }
 
-export function FilesPage({ files, loaded, tasks, addFile, deleteFile }: FilesPageProps) {
+export function FilesPage({ files, loaded, error, clearError, tasks, addFile, deleteFile }: FilesPageProps) {
   const [search, setSearch] = useState('')
   const [formOpen, setFormOpen] = useState(false)
 
@@ -29,6 +32,15 @@ export function FilesPage({ files, loaded, tasks, addFile, deleteFile }: FilesPa
         <h1 className="text-xl font-semibold">ไฟล์</h1>
         <p className="mt-1 text-sm text-blue-100">{files.length} ไฟล์ทั้งหมด</p>
       </header>
+
+      {error && (
+        <div className="mx-4 mt-4 flex items-start justify-between gap-2 rounded-lg bg-rose-50 p-3 text-sm text-rose-700 ring-1 ring-rose-200 sm:mx-6">
+          <span>{error}</span>
+          <button type="button" onClick={clearError} className="shrink-0 font-medium">
+            ปิด
+          </button>
+        </div>
+      )}
 
       <section className="px-4 py-4 sm:px-6">
         <input
@@ -54,6 +66,7 @@ export function FilesPage({ files, loaded, tasks, addFile, deleteFile }: FilesPa
           </ul>
         )}
       </section>
+      <Footer />
 
       <button
         type="button"

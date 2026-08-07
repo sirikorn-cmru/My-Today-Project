@@ -7,6 +7,7 @@ import { TodaySchedule } from '../components/TodaySchedule'
 import { Upcoming } from '../components/Upcoming'
 import { TaskFormModal } from '../components/TaskFormModal'
 import { NotificationList } from '../components/NotificationList'
+import { Footer } from '../components/Footer'
 import { isDueToday, daysUntil, todayISO } from '../lib/taskUtils'
 import type { CalendarEvent, NotificationItem, Task, TaskInput, TaskStatus } from '../types'
 
@@ -74,6 +75,7 @@ export function DashboardPage({
       <TodayTasks tasks={todayTasks} onStatusChange={setStatus} />
       <TodaySchedule events={todayEvents} />
       <Upcoming tasks={upcomingTasks} />
+      <Footer />
 
       <button
         type="button"
