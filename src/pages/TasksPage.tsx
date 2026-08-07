@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { TaskCard } from '../components/TaskCard'
 import { TaskFormModal } from '../components/TaskFormModal'
 import { filterTasks, sortByDeadline, dueLabel } from '../lib/taskUtils'
@@ -33,10 +34,23 @@ export function TasksPage({
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
   const [formOpen, setFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const visibleTasks = useMemo(() => {
     return sortByDeadline(filterTasks(tasks, filters), sortDir)
   }, [tasks, filters, sortDir])
+
+  useEffect(() => {
+    const taskId = searchParams.get('taskId')
+    if (!taskId) return
+    const task = tasks.find((t) => t.id === taskId)
+    if (task) {
+      setEditingTask(task)
+      setFormOpen(true)
+    }
+    setSearchParams({}, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   function openCreate() {
     setEditingTask(null)

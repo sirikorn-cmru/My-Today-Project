@@ -4,21 +4,37 @@ import { DashboardPage } from './pages/DashboardPage'
 import { TasksPage } from './pages/TasksPage'
 import { CalendarPage } from './pages/CalendarPage'
 import { FilesPage } from './pages/FilesPage'
+import { NotificationsPage } from './pages/NotificationsPage'
 import { useTasks } from './hooks/useTasks'
 import { useEvents } from './hooks/useEvents'
 import { useFiles } from './hooks/useFiles'
+import { useNotifications } from './hooks/useNotifications'
 
 function App() {
   const { tasks, addTask, updateTask, deleteTask, setStatus } = useTasks()
   const { events, addEvent, updateEvent, deleteEvent } = useEvents()
   const { files, loaded: filesLoaded, addFile, deleteFile, linkFileToTask, unlinkFileFromTask } = useFiles()
+  const { notifications, unreadCount, markRead, markAllRead, permission, requestPermission } = useNotifications(
+    tasks,
+    events,
+  )
 
   return (
     <>
       <Routes>
         <Route
           path="/"
-          element={<DashboardPage tasks={tasks} addTask={addTask} setStatus={setStatus} events={events} />}
+          element={
+            <DashboardPage
+              tasks={tasks}
+              addTask={addTask}
+              setStatus={setStatus}
+              events={events}
+              notifications={notifications}
+              unreadCount={unreadCount}
+              markRead={markRead}
+            />
+          }
         />
         <Route
           path="/tasks"
@@ -53,8 +69,20 @@ function App() {
             <FilesPage files={files} loaded={filesLoaded} tasks={tasks} addFile={addFile} deleteFile={deleteFile} />
           }
         />
+        <Route
+          path="/notifications"
+          element={
+            <NotificationsPage
+              notifications={notifications}
+              markRead={markRead}
+              markAllRead={markAllRead}
+              permission={permission}
+              requestPermission={requestPermission}
+            />
+          }
+        />
       </Routes>
-      <NavBar />
+      <NavBar unreadCount={unreadCount} />
     </>
   )
 }

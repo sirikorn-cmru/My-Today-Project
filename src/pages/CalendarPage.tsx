@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { DayAgenda } from '../components/DayAgenda'
 import { EventFormModal } from '../components/EventFormModal'
 import { getDayItems, getMonthGrid, getWeekDates, weekdayLabels } from '../lib/calendarUtils'
@@ -20,12 +21,19 @@ const viewLabels: Record<CalendarViewMode, string> = {
 }
 
 export function CalendarPage({ events, tasks, addEvent, updateEvent, deleteEvent }: CalendarPageProps) {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialDate = searchParams.get('date')
   const [viewMode, setViewMode] = useState<CalendarViewMode>('today')
-  const [selectedDate, setSelectedDate] = useState(() => todayISO())
+  const [selectedDate, setSelectedDate] = useState(() => initialDate || todayISO())
   const [formOpen, setFormOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
 
   const today = todayISO()
+
+  useEffect(() => {
+    if (initialDate) setSearchParams({}, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   function openCreate() {
     setEditingEvent(null)

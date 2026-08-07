@@ -52,3 +52,16 @@ export interface FileRecord {
 }
 
 export type FileRecordInput = Omit<FileRecord, 'id' | 'createdAt'>
+
+export type NotificationLevel = 'Overdue' | 'DueToday' | 'DueSoon'
+
+export interface NotificationItem {
+  id: string
+  kind: 'task' | 'event'
+  sourceId: string
+  level: NotificationLevel
+  title: string
+  message: string
+  timeLabel: string
+  read: boolean
+}
