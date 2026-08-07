@@ -65,6 +65,10 @@ New requirements should go through the `requirement-intake` skill (`.claude/skil
 
 Use the `backlog-sync-check` skill (`.claude/skills/backlog-sync-check/SKILL.md`) to audit whether `backlog.md` is still accurate — both internally (every spec doc has a matching, non-broken backlog entry) and against reality (a Sprint's noted status vs. what's actually been built in `src/` and committed in git). It delegates to the `backlog-auditor` subagent (`.claude/agents/backlog-auditor.md`), which fixes `backlog.md` directly if it's stale but never edits spec files themselves. Run this periodically or whenever backlog accuracy is in question — don't assume a Sprint's "สถานะ" note in `backlog.md` is current just because it was correct when written (e.g. Sprint 1-2 were marked "ยังไม่เริ่ม" well after being implemented, until this check catches it).
 
+### Wikilink audit
+
+Use the `wikilink-audit` skill (`.claude/skills/wikilink-audit/SKILL.md`) to scan every `.md` file across the entire `.docs/` vault — not just `backlog.md` vs `01-spec/` like the backlog check above, but every `index.md`, `00-archived/`, `05-log/`, and everything else — for `[[wikilinks]]` whose target file doesn't exist. It delegates to the `wikilink-auditor` subagent (`.claude/agents/wikilink-auditor.md`), which fixes unambiguous cases directly (e.g. a link that clearly should point to a file that was renamed) and reports anything ambiguous for the user to resolve manually. Run this periodically or whenever link integrity in the vault is in question.
+
 ### Language
 
 All existing docs in `.docs/` are written in Thai. Write new spec and backlog content in Thai to stay consistent — don't switch to English mid-vault. Filenames/slugs stay in English for cross-platform safety.
