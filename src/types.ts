@@ -39,3 +39,16 @@ export interface DayItem {
   subLabel: string
   sortKey: string
 }
+
+export interface FileRecord {
+  id: string
+  name: string
+  category: string
+  linkedTaskIds: string[]
+  mimeType: string
+  size: number
+  createdAt: string
+  blob: Blob
+}
+
+export type FileRecordInput = Omit<FileRecord, 'id' | 'createdAt'>

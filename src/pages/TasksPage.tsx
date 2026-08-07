@@ -3,7 +3,7 @@ import { TaskCard } from '../components/TaskCard'
 import { TaskFormModal } from '../components/TaskFormModal'
 import { filterTasks, sortByDeadline, dueLabel } from '../lib/taskUtils'
 import type { TaskFilters } from '../lib/taskUtils'
-import type { Task, TaskInput, TaskStatus, Priority } from '../types'
+import type { FileRecord, Task, TaskInput, TaskStatus, Priority } from '../types'
 
 interface TasksPageProps {
   tasks: Task[]
@@ -11,12 +11,24 @@ interface TasksPageProps {
   updateTask: (id: string, input: TaskInput) => void
   deleteTask: (id: string) => void
   setStatus: (id: string, status: TaskStatus) => void
+  files: FileRecord[]
+  onLinkFile: (fileId: string, taskId: string) => void
+  onUnlinkFile: (fileId: string, taskId: string) => void
 }
 
 const statusFilterOptions: Array<TaskStatus | 'All'> = ['All', 'To Do', 'Doing', 'Done']
 const priorityFilterOptions: Array<Priority | 'All'> = ['All', 'High', 'Medium', 'Low']
 
-export function TasksPage({ tasks, addTask, updateTask, deleteTask, setStatus }: TasksPageProps) {
+export function TasksPage({
+  tasks,
+  addTask,
+  updateTask,
+  deleteTask,
+  setStatus,
+  files,
+  onLinkFile,
+  onUnlinkFile,
+}: TasksPageProps) {
   const [filters, setFilters] = useState<TaskFilters>({ status: 'All', priority: 'All', search: '' })
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
   const [formOpen, setFormOpen] = useState(false)
@@ -108,6 +120,7 @@ export function TasksPage({ tasks, addTask, updateTask, deleteTask, setStatus }:
               task={task}
               metaLabel={dueLabel(task)}
               showDescription
+              fileCount={files.filter((f) => f.linkedTaskIds.includes(task.id)).length}
               onStatusChange={(status) => setStatus(task.id, status)}
               onEdit={() => openEdit(task)}
               onDelete={() => handleDelete(task)}
@@ -137,6 +150,9 @@ export function TasksPage({ tasks, addTask, updateTask, deleteTask, setStatus }:
           setEditingTask(null)
         }}
         onSubmit={handleSubmit}
+        files={files}
+        onLinkFile={(fileId) => editingTask && onLinkFile(fileId, editingTask.id)}
+        onUnlinkFile={(fileId) => editingTask && onUnlinkFile(fileId, editingTask.id)}
       />
     </div>
   )

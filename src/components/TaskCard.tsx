@@ -5,6 +5,7 @@ interface TaskCardProps {
   task: Task
   metaLabel: string
   showDescription?: boolean
+  fileCount?: number
   onStatusChange?: (status: TaskStatus) => void
   onEdit?: () => void
   onDelete?: () => void
@@ -12,7 +13,15 @@ interface TaskCardProps {
 
 const statusOptions: TaskStatus[] = ['To Do', 'Doing', 'Done']
 
-export function TaskCard({ task, metaLabel, showDescription, onStatusChange, onEdit, onDelete }: TaskCardProps) {
+export function TaskCard({
+  task,
+  metaLabel,
+  showDescription,
+  fileCount,
+  onStatusChange,
+  onEdit,
+  onDelete,
+}: TaskCardProps) {
   return (
     <li className="rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
       <div className="flex items-start justify-between gap-3">
@@ -24,6 +33,7 @@ export function TaskCard({ task, metaLabel, showDescription, onStatusChange, onE
           {showDescription && task.description && (
             <p className="mt-1 text-xs text-slate-500">{task.description}</p>
           )}
+          {Boolean(fileCount) && <p className="mt-1 text-xs text-blue-600">📎 ไฟล์ที่เกี่ยวข้อง {fileCount}</p>}
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
           <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${priorityBadge[task.priority]}`}>

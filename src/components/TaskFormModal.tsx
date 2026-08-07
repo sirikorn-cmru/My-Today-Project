@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react'
-import type { Priority, Task, TaskInput, TaskStatus } from '../types'
+import type { FileRecord, Priority, Task, TaskInput, TaskStatus } from '../types'
+import { downloadBlob, formatBytes } from '../lib/fileUtils'
 
 interface TaskFormModalProps {
   open: boolean
   initialTask?: Task | null
   onClose: () => void
   onSubmit: (input: TaskInput) => void
+  files?: FileRecord[]
+  onLinkFile?: (fileId: string) => void
+  onUnlinkFile?: (fileId: string) => void
 }
 
 const emptyForm: TaskInput = {
@@ -18,7 +22,15 @@ const emptyForm: TaskInput = {
   status: 'To Do',
 }
 
-export function TaskFormModal({ open, initialTask, onClose, onSubmit }: TaskFormModalProps) {
+export function TaskFormModal({
+  open,
+  initialTask,
+  onClose,
+  onSubmit,
+  files,
+  onLinkFile,
+  onUnlinkFile,
+}: TaskFormModalProps) {
   const [form, setForm] = useState<TaskInput>(emptyForm)
 
   useEffect(() => {
@@ -142,6 +154,60 @@ export function TaskFormModal({ open, initialTask, onClose, onSubmit }: TaskForm
               </select>
             </div>
           </div>
+
+          {isEdit && files && initialTask && (
+            <div>
+              <label className="text-xs font-medium text-slate-500">ไฟล์ที่เกี่ยวข้อง (Related Files)</label>
+              <ul className="mt-1 space-y-1">
+                {files
+                  .filter((f) => f.linkedTaskIds.includes(initialTask.id))
+                  .map((f) => (
+                    <li
+                      key={f.id}
+                      className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-sm"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => downloadBlob(f.blob, f.name)}
+                        className="min-w-0 flex-1 truncate text-left text-blue-600"
+                      >
+                        {f.name} <span className="text-slate-400">({formatBytes(f.size)})</span>
+                      </button>
+                      {onUnlinkFile && (
+                        <button
+                          type="button"
+                          onClick={() => onUnlinkFile(f.id)}
+                          className="shrink-0 text-xs font-medium text-rose-600"
+                        >
+                          ลบออก
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                {files.filter((f) => f.linkedTaskIds.includes(initialTask.id)).length === 0 && (
+                  <li className="text-xs text-slate-400">ยังไม่มีไฟล์ที่เชื่อมกับงานนี้</li>
+                )}
+              </ul>
+              {onLinkFile && (
+                <select
+                  value=""
+                  onChange={(e) => {
+                    if (e.target.value) onLinkFile(e.target.value)
+                  }}
+                  className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600"
+                >
+                  <option value="">+ แนบไฟล์ที่มีอยู่...</option>
+                  {files
+                    .filter((f) => !f.linkedTaskIds.includes(initialTask.id))
+                    .map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.name}
+                      </option>
+                    ))}
+                </select>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="mt-5 flex gap-2">
