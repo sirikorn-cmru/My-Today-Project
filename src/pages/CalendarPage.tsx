@@ -5,11 +5,12 @@ import { EventFormModal } from '../components/EventFormModal'
 import { Footer } from '../components/Footer'
 import { getDayItems, getMonthGrid, getWeekDates, weekdayLabels } from '../lib/calendarUtils'
 import { todayISO } from '../lib/taskUtils'
-import type { CalendarEvent, CalendarEventInput, CalendarViewMode, Task } from '../types'
+import type { CalendarEvent, CalendarEventInput, CalendarViewMode, LifeArea, Task } from '../types'
 
 interface CalendarPageProps {
   events: CalendarEvent[]
   tasks: Task[]
+  lifeAreas: LifeArea[]
   addEvent: (input: CalendarEventInput) => void
   updateEvent: (id: string, input: CalendarEventInput) => void
   deleteEvent: (id: string) => void
@@ -21,7 +22,7 @@ const viewLabels: Record<CalendarViewMode, string> = {
   month: 'เดือน',
 }
 
-export function CalendarPage({ events, tasks, addEvent, updateEvent, deleteEvent }: CalendarPageProps) {
+export function CalendarPage({ events, tasks, lifeAreas, addEvent, updateEvent, deleteEvent }: CalendarPageProps) {
   const [searchParams, setSearchParams] = useSearchParams()
   const initialDate = searchParams.get('date')
   const [viewMode, setViewMode] = useState<CalendarViewMode>('today')
@@ -115,7 +116,7 @@ export function CalendarPage({ events, tasks, addEvent, updateEvent, deleteEvent
         {viewMode === 'today' && (
           <DayAgenda
             date={selectedDate}
-            items={getDayItems(selectedDate, events, tasks)}
+            items={getDayItems(selectedDate, events, tasks, lifeAreas)}
             onEditEvent={openEditById}
             onDeleteEvent={handleDeleteById}
           />
@@ -139,7 +140,7 @@ export function CalendarPage({ events, tasks, addEvent, updateEvent, deleteEvent
                   onClick={() => jumpToDay(date)}
                   className="block w-full text-left"
                 >
-                  <DayAgenda date={date} items={getDayItems(date, events, tasks)} showDateHeader />
+                  <DayAgenda date={date} items={getDayItems(date, events, tasks, lifeAreas)} showDateHeader />
                 </button>
               ))}
             </div>
@@ -165,7 +166,7 @@ export function CalendarPage({ events, tasks, addEvent, updateEvent, deleteEvent
             </div>
             <div className="grid grid-cols-7 gap-1">
               {monthGrid.flat().map((date) => {
-                const count = getDayItems(date, events, tasks).length
+                const count = getDayItems(date, events, tasks, lifeAreas).length
                 const isCurrentMonth = new Date(`${date}T00:00:00`).getMonth() === currentMonth
                 const isToday = date === today
                 return (
@@ -202,6 +203,7 @@ export function CalendarPage({ events, tasks, addEvent, updateEvent, deleteEvent
         open={formOpen}
         initialEvent={editingEvent}
         defaultDate={selectedDate}
+        lifeAreas={lifeAreas}
         onClose={() => {
           setFormOpen(false)
           setEditingEvent(null)

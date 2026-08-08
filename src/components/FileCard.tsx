@@ -4,10 +4,11 @@ import { downloadBlob, formatBytes, previewKind } from '../lib/fileUtils'
 
 interface FileCardProps {
   file: FileRecord
+  lifeAreaName?: string
   onDelete: (id: string) => void
 }
 
-export function FileCard({ file, onDelete }: FileCardProps) {
+export function FileCard({ file, lifeAreaName, onDelete }: FileCardProps) {
   const [previewOpen, setPreviewOpen] = useState(false)
   const [objectUrl, setObjectUrl] = useState<string | null>(null)
   const [textContent, setTextContent] = useState<string | null>(null)
@@ -36,6 +37,7 @@ export function FileCard({ file, onDelete }: FileCardProps) {
         <div className="min-w-0">
           <p className="truncate font-medium text-slate-900">{file.name}</p>
           <p className="text-xs text-slate-500">
+            {lifeAreaName && <span>{lifeAreaName} · </span>}
             {file.category} · {formatBytes(file.size)}
           </p>
         </div>

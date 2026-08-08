@@ -1,12 +1,14 @@
-import type { Task, TaskStatus } from '../types'
+import type { LifeArea, Task, TaskStatus } from '../types'
 import { TaskCard } from './TaskCard'
+import { getLifeAreaName } from '../lib/lifeAreaUtils'
 
 interface TodayTasksProps {
   tasks: Task[]
+  lifeAreas: LifeArea[]
   onStatusChange: (id: string, status: TaskStatus) => void
 }
 
-export function TodayTasks({ tasks, onStatusChange }: TodayTasksProps) {
+export function TodayTasks({ tasks, lifeAreas, onStatusChange }: TodayTasksProps) {
   return (
     <section className="px-4 py-4 sm:px-6">
       <h2 className="text-base font-semibold text-slate-900">งานของวันนี้</h2>
@@ -16,6 +18,7 @@ export function TodayTasks({ tasks, onStatusChange }: TodayTasksProps) {
             key={task.id}
             task={task}
             metaLabel={`กำหนดส่ง ${task.dueTime || '—'}`}
+            lifeAreaName={getLifeAreaName(lifeAreas, task.lifeAreaId)}
             onStatusChange={(status) => onStatusChange(task.id, status)}
           />
         ))}

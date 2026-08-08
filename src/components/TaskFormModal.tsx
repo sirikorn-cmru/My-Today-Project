@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import type { FileRecord, Priority, Task, TaskInput, TaskStatus } from '../types'
+import type { FileRecord, LifeArea, Priority, Task, TaskInput, TaskStatus } from '../types'
 import { downloadBlob, formatBytes } from '../lib/fileUtils'
 
 interface TaskFormModalProps {
   open: boolean
   initialTask?: Task | null
+  lifeAreas: LifeArea[]
   onClose: () => void
   onSubmit: (input: TaskInput) => void
   files?: FileRecord[]
@@ -15,7 +16,7 @@ interface TaskFormModalProps {
 const emptyForm: TaskInput = {
   title: '',
   description: '',
-  subject: '',
+  lifeAreaId: '',
   dueDate: '',
   dueTime: '',
   priority: 'Medium',
@@ -25,6 +26,7 @@ const emptyForm: TaskInput = {
 export function TaskFormModal({
   open,
   initialTask,
+  lifeAreas,
   onClose,
   onSubmit,
   files,
@@ -40,7 +42,7 @@ export function TaskFormModal({
         ? {
             title: initialTask.title,
             description: initialTask.description,
-            subject: initialTask.subject,
+            lifeAreaId: initialTask.lifeAreaId,
             dueDate: initialTask.dueDate,
             dueTime: initialTask.dueTime,
             priority: initialTask.priority,
@@ -97,13 +99,19 @@ export function TaskFormModal({
           </div>
 
           <div>
-            <label className="text-xs font-medium text-slate-500">รายวิชา</label>
-            <input
-              value={form.subject}
-              onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
-              placeholder="เช่น STEM 101"
+            <label className="text-xs font-medium text-slate-500">Life Area</label>
+            <select
+              value={form.lifeAreaId}
+              onChange={(e) => setForm((f) => ({ ...f, lifeAreaId: e.target.value }))}
               className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900"
-            />
+            >
+              <option value="">ไม่ระบุ</option>
+              {lifeAreas.map((la) => (
+                <option key={la.id} value={la.id}>
+                  {la.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

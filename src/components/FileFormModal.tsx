@@ -1,16 +1,18 @@
 import { useState } from 'react'
-import type { FileRecordInput, Task } from '../types'
+import type { FileRecordInput, LifeArea, Task } from '../types'
 
 interface FileFormModalProps {
   open: boolean
   tasks: Task[]
+  lifeAreas: LifeArea[]
   onClose: () => void
   onSubmit: (input: FileRecordInput) => void
 }
 
-export function FileFormModal({ open, tasks, onClose, onSubmit }: FileFormModalProps) {
+export function FileFormModal({ open, tasks, lifeAreas, onClose, onSubmit }: FileFormModalProps) {
   const [name, setName] = useState('')
   const [category, setCategory] = useState('')
+  const [lifeAreaId, setLifeAreaId] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [linkedTaskIds, setLinkedTaskIds] = useState<string[]>([])
 
@@ -21,6 +23,7 @@ export function FileFormModal({ open, tasks, onClose, onSubmit }: FileFormModalP
   function reset() {
     setName('')
     setCategory('')
+    setLifeAreaId('')
     setFile(null)
     setLinkedTaskIds([])
   }
@@ -41,6 +44,7 @@ export function FileFormModal({ open, tasks, onClose, onSubmit }: FileFormModalP
     onSubmit({
       name: name.trim(),
       category: category.trim() || 'ทั่วไป',
+      lifeAreaId,
       linkedTaskIds,
       mimeType: file.type || 'application/octet-stream',
       size: file.size,
@@ -96,6 +100,22 @@ export function FileFormModal({ open, tasks, onClose, onSubmit }: FileFormModalP
               placeholder="เช่น เอกสาร, รูปภาพ"
               className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900"
             />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-500">Life Area</label>
+            <select
+              value={lifeAreaId}
+              onChange={(e) => setLifeAreaId(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            >
+              <option value="">ไม่ระบุ</option>
+              {lifeAreas.map((la) => (
+                <option key={la.id} value={la.id}>
+                  {la.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {tasks.length > 0 && (

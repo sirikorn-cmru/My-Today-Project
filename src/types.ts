@@ -5,7 +5,7 @@ export interface Task {
   id: string
   title: string
   description: string
-  subject: string
+  lifeAreaId: string
   dueDate: string
   dueTime: string
   priority: Priority
@@ -24,6 +24,7 @@ export interface CalendarEvent {
   endTime: string
   location: string
   description: string
+  lifeAreaId: string
   createdAt: string
 }
 
@@ -44,6 +45,7 @@ export interface FileRecord {
   id: string
   name: string
   category: string
+  lifeAreaId: string
   linkedTaskIds: string[]
   mimeType: string
   size: number
@@ -64,4 +66,24 @@ export interface NotificationItem {
   message: string
   timeLabel: string
   read: boolean
+}
+
+export interface LifeArea {
+  id: string
+  name: string
+  createdAt: string
+}
+
+export type LifeAreaInput = Omit<LifeArea, 'id' | 'createdAt'>
+
+export interface Profile {
+  name: string
+  profileImage: string
+  email: string
+  preferredName: string
+  studentId: string
+  faculty: string
+  major: string
+  organization: string
+  position: string
 }

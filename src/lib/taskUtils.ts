@@ -38,6 +38,7 @@ export function sortByDeadline(tasks: Task[], direction: 'asc' | 'desc' = 'asc')
 export interface TaskFilters {
   status: TaskStatus | 'All'
   priority: Priority | 'All'
+  lifeAreaId: string | 'All'
   search: string
 }
 
@@ -46,8 +47,9 @@ export function filterTasks(tasks: Task[], filters: TaskFilters): Task[] {
   return tasks.filter((task) => {
     if (filters.status !== 'All' && task.status !== filters.status) return false
     if (filters.priority !== 'All' && task.priority !== filters.priority) return false
+    if (filters.lifeAreaId !== 'All' && task.lifeAreaId !== filters.lifeAreaId) return false
     if (search) {
-      const haystack = `${task.title} ${task.subject} ${task.description}`.toLowerCase()
+      const haystack = `${task.title} ${task.description}`.toLowerCase()
       if (!haystack.includes(search)) return false
     }
     return true

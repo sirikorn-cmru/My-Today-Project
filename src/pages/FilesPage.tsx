@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { FileCard } from '../components/FileCard'
 import { FileFormModal } from '../components/FileFormModal'
 import { Footer } from '../components/Footer'
-import type { FileRecord, FileRecordInput, Task } from '../types'
+import { getLifeAreaName } from '../lib/lifeAreaUtils'
+import type { FileRecord, FileRecordInput, LifeArea, Task } from '../types'
 
 interface FilesPageProps {
   files: FileRecord[]
@@ -10,16 +11,19 @@ interface FilesPageProps {
   error: string | null
   clearError: () => void
   tasks: Task[]
+  lifeAreas: LifeArea[]
   addFile: (input: FileRecordInput) => void
   deleteFile: (id: string) => void
 }
 
-export function FilesPage({ files, loaded, error, clearError, tasks, addFile, deleteFile }: FilesPageProps) {
+export function FilesPage({ files, loaded, error, clearError, tasks, lifeAreas, addFile, deleteFile }: FilesPageProps) {
   const [search, setSearch] = useState('')
+  const [lifeAreaFilter, setLifeAreaFilter] = useState('All')
   const [formOpen, setFormOpen] = useState(false)
 
   const visibleFiles = files
     .filter((file) => {
+      if (lifeAreaFilter !== 'All' && file.lifeAreaId !== lifeAreaFilter) return false
       const q = search.trim().toLowerCase()
       if (!q) return true
       return `${file.name} ${file.category}`.toLowerCase().includes(q)
@@ -42,13 +46,25 @@ export function FilesPage({ files, loaded, error, clearError, tasks, addFile, de
         </div>
       )}
 
-      <section className="px-4 py-4 sm:px-6">
+      <section className="space-y-2 px-4 py-4 sm:px-6">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="ค้นหาไฟล์..."
           className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
         />
+        <select
+          value={lifeAreaFilter}
+          onChange={(e) => setLifeAreaFilter(e.target.value)}
+          className="w-full rounded-lg border border-slate-200 px-2 py-2 text-sm"
+        >
+          <option value="All">ทุก Life Area</option>
+          {lifeAreas.map((la) => (
+            <option key={la.id} value={la.id}>
+              {la.name}
+            </option>
+          ))}
+        </select>
       </section>
 
       <section className="px-4 sm:px-6">
@@ -56,7 +72,12 @@ export function FilesPage({ files, loaded, error, clearError, tasks, addFile, de
         {loaded && (
           <ul className="space-y-2">
             {visibleFiles.map((file) => (
-              <FileCard key={file.id} file={file} onDelete={deleteFile} />
+              <FileCard
+                key={file.id}
+                file={file}
+                lifeAreaName={getLifeAreaName(lifeAreas, file.lifeAreaId)}
+                onDelete={deleteFile}
+              />
             ))}
             {visibleFiles.length === 0 && (
               <li className="rounded-xl bg-white p-4 text-center text-sm text-slate-500 shadow-sm ring-1 ring-slate-200">
@@ -79,6 +100,7 @@ export function FilesPage({ files, loaded, error, clearError, tasks, addFile, de
       <FileFormModal
         open={formOpen}
         tasks={tasks}
+        lifeAreas={lifeAreas}
         onClose={() => setFormOpen(false)}
         onSubmit={(input) => {
           addFile(input)

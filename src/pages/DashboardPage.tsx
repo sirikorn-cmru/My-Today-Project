@@ -9,7 +9,7 @@ import { TaskFormModal } from '../components/TaskFormModal'
 import { NotificationList } from '../components/NotificationList'
 import { Footer } from '../components/Footer'
 import { isDueToday, daysUntil, todayISO } from '../lib/taskUtils'
-import type { CalendarEvent, NotificationItem, Task, TaskInput, TaskStatus } from '../types'
+import type { CalendarEvent, LifeArea, NotificationItem, Task, TaskInput, TaskStatus } from '../types'
 
 interface DashboardPageProps {
   tasks: Task[]
@@ -19,6 +19,7 @@ interface DashboardPageProps {
   notifications: NotificationItem[]
   unreadCount: number
   markRead: (id: string) => void
+  lifeAreas: LifeArea[]
 }
 
 const UPCOMING_WINDOW_DAYS = 3
@@ -31,6 +32,7 @@ export function DashboardPage({
   notifications,
   unreadCount,
   markRead,
+  lifeAreas,
 }: DashboardPageProps) {
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const navigate = useNavigate()
@@ -72,9 +74,9 @@ export function DashboardPage({
           </div>
         </section>
       )}
-      <TodayTasks tasks={todayTasks} onStatusChange={setStatus} />
+      <TodayTasks tasks={todayTasks} lifeAreas={lifeAreas} onStatusChange={setStatus} />
       <TodaySchedule events={todayEvents} />
-      <Upcoming tasks={upcomingTasks} />
+      <Upcoming tasks={upcomingTasks} lifeAreas={lifeAreas} />
       <Footer />
 
       <button
@@ -87,6 +89,7 @@ export function DashboardPage({
 
       <TaskFormModal
         open={quickAddOpen}
+        lifeAreas={lifeAreas}
         onClose={() => setQuickAddOpen(false)}
         onSubmit={(input) => {
           addTask(input)

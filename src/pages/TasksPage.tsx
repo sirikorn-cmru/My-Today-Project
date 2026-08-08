@@ -4,8 +4,9 @@ import { TaskCard } from '../components/TaskCard'
 import { TaskFormModal } from '../components/TaskFormModal'
 import { Footer } from '../components/Footer'
 import { filterTasks, sortByDeadline, dueLabel } from '../lib/taskUtils'
+import { getLifeAreaName } from '../lib/lifeAreaUtils'
 import type { TaskFilters } from '../lib/taskUtils'
-import type { FileRecord, Task, TaskInput, TaskStatus, Priority } from '../types'
+import type { FileRecord, LifeArea, Task, TaskInput, TaskStatus, Priority } from '../types'
 
 interface TasksPageProps {
   tasks: Task[]
@@ -16,6 +17,7 @@ interface TasksPageProps {
   files: FileRecord[]
   onLinkFile: (fileId: string, taskId: string) => void
   onUnlinkFile: (fileId: string, taskId: string) => void
+  lifeAreas: LifeArea[]
 }
 
 const statusFilterOptions: Array<TaskStatus | 'All'> = ['All', 'To Do', 'Doing', 'Done']
@@ -30,8 +32,9 @@ export function TasksPage({
   files,
   onLinkFile,
   onUnlinkFile,
+  lifeAreas,
 }: TasksPageProps) {
-  const [filters, setFilters] = useState<TaskFilters>({ status: 'All', priority: 'All', search: '' })
+  const [filters, setFilters] = useState<TaskFilters>({ status: 'All', priority: 'All', lifeAreaId: 'All', search: '' })
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
   const [formOpen, setFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -93,7 +96,7 @@ export function TasksPage({
           className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
         />
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <select
             value={filters.status}
             onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value as TaskFilters['status'] }))}
@@ -124,6 +127,18 @@ export function TasksPage({
             <option value="asc">ใกล้ก่อน</option>
             <option value="desc">ไกลก่อน</option>
           </select>
+          <select
+            value={filters.lifeAreaId}
+            onChange={(e) => setFilters((f) => ({ ...f, lifeAreaId: e.target.value }))}
+            className="flex-1 rounded-lg border border-slate-200 px-2 py-2 text-sm"
+          >
+            <option value="All">ทุก Life Area</option>
+            {lifeAreas.map((la) => (
+              <option key={la.id} value={la.id}>
+                {la.name}
+              </option>
+            ))}
+          </select>
         </div>
       </section>
 
@@ -134,6 +149,7 @@ export function TasksPage({
               key={task.id}
               task={task}
               metaLabel={dueLabel(task)}
+              lifeAreaName={getLifeAreaName(lifeAreas, task.lifeAreaId)}
               showDescription
               fileCount={files.filter((f) => f.linkedTaskIds.includes(task.id)).length}
               onStatusChange={(status) => setStatus(task.id, status)}
@@ -161,6 +177,7 @@ export function TasksPage({
       <TaskFormModal
         open={formOpen}
         initialTask={editingTask}
+        lifeAreas={lifeAreas}
         onClose={() => {
           setFormOpen(false)
           setEditingTask(null)

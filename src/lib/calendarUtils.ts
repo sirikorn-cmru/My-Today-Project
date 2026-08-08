@@ -1,28 +1,36 @@
-import type { CalendarEvent, DayItem, Task } from '../types'
+import type { CalendarEvent, DayItem, LifeArea, Task } from '../types'
 import { todayISO } from './taskUtils'
+import { getLifeAreaName } from './lifeAreaUtils'
 
-export function getDayItems(date: string, events: CalendarEvent[], tasks: Task[]): DayItem[] {
+export function getDayItems(date: string, events: CalendarEvent[], tasks: Task[], lifeAreas: LifeArea[] = []): DayItem[] {
   const eventItems: DayItem[] = events
     .filter((event) => event.date === date)
-    .map((event) => ({
-      id: event.id,
-      kind: 'event',
-      title: event.title,
-      timeLabel: event.endTime ? `${event.startTime}-${event.endTime}` : event.startTime || '—',
-      subLabel: event.location || event.type,
-      sortKey: event.startTime || '99:99',
-    }))
+    .map((event) => {
+      const lifeAreaName = getLifeAreaName(lifeAreas, event.lifeAreaId)
+      const place = event.location || event.type
+      return {
+        id: event.id,
+        kind: 'event',
+        title: event.title,
+        timeLabel: event.endTime ? `${event.startTime}-${event.endTime}` : event.startTime || '—',
+        subLabel: lifeAreaName ? `${lifeAreaName} · ${place}` : place,
+        sortKey: event.startTime || '99:99',
+      }
+    })
 
   const taskItems: DayItem[] = tasks
     .filter((task) => task.dueDate === date)
-    .map((task) => ({
-      id: task.id,
-      kind: 'task',
-      title: task.title,
-      timeLabel: task.dueTime || '—',
-      subLabel: task.subject ? `กำหนดส่ง · ${task.subject}` : 'กำหนดส่ง',
-      sortKey: task.dueTime || '99:99',
-    }))
+    .map((task) => {
+      const lifeAreaName = getLifeAreaName(lifeAreas, task.lifeAreaId)
+      return {
+        id: task.id,
+        kind: 'task',
+        title: task.title,
+        timeLabel: task.dueTime || '—',
+        subLabel: lifeAreaName ? `กำหนดส่ง · ${lifeAreaName}` : 'กำหนดส่ง',
+        sortKey: task.dueTime || '99:99',
+      }
+    })
 
   return [...eventItems, ...taskItems].sort((a, b) => a.sortKey.localeCompare(b.sortKey))
 }

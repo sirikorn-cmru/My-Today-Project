@@ -76,9 +76,31 @@ export function useFiles() {
     }
   }
 
+  async function updateFileLifeArea(fileId: string, lifeAreaId: string) {
+    const file = files.find((f) => f.id === fileId)
+    if (!file) return
+    const updated: FileRecord = { ...file, lifeAreaId }
+    try {
+      await putFile(updated)
+      setFiles((prev) => prev.map((f) => (f.id === fileId ? updated : f)))
+    } catch (err) {
+      setError(`อัปเดตไฟล์ไม่สำเร็จ: ${toErrorMessage(err)}`)
+    }
+  }
+
   function clearError() {
     setError(null)
   }
 
-  return { files, loaded, error, clearError, addFile, deleteFile, linkFileToTask, unlinkFileFromTask }
+  return {
+    files,
+    loaded,
+    error,
+    clearError,
+    addFile,
+    deleteFile,
+    linkFileToTask,
+    unlinkFileFromTask,
+    updateFileLifeArea,
+  }
 }

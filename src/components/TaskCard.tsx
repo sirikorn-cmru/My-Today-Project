@@ -4,6 +4,7 @@ import { priorityBadge, statusBadge } from '../lib/taskUtils'
 interface TaskCardProps {
   task: Task
   metaLabel: string
+  lifeAreaName?: string
   showDescription?: boolean
   fileCount?: number
   onStatusChange?: (status: TaskStatus) => void
@@ -16,6 +17,7 @@ const statusOptions: TaskStatus[] = ['To Do', 'Doing', 'Done']
 export function TaskCard({
   task,
   metaLabel,
+  lifeAreaName,
   showDescription,
   fileCount,
   onStatusChange,
@@ -28,7 +30,8 @@ export function TaskCard({
         <div className="min-w-0">
           <p className="truncate font-medium text-slate-900">{task.title}</p>
           <p className="text-xs text-slate-500">
-            {task.subject} · {metaLabel}
+            {lifeAreaName && <span>{lifeAreaName} · </span>}
+            {metaLabel}
           </p>
           {showDescription && task.description && (
             <p className="mt-1 text-xs text-slate-500">{task.description}</p>

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import type { CalendarEvent, CalendarEventInput } from '../types'
+import type { CalendarEvent, CalendarEventInput, LifeArea } from '../types'
 
 interface EventFormModalProps {
   open: boolean
   initialEvent?: CalendarEvent | null
   defaultDate?: string
+  lifeAreas: LifeArea[]
   onClose: () => void
   onSubmit: (input: CalendarEventInput) => void
 }
@@ -18,10 +19,11 @@ function emptyForm(defaultDate?: string): CalendarEventInput {
     endTime: '',
     location: '',
     description: '',
+    lifeAreaId: '',
   }
 }
 
-export function EventFormModal({ open, initialEvent, defaultDate, onClose, onSubmit }: EventFormModalProps) {
+export function EventFormModal({ open, initialEvent, defaultDate, lifeAreas, onClose, onSubmit }: EventFormModalProps) {
   const [form, setForm] = useState<CalendarEventInput>(emptyForm(defaultDate))
 
   useEffect(() => {
@@ -36,6 +38,7 @@ export function EventFormModal({ open, initialEvent, defaultDate, onClose, onSub
             endTime: initialEvent.endTime,
             location: initialEvent.location,
             description: initialEvent.description,
+            lifeAreaId: initialEvent.lifeAreaId,
           }
         : emptyForm(defaultDate),
     )
@@ -136,6 +139,22 @@ export function EventFormModal({ open, initialEvent, defaultDate, onClose, onSub
               rows={2}
               className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900"
             />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-500">Life Area</label>
+            <select
+              value={form.lifeAreaId}
+              onChange={(e) => setForm((f) => ({ ...f, lifeAreaId: e.target.value }))}
+              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            >
+              <option value="">ไม่ระบุ</option>
+              {lifeAreas.map((la) => (
+                <option key={la.id} value={la.id}>
+                  {la.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
