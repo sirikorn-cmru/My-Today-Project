@@ -9,6 +9,7 @@ import { TaskFormModal } from '../components/TaskFormModal'
 import { NotificationList } from '../components/NotificationList'
 import { Footer } from '../components/Footer'
 import { isDueToday, daysUntil, todayISO } from '../lib/taskUtils'
+import { fabButtonClass } from '../lib/uiClasses'
 import type { CalendarEvent, LifeArea, NotificationItem, Task, TaskInput, TaskStatus } from '../types'
 
 interface DashboardPageProps {
@@ -79,11 +80,7 @@ export function DashboardPage({
       <Upcoming tasks={upcomingTasks} lifeAreas={lifeAreas} />
       <Footer />
 
-      <button
-        type="button"
-        onClick={() => setQuickAddOpen(true)}
-        className="fixed bottom-20 right-5 z-10 flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg"
-      >
+      <button type="button" onClick={() => setQuickAddOpen(true)} className={fabButtonClass}>
         + เพิ่มงาน
       </button>
 

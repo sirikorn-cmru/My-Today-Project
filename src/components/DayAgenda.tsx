@@ -1,5 +1,6 @@
 import type { DayItem } from '../types'
 import { formatDayHeader } from '../lib/calendarUtils'
+import { cardClass, dangerLinkButtonClass, emptyStateClass, linkButtonClass } from '../lib/uiClasses'
 
 interface DayAgendaProps {
   date: string
@@ -17,7 +18,7 @@ export function DayAgenda({ date, items, showDateHeader, onEditEvent, onDeleteEv
         {items.map((item) => (
           <li
             key={`${item.kind}-${item.id}`}
-            className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200"
+            className={`flex items-center gap-3 ${cardClass} p-3 transition-shadow hover:shadow-md`}
           >
             <span className="w-20 shrink-0 text-sm font-semibold text-blue-600">{item.timeLabel}</span>
             <div className="min-w-0 flex-1">
@@ -32,20 +33,12 @@ export function DayAgenda({ date, items, showDateHeader, onEditEvent, onDeleteEv
               (onEditEvent || onDeleteEvent) && (
                 <div className="flex shrink-0 gap-2">
                   {onEditEvent && (
-                    <button
-                      type="button"
-                      onClick={() => onEditEvent(item.id)}
-                      className="text-xs font-medium text-blue-600"
-                    >
+                    <button type="button" onClick={() => onEditEvent(item.id)} className={linkButtonClass}>
                       แก้ไข
                     </button>
                   )}
                   {onDeleteEvent && (
-                    <button
-                      type="button"
-                      onClick={() => onDeleteEvent(item.id)}
-                      className="text-xs font-medium text-rose-600"
-                    >
+                    <button type="button" onClick={() => onDeleteEvent(item.id)} className={dangerLinkButtonClass}>
                       ลบ
                     </button>
                   )}
@@ -54,11 +47,7 @@ export function DayAgenda({ date, items, showDateHeader, onEditEvent, onDeleteEv
             )}
           </li>
         ))}
-        {items.length === 0 && (
-          <li className="rounded-xl bg-white p-4 text-center text-sm text-slate-500 shadow-sm ring-1 ring-slate-200">
-            ไม่มีรายการในวันนี้
-          </li>
-        )}
+        {items.length === 0 && <li className={emptyStateClass}>ไม่มีรายการในวันนี้</li>}
       </ul>
     </div>
   )

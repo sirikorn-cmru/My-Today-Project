@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import type { FileRecordInput, LifeArea, Task } from '../types'
+import { inputClass, primaryButtonClass, secondaryButtonClass } from '../lib/uiClasses'
+import { ModalShell } from './ModalShell'
 
 interface FileFormModalProps {
   open: boolean
@@ -59,55 +61,62 @@ export function FileFormModal({ open, tasks, lifeAreas, onClose, onSubmit }: Fil
   }
 
   return (
-    <div
-      className="fixed inset-0 z-20 flex items-end justify-center overflow-y-auto bg-slate-900/40 sm:items-center"
-      onClick={handleClose}
-    >
-      <form
-        onSubmit={handleSubmit}
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm rounded-t-2xl bg-white p-5 shadow-lg sm:my-8 sm:rounded-2xl"
-      >
-        <h3 className="text-lg font-semibold text-slate-900">เพิ่มไฟล์</h3>
+    <ModalShell titleId="file-form-title" onClose={handleClose}>
+      <form onSubmit={handleSubmit}>
+        <h3 id="file-form-title" className="text-lg font-semibold text-slate-900">
+          เพิ่มไฟล์
+        </h3>
 
         <div className="mt-4 space-y-3">
           <div>
-            <label className="text-xs font-medium text-slate-500">เลือกไฟล์ *</label>
+            <label htmlFor="file-input" className="text-xs font-medium text-slate-500">
+              เลือกไฟล์ *
+            </label>
             <input
+              id="file-input"
               required
               type="file"
               onChange={handleFileChange}
-              className="mt-1 w-full text-sm text-slate-600"
+              className="mt-1 w-full rounded-lg text-sm text-slate-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="text-xs font-medium text-slate-500">ชื่อไฟล์ *</label>
+            <label htmlFor="file-name" className="text-xs font-medium text-slate-500">
+              ชื่อไฟล์ *
+            </label>
             <input
+              id="file-name"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="เช่น report.docx"
-              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900"
+              className={`mt-1 ${inputClass}`}
             />
           </div>
 
           <div>
-            <label className="text-xs font-medium text-slate-500">หมวดหมู่</label>
+            <label htmlFor="file-category" className="text-xs font-medium text-slate-500">
+              หมวดหมู่
+            </label>
             <input
+              id="file-category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               placeholder="เช่น เอกสาร, รูปภาพ"
-              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900"
+              className={`mt-1 ${inputClass}`}
             />
           </div>
 
           <div>
-            <label className="text-xs font-medium text-slate-500">Life Area</label>
+            <label htmlFor="file-life-area" className="text-xs font-medium text-slate-500">
+              Life Area
+            </label>
             <select
+              id="file-life-area"
               value={lifeAreaId}
               onChange={(e) => setLifeAreaId(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-900"
+              className={`mt-1 ${inputClass}`}
             >
               <option value="">ไม่ระบุ</option>
               {lifeAreas.map((la) => (
@@ -120,14 +129,15 @@ export function FileFormModal({ open, tasks, lifeAreas, onClose, onSubmit }: Fil
 
           {tasks.length > 0 && (
             <div>
-              <label className="text-xs font-medium text-slate-500">เชื่อมกับงาน (ไม่บังคับ)</label>
+              <span className="text-xs font-medium text-slate-500">เชื่อมกับงาน (ไม่บังคับ)</span>
               <div className="mt-1 max-h-32 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2">
                 {tasks.map((task) => (
-                  <label key={task.id} className="flex items-center gap-2 text-sm text-slate-700">
+                  <label key={task.id} className="flex items-center gap-2 rounded p-1 text-sm text-slate-700 hover:bg-slate-50">
                     <input
                       type="checkbox"
                       checked={linkedTaskIds.includes(task.id)}
                       onChange={() => toggleTask(task.id)}
+                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     />
                     <span className="truncate">{task.title}</span>
                   </label>
@@ -138,22 +148,14 @@ export function FileFormModal({ open, tasks, lifeAreas, onClose, onSubmit }: Fil
         </div>
 
         <div className="mt-5 flex gap-2">
-          <button
-            type="button"
-            onClick={handleClose}
-            className="flex-1 rounded-lg border border-slate-200 py-2 text-sm font-medium text-slate-600"
-          >
+          <button type="button" onClick={handleClose} className={`flex-1 ${secondaryButtonClass}`}>
             ยกเลิก
           </button>
-          <button
-            type="submit"
-            disabled={!canSubmit}
-            className="flex-1 rounded-lg bg-blue-600 py-2 text-sm font-medium text-white disabled:opacity-40"
-          >
+          <button type="submit" disabled={!canSubmit} className={`flex-1 ${primaryButtonClass}`}>
             บันทึก
           </button>
         </div>
       </form>
-    </div>
+    </ModalShell>
   )
 }

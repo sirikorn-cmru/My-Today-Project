@@ -2,6 +2,7 @@ import type { LifeArea, Task } from '../types'
 import { TaskCard } from './TaskCard'
 import { dueLabel } from '../lib/taskUtils'
 import { getLifeAreaName } from '../lib/lifeAreaUtils'
+import { emptyStateClass } from '../lib/uiClasses'
 
 interface UpcomingProps {
   tasks: Task[]
@@ -21,11 +22,7 @@ export function Upcoming({ tasks, lifeAreas }: UpcomingProps) {
             lifeAreaName={getLifeAreaName(lifeAreas, task.lifeAreaId)}
           />
         ))}
-        {tasks.length === 0 && (
-          <li className="rounded-xl bg-white p-4 text-center text-sm text-slate-500 shadow-sm ring-1 ring-slate-200">
-            ไม่มีงานที่ใกล้ครบกำหนด
-          </li>
-        )}
+        {tasks.length === 0 && <li className={emptyStateClass}>ไม่มีงานที่ใกล้ครบกำหนด</li>}
       </ul>
     </section>
   )

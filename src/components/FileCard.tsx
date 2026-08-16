@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FileRecord } from '../types'
 import { downloadBlob, formatBytes, previewKind } from '../lib/fileUtils'
+import { cardClass, dangerLinkButtonClass, linkButtonClass } from '../lib/uiClasses'
 
 interface FileCardProps {
   file: FileRecord
@@ -32,7 +33,7 @@ export function FileCard({ file, lifeAreaName, onDelete }: FileCardProps) {
   }
 
   return (
-    <li className="rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
+    <li className={`${cardClass} p-3 transition-shadow hover:shadow-md`}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate font-medium text-slate-900">{file.name}</p>
@@ -51,19 +52,16 @@ export function FileCard({ file, lifeAreaName, onDelete }: FileCardProps) {
           <button
             type="button"
             onClick={() => setPreviewOpen((v) => !v)}
-            className="text-xs font-medium text-blue-600"
+            aria-expanded={previewOpen}
+            className={linkButtonClass}
           >
             {previewOpen ? 'ซ่อน Preview' : 'Preview'}
           </button>
         )}
-        <button
-          type="button"
-          onClick={() => downloadBlob(file.blob, file.name)}
-          className="text-xs font-medium text-blue-600"
-        >
+        <button type="button" onClick={() => downloadBlob(file.blob, file.name)} className={linkButtonClass}>
           Download
         </button>
-        <button type="button" onClick={handleDelete} className="text-xs font-medium text-rose-600">
+        <button type="button" onClick={handleDelete} className={dangerLinkButtonClass}>
           ลบ
         </button>
       </div>

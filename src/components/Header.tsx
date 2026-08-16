@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { NotificationBell } from './NotificationBell'
+import { iconButtonClass, pageHeaderClass } from '../lib/uiClasses'
 
 interface HeaderProps {
   today: Date
@@ -15,17 +16,17 @@ export function Header({ today, unreadCount = 0 }: HeaderProps) {
   }).format(today)
 
   return (
-    <header className="bg-blue-600 px-4 py-6 text-white sm:px-6">
+    <header className={pageHeaderClass}>
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm font-medium uppercase tracking-wide text-blue-100">My Today</p>
           <p className="mt-1 text-sm text-blue-100">{dateLabel}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/life-areas" className="inline-flex items-center justify-center rounded-full bg-blue-500 p-2" aria-label="Life Areas">
+          <Link to="/life-areas" className={iconButtonClass} aria-label="Life Areas">
             <span aria-hidden>🗂️</span>
           </Link>
-          <Link to="/profile" className="inline-flex items-center justify-center rounded-full bg-blue-500 p-2" aria-label="Profile">
+          <Link to="/profile" className={iconButtonClass} aria-label="Profile">
             <span aria-hidden>👤</span>
           </Link>
           <NotificationBell unreadCount={unreadCount} />

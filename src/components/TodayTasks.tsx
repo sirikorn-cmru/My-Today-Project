@@ -1,6 +1,7 @@
 import type { LifeArea, Task, TaskStatus } from '../types'
 import { TaskCard } from './TaskCard'
 import { getLifeAreaName } from '../lib/lifeAreaUtils'
+import { emptyStateClass } from '../lib/uiClasses'
 
 interface TodayTasksProps {
   tasks: Task[]
@@ -22,11 +23,7 @@ export function TodayTasks({ tasks, lifeAreas, onStatusChange }: TodayTasksProps
             onStatusChange={(status) => onStatusChange(task.id, status)}
           />
         ))}
-        {tasks.length === 0 && (
-          <li className="rounded-xl bg-white p-4 text-center text-sm text-slate-500 shadow-sm ring-1 ring-slate-200">
-            วันนี้ไม่มีงานที่ต้องทำ 🎉
-          </li>
-        )}
+        {tasks.length === 0 && <li className={emptyStateClass}>วันนี้ไม่มีงานที่ต้องทำ 🎉</li>}
       </ul>
     </section>
   )

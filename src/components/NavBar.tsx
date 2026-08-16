@@ -4,9 +4,10 @@ interface NavBarProps {
   unreadCount?: number
 }
 
-const linkBase = 'relative flex-1 py-3 text-center text-sm font-medium'
-const linkActive = 'text-blue-600'
-const linkInactive = 'text-slate-500'
+const linkBase =
+  'relative flex-1 border-t-2 py-3 text-center text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500'
+const linkActive = 'border-blue-600 text-blue-600'
+const linkInactive = 'border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-700'
 
 export function NavBar({ unreadCount = 0 }: NavBarProps) {
   return (

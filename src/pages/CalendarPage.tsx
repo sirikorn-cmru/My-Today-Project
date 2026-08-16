@@ -5,6 +5,7 @@ import { EventFormModal } from '../components/EventFormModal'
 import { Footer } from '../components/Footer'
 import { getDayItems, getMonthGrid, getWeekDates, weekdayLabels } from '../lib/calendarUtils'
 import { todayISO } from '../lib/taskUtils'
+import { fabButtonClass, pageHeaderClass } from '../lib/uiClasses'
 import type { CalendarEvent, CalendarEventInput, CalendarViewMode, LifeArea, Task } from '../types'
 
 interface CalendarPageProps {
@@ -90,7 +91,7 @@ export function CalendarPage({ events, tasks, lifeAreas, addEvent, updateEvent, 
 
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
-      <header className="bg-blue-600 px-4 py-6 text-white sm:px-6">
+      <header className={pageHeaderClass}>
         <h1 className="text-xl font-semibold">ปฏิทิน</h1>
       </header>
 
@@ -103,8 +104,11 @@ export function CalendarPage({ events, tasks, lifeAreas, addEvent, updateEvent, 
               setViewMode(mode)
               if (mode === 'today') setSelectedDate(today)
             }}
-            className={`flex-1 rounded-lg py-2 text-sm font-medium ${
-              viewMode === mode ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200'
+            aria-pressed={viewMode === mode}
+            className={`flex-1 rounded-lg py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${
+              viewMode === mode
+                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'
             }`}
           >
             {viewLabels[mode]}
@@ -125,10 +129,18 @@ export function CalendarPage({ events, tasks, lifeAreas, addEvent, updateEvent, 
         {viewMode === 'week' && (
           <div>
             <div className="mb-3 flex items-center justify-between">
-              <button type="button" onClick={() => shiftWeek(-7)} className="px-2 py-1 text-sm text-blue-600">
+              <button
+                type="button"
+                onClick={() => shiftWeek(-7)}
+                className="rounded px-2 py-1 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
                 ← สัปดาห์ก่อน
               </button>
-              <button type="button" onClick={() => shiftWeek(7)} className="px-2 py-1 text-sm text-blue-600">
+              <button
+                type="button"
+                onClick={() => shiftWeek(7)}
+                className="rounded px-2 py-1 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
                 สัปดาห์ถัดไป →
               </button>
             </div>
@@ -138,7 +150,7 @@ export function CalendarPage({ events, tasks, lifeAreas, addEvent, updateEvent, 
                   key={date}
                   type="button"
                   onClick={() => jumpToDay(date)}
-                  className="block w-full text-left"
+                  className="block w-full rounded-xl text-left transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                   <DayAgenda date={date} items={getDayItems(date, events, tasks, lifeAreas)} showDateHeader />
                 </button>
@@ -150,10 +162,18 @@ export function CalendarPage({ events, tasks, lifeAreas, addEvent, updateEvent, 
         {viewMode === 'month' && (
           <div>
             <div className="mb-3 flex items-center justify-between">
-              <button type="button" onClick={() => shiftMonth(-1)} className="px-2 py-1 text-sm text-blue-600">
+              <button
+                type="button"
+                onClick={() => shiftMonth(-1)}
+                className="rounded px-2 py-1 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
                 ← เดือนก่อน
               </button>
-              <button type="button" onClick={() => shiftMonth(1)} className="px-2 py-1 text-sm text-blue-600">
+              <button
+                type="button"
+                onClick={() => shiftMonth(1)}
+                className="rounded px-2 py-1 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
                 เดือนถัดไป →
               </button>
             </div>
@@ -174,8 +194,10 @@ export function CalendarPage({ events, tasks, lifeAreas, addEvent, updateEvent, 
                     key={date}
                     type="button"
                     onClick={() => jumpToDay(date)}
-                    className={`aspect-square rounded-lg p-1 text-xs ring-1 ${
-                      isToday ? 'bg-blue-600 text-white ring-blue-600' : 'bg-white ring-slate-200'
+                    aria-label={date}
+                    aria-current={isToday ? 'date' : undefined}
+                    className={`aspect-square rounded-lg p-1 text-xs ring-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 ${
+                      isToday ? 'bg-blue-600 text-white ring-blue-600' : 'bg-white ring-slate-200 hover:bg-slate-50'
                     } ${!isCurrentMonth && !isToday ? 'text-slate-300' : 'text-slate-700'}`}
                   >
                     <div>{new Date(`${date}T00:00:00`).getDate()}</div>
@@ -191,11 +213,7 @@ export function CalendarPage({ events, tasks, lifeAreas, addEvent, updateEvent, 
       </div>
       <Footer />
 
-      <button
-        type="button"
-        onClick={openCreate}
-        className="fixed bottom-20 right-5 z-10 flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-lg"
-      >
+      <button type="button" onClick={openCreate} className={fabButtonClass}>
         + เพิ่มกิจกรรม
       </button>
 

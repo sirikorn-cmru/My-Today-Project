@@ -1,4 +1,5 @@
 import type { CalendarEvent } from '../types'
+import { cardClass, emptyStateClass } from '../lib/uiClasses'
 
 interface TodayScheduleProps {
   events: CalendarEvent[]
@@ -12,10 +13,7 @@ export function TodaySchedule({ events }: TodayScheduleProps) {
       <h2 className="text-base font-semibold text-slate-900">ตารางวันนี้</h2>
       <ul className="mt-3 space-y-2">
         {sorted.map((event) => (
-          <li
-            key={event.id}
-            className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200"
-          >
+          <li key={event.id} className={`flex items-center gap-3 ${cardClass} p-3 transition-shadow hover:shadow-md`}>
             <span className="w-14 shrink-0 text-sm font-semibold text-blue-600">{event.startTime || '—'}</span>
             <div className="min-w-0">
               <p className="truncate font-medium text-slate-900">{event.title}</p>
@@ -23,11 +21,7 @@ export function TodaySchedule({ events }: TodayScheduleProps) {
             </div>
           </li>
         ))}
-        {sorted.length === 0 && (
-          <li className="rounded-xl bg-white p-4 text-center text-sm text-slate-500 shadow-sm ring-1 ring-slate-200">
-            วันนี้ไม่มีตารางเรียน/กิจกรรม
-          </li>
-        )}
+        {sorted.length === 0 && <li className={emptyStateClass}>วันนี้ไม่มีตารางเรียน/กิจกรรม</li>}
       </ul>
     </section>
   )

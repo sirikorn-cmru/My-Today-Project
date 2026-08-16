@@ -1,5 +1,6 @@
 import type { NotificationItem } from '../types'
 import { levelBadge, levelLabel } from '../lib/notificationUtils'
+import { emptyStateClass } from '../lib/uiClasses'
 
 interface NotificationListProps {
   items: NotificationItem[]
@@ -15,8 +16,8 @@ export function NotificationList({ items, onSelect, emptyLabel }: NotificationLi
           <button
             type="button"
             onClick={() => onSelect(item)}
-            className={`flex w-full items-start gap-3 rounded-xl p-3 text-left shadow-sm ring-1 ring-slate-200 ${
-              item.read ? 'bg-white' : 'bg-blue-50'
+            className={`flex w-full items-start gap-3 rounded-xl p-3 text-left shadow-sm ring-1 ring-slate-200 transition-colors hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+              item.read ? 'bg-white hover:bg-slate-50' : 'bg-blue-50 hover:bg-blue-100'
             }`}
           >
             <span className={`mt-0.5 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${levelBadge[item.level]}`}>
@@ -31,11 +32,7 @@ export function NotificationList({ items, onSelect, emptyLabel }: NotificationLi
           </button>
         </li>
       ))}
-      {items.length === 0 && (
-        <li className="rounded-xl bg-white p-4 text-center text-sm text-slate-500 shadow-sm ring-1 ring-slate-200">
-          {emptyLabel ?? 'ไม่มีการแจ้งเตือน'}
-        </li>
-      )}
+      {items.length === 0 && <li className={emptyStateClass}>{emptyLabel ?? 'ไม่มีการแจ้งเตือน'}</li>}
     </ul>
   )
 }

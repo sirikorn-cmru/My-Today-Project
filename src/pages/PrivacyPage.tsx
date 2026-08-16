@@ -1,12 +1,14 @@
+import { cardClass, pageHeaderClass } from '../lib/uiClasses'
+
 export function PrivacyPage() {
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
-      <header className="bg-blue-600 px-4 py-6 text-white sm:px-6">
+      <header className={pageHeaderClass}>
         <h1 className="text-xl font-semibold">นโยบายความเป็นส่วนตัว และข้อกำหนดการใช้งาน</h1>
       </header>
 
       <section className="space-y-4 px-4 py-4 sm:px-6">
-        <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        <div className={cardClass}>
           <h2 className="font-semibold text-slate-900">นโยบายความเป็นส่วนตัว (Privacy Notice)</h2>
           <ul className="mt-2 list-disc space-y-2 pl-5 text-sm text-slate-600">
             <li>
@@ -25,7 +27,7 @@ export function PrivacyPage() {
           </ul>
         </div>
 
-        <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        <div className={cardClass}>
           <h2 className="font-semibold text-slate-900">ข้อกำหนดการใช้งาน (Terms of Use)</h2>
           <ul className="mt-2 list-disc space-y-2 pl-5 text-sm text-slate-600">
             <li>
@@ -40,7 +42,7 @@ export function PrivacyPage() {
           </ul>
         </div>
 
-        <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        <div className={cardClass}>
           <h2 className="font-semibold text-slate-900">ลิขสิทธิ์และทรัพย์สินทางปัญญา</h2>
           <p className="mt-2 text-sm text-slate-600">
             คุณต้องรับผิดชอบต่อลิขสิทธิ์ของไฟล์ที่คุณเองแนบเข้าระบบผ่านฟีเจอร์จัดการไฟล์ แอปนี้ไม่เผยแพร่หรือแชร์
