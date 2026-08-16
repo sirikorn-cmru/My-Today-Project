@@ -26,7 +26,7 @@ No test runner is configured yet (no Sprint so far has required one). When Sprin
 - `src/lib/taskUtils.ts` — pure functions for date/deadline logic (`todayISO`, `daysUntil`, `isDueToday`, `dueLabel`), filtering/sorting (`filterTasks`, `sortByDeadline`), and the shared priority/status badge color maps
 - `src/types.ts` — shared domain types (`Task`, `TaskInput`, `ScheduleItem`, etc.)
 - `src/data/seedTasks.ts` — one-time seed data for a fresh install (dates computed relative to "today" so it never looks stale); `src/data/mockData.ts` now holds only `mockSchedule`, which stays mock until Sprint 3 implements real Calendar/Schedule storage
-- Styling is Tailwind utility classes only (see `tailwind.config.js` / `postcss.config.js`) — no CSS-in-JS or component library
+- Styling is Tailwind utility classes only (see `tailwind.config.js` / `postcss.config.js`) — no CSS-in-JS or component library. Follow [DESIGN.md](DESIGN.md) (the product's design system — brand identity, color/type/spacing tokens, component patterns, UX rules) for any new or changed UI; it documents a "minimalist + MUJI" target look that the current Sprint 1-2 components don't fully match yet (see its Adoption note) — don't restyle existing screens to match it as a side effect of unrelated work, but new components/screens should follow it from the start
 - `tsconfig.json` covers both `src/` and `vite.config.ts` in one project (no TS project references) — keep it that way; splitting into `tsconfig.node.json` with project references previously caused `tsc -b` to emit stray `vite.config.js`/`.tsbuildinfo` files into the repo root
 
 ### Sprint discipline
@@ -55,7 +55,7 @@ The project is in its earliest phase. Work here should concentrate on `.docs/01-
 
 `02-plan/` (roadmap/milestones) and `03-task/` (task breakdown) are secondary right now and not the backlog — don't conflate them with `backlog.md`.
 
-The later stages — `02-design/`, `03-testing/`, `04-retrospectives/` — are not active yet; don't create content there unless explicitly asked, since there's no design or test work to document until the requirements/backlog stabilize.
+The later stages — `03-testing/`, `04-retrospectives/`, and `02-design/02-technical/` — are not active yet; don't create content there unless explicitly asked, since there's no design or test work to document until the requirements/backlog stabilize. `02-design/01-prototypes/` is the one exception — it's now driven by the `prototype-intake` skill (see below).
 
 ### Requirement intake workflow
 
@@ -69,6 +69,10 @@ Use the `backlog-sync-check` skill (`.claude/skills/backlog-sync-check/SKILL.md`
 
 Use the `wikilink-audit` skill (`.claude/skills/wikilink-audit/SKILL.md`) to scan every `.md` file across the entire `.docs/` vault — not just `backlog.md` vs `01-spec/` like the backlog check above, but every `index.md`, `00-archived/`, `05-log/`, and everything else — for `[[wikilinks]]` whose target file doesn't exist. It delegates to the `wikilink-auditor` subagent (`.claude/agents/wikilink-auditor.md`), which fixes unambiguous cases directly (e.g. a link that clearly should point to a file that was renamed) and reports anything ambiguous for the user to resolve manually. Run this periodically or whenever link integrity in the vault is in question.
 
+### Prototype generation
+
+Use the `prototype-intake` skill (`.claude/skills/prototype-intake/SKILL.md`) to create or update UI/UX prototypes under `.docs/02-design/01-prototypes/{topic-slug}/v{N}/`, drawing on Requirement specs, `backlog.md`, and Feature List/User Journey content (a dedicated doc if one exists, otherwise derived from each spec's Feature Requirements/Business Rules/Acceptance Criteria sections — neither is a standalone doc type in this vault yet). It always checks `DESIGN.md` first (asking the user to help build it — color tone, style, reference/logo images — if it doesn't exist yet), always proposes a plan for the user to review/confirm before creating anything, and on repeat runs always asks whether to start a new version folder or edit the latest one (with a recommendation either way) before delegating the actual file writes to the `prototype-writer` subagent (`.claude/agents/prototype-writer.md`), which builds self-contained static HTML/CSS mockup screens (no CDN/external dependencies) styled from `DESIGN.md`'s tokens, an `index.md`, and a log entry.
+
 ### Language
 
 All existing docs in `.docs/` are written in Thai. Write new spec and backlog content in Thai to stay consistent — don't switch to English mid-vault. Filenames/slugs stay in English for cross-platform safety.
@@ -81,9 +85,9 @@ All existing docs in `.docs/` are written in Thai. Write new spec and backlog co
   - `01-spec/` — individual requirement docs
   - `backlog.md` — Product Backlog (flat file, not a subfolder)
   - `02-plan/`, `03-task/` — roadmap and task breakdown (secondary right now)
-- `02-design/` — design built on top of requirements (not yet active)
-  - `01-prototypes/` — UI/UX mockups and wireframes
-  - `02-technical/` — architecture, database, and API design
+- `02-design/` — design built on top of requirements
+  - `01-prototypes/` — UI/UX mockups and wireframes, generated via the `prototype-intake` skill (see above)
+  - `02-technical/` — architecture, database, and API design (not yet active)
 - `03-testing/` — testing built on top of design (not yet active)
   - `01-test-plan/` — test plans and test cases
   - `02-test-result/` — actual test results and bugs found
