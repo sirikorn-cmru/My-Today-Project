@@ -50,12 +50,13 @@ Explicitly out of scope for both tracks: AI (until a possible future post-Freeze
 
 The project is in its earliest phase. Work here should concentrate on `.docs/01-requirements/`, specifically:
 
-- `01-spec/` — the source-of-truth requirements docs, one file per requirement: `{YYYYMMDD}-{RUNNING_NO}-{topic-slug}.md` (English slug, Thai content). `RUNNING_NO` is a single global sequence across all spec docs (zero-padded to 3 digits), not reset per day.
+- `01-spec/` — the source-of-truth requirements docs, one file per requirement: `{YYYYMMDD}-{RUNNING_NO}-{topic-slug}.md` (English slug, Thai content). `RUNNING_NO` is a single global sequence across all spec docs (zero-padded to 3 digits), not reset per day. Every Sprint spec (not the non-Sprint Functional Requirements Master List) carries a mandatory `## Acceptance Criteria` section and a `## Gate (เกณฑ์ผ่าน Sprint)` section — these are what the testing docs and the Feature List/User Journey docs below key off of, and their running number is reused as the ID prefix for that Sprint's `AC-{RUNNING_NO}-*`/`TC-{RUNNING_NO}-*` scenarios (see Test intake below).
 - `backlog.md` — a flat file directly under `01-requirements/` that is the **Product Backlog**: one entry per spec doc, linking back to it. This is generated/maintained alongside spec docs, not hand-authored from scratch.
+- `feature-list.md` and `user-journey.md` — two more flat files at the same level as `backlog.md`: a consolidated feature catalog and dual-persona (นักศึกษา/บุคคลทั่วไป) end-to-end journeys, both derived from the current specs. Unlike `backlog.md` (corrected in place) or spec docs (append-only history), these two are **living summaries meant to be fully regenerated** from current spec content — see the Feature List & User Journey section below.
 
 `02-plan/` (roadmap/milestones) and `03-task/` (task breakdown) are secondary right now and not the backlog — don't conflate them with `backlog.md`.
 
-The later stages — `03-testing/`, `04-retrospectives/`, and `02-design/02-technical/` — are not active yet; don't create content there unless explicitly asked, since there's no design or test work to document until the requirements/backlog stabilize. `02-design/01-prototypes/` is the one exception — it's now driven by the `prototype-intake` skill (see below).
+The later stages — `04-retrospectives/`, `02-design/02-technical/`, and `03-testing/02-test-result/` — are not active yet; don't create content there unless explicitly asked, since there's no design or test-execution work to document until the requirements/backlog stabilize and there's a running build to test. `02-design/01-prototypes/` (via `prototype-intake`) and `03-testing/01-test-plan/` (via `test-intake`) are the exceptions — see below.
 
 ### Requirement intake workflow
 
@@ -69,9 +70,23 @@ Use the `backlog-sync-check` skill (`.claude/skills/backlog-sync-check/SKILL.md`
 
 Use the `wikilink-audit` skill (`.claude/skills/wikilink-audit/SKILL.md`) to scan every `.md` file across the entire `.docs/` vault — not just `backlog.md` vs `01-spec/` like the backlog check above, but every `index.md`, `00-archived/`, `05-log/`, and everything else — for `[[wikilinks]]` whose target file doesn't exist. It delegates to the `wikilink-auditor` subagent (`.claude/agents/wikilink-auditor.md`), which fixes unambiguous cases directly (e.g. a link that clearly should point to a file that was renamed) and reports anything ambiguous for the user to resolve manually. Run this periodically or whenever link integrity in the vault is in question.
 
+### Feature List & User Journey
+
+Use the `feature-journey-intake` skill (`.claude/skills/feature-journey-intake/SKILL.md`) to create or refresh `.docs/01-requirements/feature-list.md` and `.docs/01-requirements/user-journey.md`. It decides (asking the user when it's not obvious) whether a run should fully regenerate both files from every current spec or just incrementally update the section(s) tied to specific Sprint(s) that changed, then delegates the writes to the `feature-journey-writer` subagent (`.claude/agents/feature-journey-writer.md`). `feature-list.md` stays intentionally flat/scannable and points to the Functional Requirements Master List for full FR-ID traceability rather than duplicating it; `user-journey.md`'s two persona journeys are the general-purpose, always-current version of what Sprint 6's and Sprint 11's specs call for as sprint-specific demo/acceptance deliverables.
+
+### Test intake (Acceptance Criteria, Test Plan, Test Case)
+
+Use the `test-intake` skill (`.claude/skills/test-intake/SKILL.md`) to create or update three related-but-distinct testing docs under `.docs/03-testing/01-test-plan/`, each with its own subagent:
+
+- **`acceptance-criteria.md`** (`acceptance-criteria-writer` subagent) — one living file, one Given-When-Then section per Backlog Item, converted from each spec's `## Acceptance Criteria`/`## Business Rules`/`## Gate`, referencing that Sprint's prototype if one exists. Scenario IDs reuse the spec's own running number: `AC-{RUNNING_NO}-{NN}`.
+- **`test-plan.md`** (`test-plan-writer` subagent) — exactly **one file for the whole project**: scope, test types/strategy, environment, risk management, entry/exit criteria. Derives NFR content (responsive/device, PDPA/legal) mainly from the Sprint 6 spec, since there's no dedicated NFR doc.
+- **`test-cases/{topic-slug}.md`** (`test-case-writer` subagent) — one file per Backlog Item (Sprint), step-by-step test cases (Test ID `TC-{RUNNING_NO}-{NN}`, Pre-condition, Test Steps, Expected Result, Test Data, and a reference back to the AC scenario it covers) for every feature in that Sprint.
+
+`acceptance-criteria.md` and `test-plan.md` are living documents (regenerated to match current specs, not append-only) — same pattern as `feature-list.md`/`user-journey.md`. The skill always generates a Sprint's AC section before that Sprint's Test Case file (Test Case references AC by ID), asks for scope when it isn't given (≥3 options), and proposes the file list first for a large "every Backlog Item" run. No test runner exists yet (see Commands above), so every test case is manual/black-box — never generate test code here.
+
 ### Prototype generation
 
-Use the `prototype-intake` skill (`.claude/skills/prototype-intake/SKILL.md`) to create or update UI/UX prototypes under `.docs/02-design/01-prototypes/{topic-slug}/v{N}/`, drawing on Requirement specs, `backlog.md`, and Feature List/User Journey content (a dedicated doc if one exists, otherwise derived from each spec's Feature Requirements/Business Rules/Acceptance Criteria sections — neither is a standalone doc type in this vault yet). It always checks `DESIGN.md` first (asking the user to help build it — color tone, style, reference/logo images — if it doesn't exist yet), always proposes a plan for the user to review/confirm before creating anything, and on repeat runs always asks whether to start a new version folder or edit the latest one (with a recommendation either way) before delegating the actual file writes to the `prototype-writer` subagent (`.claude/agents/prototype-writer.md`), which builds self-contained static HTML/CSS mockup screens (no CDN/external dependencies) styled from `DESIGN.md`'s tokens, an `index.md`, and a log entry.
+Use the `prototype-intake` skill (`.claude/skills/prototype-intake/SKILL.md`) to create or update UI/UX prototypes under `.docs/02-design/01-prototypes/{topic-slug}/v{N}/`, drawing on Requirement specs, `backlog.md`, and `feature-list.md`/`user-journey.md` (falling back to deriving the equivalent content from a spec's own sections if those two files don't exist yet). It always checks `DESIGN.md` first (asking the user to help build it — color tone, style, reference/logo images — if it doesn't exist yet), always proposes a plan for the user to review/confirm before creating anything, and on repeat runs always asks whether to start a new version folder or edit the latest one (with a recommendation either way) before delegating the actual file writes to the `prototype-writer` subagent (`.claude/agents/prototype-writer.md`), which builds self-contained static HTML/CSS mockup screens (no CDN/external dependencies) styled from `DESIGN.md`'s tokens, an `index.md`, and a log entry.
 
 ### Language
 
@@ -84,13 +99,14 @@ All existing docs in `.docs/` are written in Thai. Write new spec and backlog co
 - `01-requirements/` — source of truth for what the system must do (**current focus**, see above)
   - `01-spec/` — individual requirement docs
   - `backlog.md` — Product Backlog (flat file, not a subfolder)
+  - `feature-list.md`, `user-journey.md` — two more flat files, generated/refreshed via the `feature-journey-intake` skill (see above)
   - `02-plan/`, `03-task/` — roadmap and task breakdown (secondary right now)
 - `02-design/` — design built on top of requirements
   - `01-prototypes/` — UI/UX mockups and wireframes, generated via the `prototype-intake` skill (see above)
   - `02-technical/` — architecture, database, and API design (not yet active)
-- `03-testing/` — testing built on top of design (not yet active)
-  - `01-test-plan/` — test plans and test cases
-  - `02-test-result/` — actual test results and bugs found
+- `03-testing/` — testing built on top of design
+  - `01-test-plan/` — `acceptance-criteria.md`, `test-plan.md`, and `test-cases/{topic-slug}.md`, all generated/updated via the `test-intake` skill (see above)
+  - `02-test-result/` — actual test results and bugs found (not yet active — no build to test against yet for most Sprints)
 - `04-retrospectives/` — lessons learned per phase/sprint/milestone, drawing on test results and the log
 - `05-log/` — chronological changelog and decision log
 - `00-archived/` — superseded documents; never delete docs outright, move them here instead to preserve history
