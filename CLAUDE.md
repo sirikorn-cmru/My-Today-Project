@@ -56,7 +56,7 @@ The project is in its earliest phase. Work here should concentrate on `.docs/01-
 
 `02-plan/` (roadmap/milestones) and `03-task/` (task breakdown) are secondary right now and not the backlog — don't conflate them with `backlog.md`.
 
-The later stages — `04-retrospectives/`, `02-design/02-technical/`, and `03-testing/02-test-result/` — are not active yet; don't create content there unless explicitly asked, since there's no design or test-execution work to document until the requirements/backlog stabilize and there's a running build to test. `02-design/01-prototypes/` (via `prototype-intake`) and `03-testing/01-test-plan/` (via `test-intake`) are the exceptions — see below.
+The later stages — `04-retrospectives/` and `03-testing/02-test-result/` — are not active yet; don't create content there unless explicitly asked, since there's no test-execution work to document until there's a running build to test. `02-design/01-prototypes/` (via `prototype-intake`), `02-design/02-technical/` (via `architecture-intake`, conceptual architecture only — database/API/technology-choice docs in that same folder are still not active), and `03-testing/01-test-plan/` (via `test-intake`) are the exceptions — see below.
 
 ### Requirement intake workflow
 
@@ -84,6 +84,10 @@ Use the `test-intake` skill (`.claude/skills/test-intake/SKILL.md`) to create or
 
 `acceptance-criteria.md` and `test-plan.md` are living documents (regenerated to match current specs, not append-only) — same pattern as `feature-list.md`/`user-journey.md`. The skill always generates a Sprint's AC section before that Sprint's Test Case file (Test Case references AC by ID), asks for scope when it isn't given (≥3 options), and proposes the file list first for a large "every Backlog Item" run. No test runner exists yet (see Commands above), so every test case is manual/black-box — never generate test code here.
 
+### High-level architecture
+
+Use the `architecture-intake` skill (`.claude/skills/architecture-intake/SKILL.md`) to create or refresh `.docs/02-design/02-technical/architecture.md`, a single living document covering exactly three parts: Conceptual Components (grouped by responsibility, spanning whatever Sprints contribute to each — not one component per Sprint), Conceptual Data Model (entities and relationships, no field types), and Data Flow per User Journey (traced against `user-journey.md`, rendered as Mermaid diagrams). It's deliberately **technology-agnostic** — never names a framework, library, or storage technology even though the codebase has already chosen one; database schema, API contracts, and technology-choice docs remain a separate, still-inactive part of `02-technical/` if added later. The skill decides full regeneration vs. incremental update the same way `feature-journey-intake` does, then delegates to the `architecture-writer` subagent (`.claude/agents/architecture-writer.md`), which self-checks its own output for accidental tech-stack references before reporting done.
+
 ### Prototype generation
 
 Use the `prototype-intake` skill (`.claude/skills/prototype-intake/SKILL.md`) to create or update UI/UX prototypes under `.docs/02-design/01-prototypes/{topic-slug}/v{N}/`, drawing on Requirement specs, `backlog.md`, and `feature-list.md`/`user-journey.md` (falling back to deriving the equivalent content from a spec's own sections if those two files don't exist yet). It always checks `DESIGN.md` first (asking the user to help build it — color tone, style, reference/logo images — if it doesn't exist yet), always proposes a plan for the user to review/confirm before creating anything, and on repeat runs always asks whether to start a new version folder or edit the latest one (with a recommendation either way) before delegating the actual file writes to the `prototype-writer` subagent (`.claude/agents/prototype-writer.md`), which builds self-contained static HTML/CSS mockup screens (no CDN/external dependencies) styled from `DESIGN.md`'s tokens, an `index.md`, and a log entry.
@@ -103,7 +107,7 @@ All existing docs in `.docs/` are written in Thai. Write new spec and backlog co
   - `02-plan/`, `03-task/` — roadmap and task breakdown (secondary right now)
 - `02-design/` — design built on top of requirements
   - `01-prototypes/` — UI/UX mockups and wireframes, generated via the `prototype-intake` skill (see above)
-  - `02-technical/` — architecture, database, and API design (not yet active)
+  - `02-technical/` — `architecture.md` (conceptual, generated via `architecture-intake`, see above); database schema, API design, and technology-choice docs are not yet active
 - `03-testing/` — testing built on top of design
   - `01-test-plan/` — `acceptance-criteria.md`, `test-plan.md`, and `test-cases/{topic-slug}.md`, all generated/updated via the `test-intake` skill (see above)
   - `02-test-result/` — actual test results and bugs found (not yet active — no build to test against yet for most Sprints)
