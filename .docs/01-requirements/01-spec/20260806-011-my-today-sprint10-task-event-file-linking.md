@@ -55,3 +55,13 @@ Sprint นี้เป็น Sprint ที่ 4 ของ **Competition Track (S
 ## Gate (เกณฑ์ผ่าน Sprint)
 
 **Gate 10:** ทำ Scenario ทั้งสองตัวอย่าง (โรงพยาบาล, ส่งบทความ) ให้ครบตาม Business Rules ข้อ Feature Requirements — เปิด Task แล้วเห็น What+When+Information ครบในหน้าเดียวโดยไม่ต้องสลับหน้า จึงถือว่าผ่าน
+
+## เพิ่มเติม (20260823): แก้ไขข้อความคลาดเคลื่อนเรื่อง Task↔File relationship (linkedFileIds)
+
+Business Rule ข้อ 1 เดิมเข้าใจผิดว่า Task มี field `linkedFileIds` อยู่แล้วจาก Sprint 4 — ความจริงคือ Sprint 4 เก็บความสัมพันธ์ Task↔File ไว้ที่ฝั่ง **File** ผ่าน field `linkedTaskIds` (many-to-many จากฝั่ง File เป็นผู้ถือรายการ) ไม่ใช่ field บน Task เลย ("ไฟล์ที่เกี่ยวข้องกับ Task นี้" เป็นค่าที่คำนวณจากการกรอง File ทั้งหมดเสมอ ไม่ใช่ field ที่เก็บบน Task) — ยืนยันแล้วจากทั้ง `src/types.ts` ที่ build จริงและเอกสาร [[../../02-design/02-technical/architecture|architecture.md]] / [[../../02-design/02-technical/database-schema|database-schema.md]]
+
+ดังนั้นแก้ไข Business Rule ข้อ 1 ให้ถูกต้องเป็น: "Task เพิ่ม field ความสัมพันธ์ใหม่: `linkedNoteIds` และ `linkedLinkIds` ทั้งหมด optional (เก็บไว้ที่ฝั่ง Task โดยตรง — ต่างจาก pattern ของ Task↔File เดิมจาก Sprint 4 ที่เก็บไว้ที่ฝั่ง File แทน เป็นการตัดสินใจออกแบบใหม่ของ Sprint นี้ ไม่ใช่การขยายจาก field ที่มีอยู่แล้วบน Task)"
+
+field/scope อื่นๆ ของ Sprint 10 (`reminderLeadTime`, Task Detail 3 ส่วน What/When/Information, Event ก็เชื่อมได้เหมือนกัน, out-of-scope, acceptance criteria, Gate 10) **ไม่เปลี่ยนแปลง** จากการแก้ไขนี้ — นี่เป็นแค่การแก้ถ้อยคำให้ตรงกับความจริงของโค้ด ไม่ใช่การเปลี่ยนขอบเขตหรือ business rule อื่นใด
+
+พบความไม่สอดคล้องนี้ระหว่างการเขียนเอกสาร [[../../02-design/02-technical/database-schema|database-schema.md]] และ [[../../02-design/02-technical/api-spec|api-spec.md]] วันที่ 20260823
