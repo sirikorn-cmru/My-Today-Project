@@ -10,15 +10,15 @@
 
 **Scenario:** นักศึกษาได้รับมอบหมายรายงาน HCI ที่ต้องส่ง จึงบันทึกเป็น Task "ส่งรายงาน HCI" ผ่านขั้นตอนตาม Final Competition User Journey ที่ระบุใน [[../../01-requirements/01-spec/20260806-012-my-today-sprint11-competition-demo-freeze|Sprint 11]] (Business Rule ข้อ 2, persona นักศึกษา): เพิ่ม Task ผ่าน Quick Capture → เข้า Inbox → จัดเข้า Life Area "Study" → กำหนด Deadline → แนบไฟล์ → เห็น Deadline ใน Calendar และ Timeline → เปิด My Today ตอนเช้าเห็นงานบน Dashboard → ระบบเตือนตาม Reminder ที่ตั้งไว้ → ทำงานเสร็จกด Done → Life Progress อัปเดต
 
-**หมายเหตุสถานะ ณ วันที่เขียนเอกสารนี้ (20260816):** ตาม `backlog.md` มีเพียง Sprint 1-7 เท่านั้นที่ build เสร็จแล้ว ("เสร็จแล้ว") ส่วน Sprint 8-10 (Quick Capture/Inbox, Timeline/Life Progress, custom Reminder lead time) ยังมีสถานะ "ยังไม่เริ่ม" ไดอะแกรมด้านล่างจึงแยกสไตล์ node ที่ทำได้จริงวันนี้ (เส้นทึบ) ออกจาก node ที่เป็นแผนในอนาคต (เส้นประ) อย่างชัดเจน เพื่อไม่ให้สื่อว่าแอปมีความสามารถนั้นอยู่แล้วก่อนถูก build จริง
+**หมายเหตุสถานะ ณ วันที่เขียนเอกสารนี้ (20260823):** ตาม `backlog.md` ตอนนี้ Sprint 1-8 build เสร็จแล้วทั้งหมด ("เสร็จแล้ว") รวมถึง Sprint 8 (Quick Capture/Inbox) ที่เพิ่งยืนยันเสร็จในรอบ backlog-sync-check วันที่ 20260823 เหลือเพียง Sprint 9-10 (Timeline/Life Progress, custom Reminder lead time) ที่ยังมีสถานะ "ยังไม่เริ่ม" ไดอะแกรมด้านล่างจึงแยกสไตล์ node ที่ทำได้จริงวันนี้ (เส้นทึบ) ออกจาก node ที่เป็นแผนในอนาคต (เส้นประ — เหลือเฉพาะขั้นตอนที่ 7, 9, 11) อย่างชัดเจน เพื่อไม่ให้สื่อว่าแอปมีความสามารถนั้นอยู่แล้วก่อนถูก build จริง
 
 ## Diagram
 
 ```mermaid
 flowchart TD
-    A1["1. เพิ่ม Task 'ส่งรายงาน HCI' ผ่าน Quick Capture (แผนในอนาคต)"]:::planned
-    A2["2. เข้า My Inbox (แผนในอนาคต)"]:::planned
-    A3["3. จัดเข้า Life Area 'Study' จาก Inbox (แผนในอนาคต)"]:::planned
+    A1["1. เพิ่ม Task 'ส่งรายงาน HCI' ผ่าน Quick Capture"]:::done
+    A2["2. เข้า My Inbox"]:::done
+    A3["3. จัดเข้า Life Area 'Study' จาก Inbox"]:::done
     A4["4. กำหนด Deadline ของ Task"]:::done
     A5["5. แนบไฟล์รายงาน (Related Files)"]:::done
     A6["6. เห็น Deadline ใน Calendar"]:::done
@@ -36,9 +36,9 @@ flowchart TD
 
 ## รายการขั้นตอน (อ้างอิง FR + Spec)
 
-1. เพิ่ม Task "ส่งรายงาน HCI" ผ่าน Quick Capture — อ้างอิง FR-13 ([[../../01-requirements/01-spec/20260806-009-my-today-sprint8-universal-inbox-quick-capture|Sprint 8]]) — **แผนในอนาคต** (backlog.md: ยังไม่เริ่ม)
-2. เข้า My Inbox ดูรายการที่ยังไม่จัด Life Area — อ้างอิง FR-14 ([[../../01-requirements/01-spec/20260806-009-my-today-sprint8-universal-inbox-quick-capture|Sprint 8]]) — **แผนในอนาคต**
-3. จัดรายการเข้า Life Area "Study" จาก Inbox — อ้างอิง FR-14 ([[../../01-requirements/01-spec/20260806-009-my-today-sprint8-universal-inbox-quick-capture|Sprint 8]]) — **แผนในอนาคต** (กลไก Life Area เองสร้างเสร็จแล้วที่ FR-02, [[../../01-requirements/01-spec/20260806-007-my-today-sprint7-category-profile|Sprint 7]] แต่ flow "จัดเข้าจาก Inbox" เป็นส่วนของ Sprint 8 ที่ยังไม่ build)
+1. เพิ่ม Task "ส่งรายงาน HCI" ผ่าน Quick Capture — อ้างอิง FR-13 ([[../../01-requirements/01-spec/20260806-009-my-today-sprint8-universal-inbox-quick-capture|Sprint 8]]) — เสร็จแล้ว
+2. เข้า My Inbox ดูรายการที่ยังไม่จัด Life Area — อ้างอิง FR-14 ([[../../01-requirements/01-spec/20260806-009-my-today-sprint8-universal-inbox-quick-capture|Sprint 8]]) — เสร็จแล้ว
+3. จัดรายการเข้า Life Area "Study" จาก Inbox — อ้างอิง FR-14 ([[../../01-requirements/01-spec/20260806-009-my-today-sprint8-universal-inbox-quick-capture|Sprint 8]]) — เสร็จแล้ว
 4. กำหนด Deadline ของ Task — อ้างอิง FR-04 ([[../../01-requirements/01-spec/20260806-002-my-today-sprint2-task-management|Sprint 2]]) — เสร็จแล้ว
 5. แนบไฟล์รายงาน (Related Files) — อ้างอิง FR-09 ([[../../01-requirements/01-spec/20260806-004-my-today-sprint4-file-organizer|Sprint 4]]) — เสร็จแล้ว
 6. เห็น Deadline ของ Task ปรากฏใน Calendar โดยอัตโนมัติ — อ้างอิง FR-07 ([[../../01-requirements/01-spec/20260806-003-my-today-sprint3-calendar-schedule|Sprint 3]]) — เสร็จแล้ว

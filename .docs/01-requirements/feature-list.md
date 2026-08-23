@@ -4,7 +4,7 @@
 
 เอกสารนี้เป็น **Feature List ระดับ Sprint** ที่แปลงมาจาก [[backlog|backlog.md]] ผสานกับเนื้อหาจริงของแต่ละ spec doc ใน [[01-spec/index|01-spec]] granularity ของเอกสารนี้คือ **1 feature = 1 Sprint** (ไม่ใช่ 1 feature = 1 ปุ่ม/1 หน้าจอ) และจัดลำดับความสำคัญด้วย **MoSCoW** (Must/Should/Could/Won't) ตามที่ผู้ใช้ยืนยันแล้ว
 
-MoSCoW ที่ระบุในเอกสารนี้คือมุมมอง **ย้อนหลัง** (Sprint 1-7 ทำเสร็จไปแล้วตาม backlog.md) ผสมกับมุมมอง **ที่เหลือ** (Sprint 8-11 ยังไม่เริ่ม) ใช้สำหรับสื่อสารว่าอะไรคือแก่นที่ขาดไม่ได้ของผลิตภัณฑ์ เทียบกับอะไรที่เป็นส่วนเสริมคุณค่าแต่ตัดออกได้หากเวลาจำกัด
+MoSCoW ที่ระบุในเอกสารนี้คือมุมมอง **ย้อนหลัง** (Sprint 1-8 ทำเสร็จไปแล้วตาม backlog.md ณ วันที่ 20260823) ผสมกับมุมมอง **ที่เหลือ** (Sprint 9-11 ยังไม่เริ่ม) ใช้สำหรับสื่อสารว่าอะไรคือแก่นที่ขาดไม่ได้ของผลิตภัณฑ์ เทียบกับอะไรที่เป็นส่วนเสริมคุณค่าแต่ตัดออกได้หากเวลาจำกัด
 
 ## สรุปตาราง
 
@@ -17,7 +17,7 @@ MoSCoW ที่ระบุในเอกสารนี้คือมุม�
 | 5 | Notification & Deadline Awareness | Must | เสร็จแล้ว | FR-10 | [[01-spec/20260806-005-my-today-sprint5-notification-deadline-awareness\|Sprint 5]] |
 | 6 | Integration, UX & Final Testing (ปิดจบ Version 1/Core) | Must | เสร็จแล้ว | (ไม่มี FR ใหม่ — เป็นการปรับปรุง/ทดสอบ FR-01 ถึง FR-12 เดิม) | [[01-spec/20260806-006-my-today-sprint6-integration-ux-final-testing\|Sprint 6]] |
 | 7 | Life Area / Workspace & Personal Profile | Must | เสร็จแล้ว | FR-01, FR-02 | [[01-spec/20260806-007-my-today-sprint7-category-profile\|Sprint 7]] |
-| 8 | Universal Inbox + Quick Capture | Should | ยังไม่เริ่ม | FR-13, FR-14, FR-15 | [[01-spec/20260806-009-my-today-sprint8-universal-inbox-quick-capture\|Sprint 8]] |
+| 8 | Universal Inbox + Quick Capture | Should | เสร็จแล้ว | FR-13, FR-14, FR-15 | [[01-spec/20260806-009-my-today-sprint8-universal-inbox-quick-capture\|Sprint 8]] |
 | 9 | Now/Next/Later Timeline + Smart Priority + Life Progress | Should | ยังไม่เริ่ม | FR-16, FR-17 | [[01-spec/20260806-010-my-today-sprint9-timeline-priority-progress\|Sprint 9]] |
 | 10 | Task-Event-File-Note-Link Linking (What/When/Information) | Must | ยังไม่เริ่ม | FR-18, FR-19 | [[01-spec/20260806-011-my-today-sprint10-task-event-file-linking\|Sprint 10]] |
 | 11 | Competition Demo + UX Polish, then Freeze | Must | ยังไม่เริ่ม | (ไม่มี FR ใหม่ — เป็นการปรับปรุง/ทดสอบ/เตรียม demo ของ FR-13 ถึง FR-19 เดิม) | [[01-spec/20260806-012-my-today-sprint11-competition-demo-freeze\|Sprint 11]] |
@@ -84,7 +84,7 @@ MoSCoW ที่ระบุในเอกสารนี้คือมุม�
 
 - **MoSCoW:** Should — มีคุณค่าจริง (ลด friction ก่อนจัดระเบียบ) แต่ core CRUD ยังเข้าถึงได้ผ่านฟอร์มเต็มจาก Sprint 2-4 อยู่แล้วโดยไม่ต้องมี Quick Capture/Inbox หากเวลาจำกัดตัดออกได้โดยไม่ทำให้ core พัง
 - **คำอธิบาย:** เพิ่มปุ่มกลาง "+ Add to My Today" ที่เข้าถึงได้จากทุกหน้า ให้ผู้ใช้กรอกแค่ข้อมูลขั้นต่ำแล้วบันทึกได้ทันทีโดยไม่ต้องกรอกฟอร์มเต็ม รายการที่ capture มาเข้า "My Inbox" ก่อน (ยังไม่จัด Life Area) แล้วผู้ใช้มาจัดเข้า Life Area + เติมรายละเอียดทีหลัง เพิ่ม entity ใหม่ 2 ชนิด: Note และ Link ห้ามใช้ AI parsing ข้อความอิสระ
-- **สถานะ (backlog.md):** ยังไม่เริ่ม
+- **สถานะ (backlog.md):** เสร็จแล้ว
 - **FR ที่เกี่ยวข้อง:** FR-13 (Quick Capture Task/Event/File/Note/Link), FR-14 (Universal Inbox), FR-15 (สร้าง/จัดการ Note และ Link)
 - **Spec:** [[01-spec/20260806-009-my-today-sprint8-universal-inbox-quick-capture|Sprint 8]]
 
