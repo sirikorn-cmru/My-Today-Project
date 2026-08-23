@@ -108,11 +108,12 @@ Operation กลุ่มนี้ narrative ของ Sprint ที่ยัง
 - **Set Custom Reminder Lead Time** (Sprint 10, FR-19) — operation ตั้งค่า `reminderLeadTime` เฉพาะ Task/Event รายการหนึ่ง ให้ "Build Notifications" ใช้ค่านี้แทนค่า default กลางของระบบเฉพาะรายการนั้น
 - **Get Task/Event Detail (What/When/Information unified view)** (Sprint 10) — query รวมข้อมูล Task/Event เดียวกับไฟล์/Note/Link/reminder ที่เชื่อมไว้ทั้งหมด ให้แสดงในหน้าเดียวโดยไม่ต้องสลับหน้า
 
-**ข้อควรระวังเรื่องความสอดคล้องของ spec:** ดูหมายเหตุใน [[database-schema|database-schema.md]] หัวข้อ 4 — spec ของ Sprint 10 อ้างถึง `linkedFileIds` บน Task ราวกับมีอยู่แล้ว ซึ่งไม่ตรงกับ operation "Link File to Task"/"Unlink File from Task" ที่มีอยู่จริงในหัวข้อ 1.4 ข้างบน (เขียนที่ฝั่ง File ไม่ใช่ Task) เอกสารนี้ยึดตาม operation ที่มีอยู่จริงและ architecture.md เป็นหลัก
+**ข้อควรระวังเรื่องความสอดคล้องของ spec (แก้ไขแล้ว):** ดูหมายเหตุใน [[database-schema|database-schema.md]] หัวข้อ 4 — เดิม spec ของ Sprint 10 อ้างถึง `linkedFileIds` บน Task ราวกับมีอยู่แล้ว ซึ่งไม่ตรงกับ operation "Link File to Task"/"Unlink File from Task" ที่มีอยู่จริงในหัวข้อ 1.4 ข้างบน (เขียนที่ฝั่ง File ไม่ใช่ Task) ประเด็นนี้ได้รับการแก้ไขแล้วผ่าน commit `83a38ee` ("Correct Sprint 10 spec's incorrect Task.linkedFileIds claim") ซึ่งเพิ่มหัวข้อ `## เพิ่มเติม (20260823): แก้ไขข้อความคลาดเคลื่อนเรื่อง Task↔File relationship (linkedFileIds)` ต่อท้าย spec Sprint 10 ยืนยันว่าความสัมพันธ์จริงคือ File→Task ผ่าน `linkedTaskIds` และ `linkedNoteIds`/`linkedLinkIds` ของ Sprint 10 เป็นการตัดสินใจออกแบบใหม่บน Task ไม่ใช่การขยายฟิลด์เดิม การแก้ไขนี้ยืนยันว่า operation contract ที่บันทึกไว้ในเอกสารนี้ถูกต้องมาตั้งแต่แรก **ไม่ต้องแก้ไข operation ใดๆ เพิ่มเติม** — ที่ผิดคือถ้อยคำของ spec Sprint 10 เท่านั้น คงหมายเหตุนี้ไว้เป็นบันทึกประวัติความไม่สอดคล้องและการแก้ไข แทนการลบทิ้ง
 
 ## 5. Change Log
 
 - 20260823 — สร้างเอกสารนี้ครั้งแรก: operation contract ต่อ entity ครบ 7 กลุ่ม (Life Area, Task, Event, File, Note, Link, Personal Profile), cross-cutting operations (Delete Life Area, Quick Capture, Organize from Inbox, List Inbox Items), derived/read-only operations (Build Notifications, Get Day Items, Get Today Dashboard Summary, ฯลฯ), known gaps จาก Sprint 9-10, และหมายเหตุความไม่สอดคล้องของ spec Sprint 10 เรื่อง `linkedFileIds`
+- 20260823 (อัปเดตภายหลัง) — อัปเดตหมายเหตุความไม่สอดคล้องของ spec Sprint 10 ในหัวข้อ 4 จากคำแนะนำเชิง forward-looking ให้เป็นบันทึกแบบ resolved: spec Sprint 10 ถูกแก้ไขแล้ว (commit `83a38ee`) ยืนยันว่า operation contract เดิมถูกต้อง ไม่ต้องแก้ operation เพิ่ม
 
 ---
 
