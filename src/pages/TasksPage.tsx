@@ -42,7 +42,7 @@ export function TasksPage({
   const [searchParams, setSearchParams] = useSearchParams()
 
   const visibleTasks = useMemo(() => {
-    return sortByDeadline(filterTasks(tasks, filters), sortDir)
+    return sortByDeadline(filterTasks(tasks.filter((t) => !t.inInbox), filters), sortDir)
   }, [tasks, filters, sortDir])
 
   useEffect(() => {
@@ -86,7 +86,7 @@ export function TasksPage({
     <div className="min-h-screen bg-slate-50 pb-24">
       <header className={pageHeaderClass}>
         <h1 className="text-xl font-semibold">งานทั้งหมด</h1>
-        <p className="mt-1 text-sm text-blue-100">{tasks.length} งานทั้งหมดในระบบ</p>
+        <p className="mt-1 text-sm text-blue-100">{tasks.filter((t) => !t.inInbox).length} งานทั้งหมดในระบบ</p>
       </header>
 
       <section className="space-y-2 px-4 py-4 sm:px-6">

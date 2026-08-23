@@ -13,6 +13,9 @@ interface TaskFormModalProps {
   files?: FileRecord[]
   onLinkFile?: (fileId: string) => void
   onUnlinkFile?: (fileId: string) => void
+  // Quick Capture mode (Sprint 8): only "ชื่องาน" is required — วันที่กำหนดส่งและฟิลด์อื่นๆ
+  // ถูกเลื่อนไปกรอกทีหลังตอน "จัดเข้า Life Area" จาก Inbox ตาม Business Rule ข้อ 1 ของ Sprint 8
+  quickCapture?: boolean
 }
 
 const emptyForm: TaskInput = {
@@ -23,6 +26,7 @@ const emptyForm: TaskInput = {
   dueTime: '',
   priority: 'Medium',
   status: 'To Do',
+  inInbox: false,
 }
 
 export function TaskFormModal({
@@ -34,6 +38,7 @@ export function TaskFormModal({
   files,
   onLinkFile,
   onUnlinkFile,
+  quickCapture,
 }: TaskFormModalProps) {
   const [form, setForm] = useState<TaskInput>(emptyForm)
 
@@ -49,6 +54,7 @@ export function TaskFormModal({
             dueTime: initialTask.dueTime,
             priority: initialTask.priority,
             status: initialTask.status,
+            inInbox: initialTask.inInbox,
           }
         : emptyForm,
     )
@@ -57,20 +63,25 @@ export function TaskFormModal({
   if (!open) return null
 
   const isEdit = Boolean(initialTask)
-  const canSubmit = form.title.trim().length > 0 && form.dueDate.trim().length > 0
+  const canSubmit = form.title.trim().length > 0 && (quickCapture || form.dueDate.trim().length > 0)
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!canSubmit) return
-    onSubmit(form)
+    onSubmit({ ...form, inInbox: Boolean(quickCapture) })
   }
 
   return (
     <ModalShell titleId="task-form-title" onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <h3 id="task-form-title" className="text-lg font-semibold text-slate-900">
-          {isEdit ? 'แก้ไขงาน' : 'เพิ่มงานใหม่'}
+          {quickCapture ? '+ Add to My Today — งาน' : isEdit ? 'แก้ไขงาน' : 'เพิ่มงานใหม่'}
         </h3>
+        {quickCapture && (
+          <p className="mt-1 text-xs text-slate-500">
+            กรอกแค่ชื่องานก่อนได้ รายละเอียดอื่นๆ ไปกรอกทีหลังตอนจัดเข้า Life Area ที่ My Inbox
+          </p>
+        )}
 
         <div className="mt-4 space-y-3">
           <div>
@@ -123,11 +134,11 @@ export function TaskFormModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label htmlFor="task-due-date" className="text-xs font-medium text-slate-500">
-                วันที่กำหนดส่ง *
+                วันที่กำหนดส่ง {quickCapture ? '' : '*'}
               </label>
               <input
                 id="task-due-date"
-                required
+                required={!quickCapture}
                 type="date"
                 value={form.dueDate}
                 onChange={(e) => setForm((f) => ({ ...f, dueDate: e.target.value }))}

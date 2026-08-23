@@ -16,6 +16,7 @@ const levelOrder: Record<NotificationLevel, number> = { Overdue: 0, DueToday: 1,
 
 function taskLevel(task: Task, now: number): NotificationLevel | null {
   if (task.status === 'Done') return null
+  if (task.inInbox || !task.dueDate) return null
   const deadline = new Date(`${task.dueDate}T${task.dueTime || '23:59'}:00`).getTime()
   const hoursUntil = (deadline - now) / (1000 * 60 * 60)
   if (hoursUntil < 0) return 'Overdue'
@@ -25,6 +26,7 @@ function taskLevel(task: Task, now: number): NotificationLevel | null {
 }
 
 function eventLevel(event: CalendarEvent, now: number): NotificationLevel | null {
+  if (event.inInbox || !event.date) return null
   const start = new Date(`${event.date}T${event.startTime || '00:00'}:00`).getTime()
   const hoursUntil = (start - now) / (1000 * 60 * 60)
   if (hoursUntil < -2) return null

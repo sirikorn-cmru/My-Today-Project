@@ -10,6 +10,7 @@ export interface Task {
   dueTime: string
   priority: Priority
   status: TaskStatus
+  inInbox: boolean
   createdAt: string
 }
 
@@ -25,6 +26,7 @@ export interface CalendarEvent {
   location: string
   description: string
   lifeAreaId: string
+  inInbox: boolean
   createdAt: string
 }
 
@@ -49,6 +51,7 @@ export interface FileRecord {
   linkedTaskIds: string[]
   mimeType: string
   size: number
+  inInbox: boolean
   createdAt: string
   blob: Blob
 }
@@ -75,6 +78,30 @@ export interface LifeArea {
 }
 
 export type LifeAreaInput = Omit<LifeArea, 'id' | 'createdAt'>
+
+export interface Note {
+  id: string
+  title: string
+  content: string
+  lifeAreaId: string
+  inInbox: boolean
+  createdAt: string
+}
+
+export type NoteInput = Omit<Note, 'id' | 'createdAt'>
+
+export interface Link {
+  id: string
+  title: string
+  url: string
+  lifeAreaId: string
+  inInbox: boolean
+  createdAt: string
+}
+
+export type LinkInput = Omit<Link, 'id' | 'createdAt'>
+
+export type InboxKind = 'task' | 'event' | 'file' | 'note' | 'link'
 
 export interface Profile {
   name: string

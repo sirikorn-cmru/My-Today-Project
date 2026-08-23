@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import type { FileRecordInput, LifeArea, Task } from '../types'
+import { useEffect, useState } from 'react'
+import type { FileRecord, FileRecordInput, LifeArea, Task } from '../types'
 import { inputClass, primaryButtonClass, secondaryButtonClass } from '../lib/uiClasses'
 import { ModalShell } from './ModalShell'
 
@@ -9,18 +9,55 @@ interface FileFormModalProps {
   lifeAreas: LifeArea[]
   onClose: () => void
   onSubmit: (input: FileRecordInput) => void
+  // Edit/organize mode: ปรับชื่อ/หมวดหมู่/Life Area ของไฟล์ที่มีอยู่แล้ว (ไม่เลือกไฟล์ใหม่)
+  initialFile?: FileRecord | null
+  onUpdate?: (
+    id: string,
+    patch: Partial<Pick<FileRecord, 'name' | 'category' | 'lifeAreaId' | 'linkedTaskIds' | 'inInbox'>>,
+  ) => void
+  // Quick Capture mode (Sprint 8): ตั้ง inInbox=true ตอนสร้างใหม่ผ่านปุ่มกลาง — ยังต้องเลือกไฟล์เสมอ
+  // (ไฟล์ที่ไม่มีเนื้อหาไม่มีความหมาย) แต่ชื่อ/หมวดหมู่/Life Area ไปกรอกทีหลังได้ที่ My Inbox
+  quickCapture?: boolean
 }
 
-export function FileFormModal({ open, tasks, lifeAreas, onClose, onSubmit }: FileFormModalProps) {
+export function FileFormModal({
+  open,
+  tasks,
+  lifeAreas,
+  onClose,
+  onSubmit,
+  initialFile,
+  onUpdate,
+  quickCapture,
+}: FileFormModalProps) {
   const [name, setName] = useState('')
   const [category, setCategory] = useState('')
   const [lifeAreaId, setLifeAreaId] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [linkedTaskIds, setLinkedTaskIds] = useState<string[]>([])
 
+  const isEdit = Boolean(initialFile)
+
+  useEffect(() => {
+    if (!open) return
+    if (initialFile) {
+      setName(initialFile.name)
+      setCategory(initialFile.category)
+      setLifeAreaId(initialFile.lifeAreaId)
+      setLinkedTaskIds(initialFile.linkedTaskIds)
+      setFile(null)
+    } else {
+      setName('')
+      setCategory('')
+      setLifeAreaId('')
+      setFile(null)
+      setLinkedTaskIds([])
+    }
+  }, [open, initialFile])
+
   if (!open) return null
 
-  const canSubmit = name.trim().length > 0 && file !== null
+  const canSubmit = name.trim().length > 0 && (isEdit || file !== null)
 
   function reset() {
     setName('')
@@ -42,7 +79,18 @@ export function FileFormModal({ open, tasks, lifeAreas, onClose, onSubmit }: Fil
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!file || !canSubmit) return
+    if (!canSubmit) return
+    if (isEdit && initialFile) {
+      onUpdate?.(initialFile.id, {
+        name: name.trim(),
+        category: category.trim() || 'ทั่วไป',
+        lifeAreaId,
+        linkedTaskIds,
+        inInbox: false,
+      })
+      return
+    }
+    if (!file) return
     onSubmit({
       name: name.trim(),
       category: category.trim() || 'ทั่วไป',
@@ -51,6 +99,7 @@ export function FileFormModal({ open, tasks, lifeAreas, onClose, onSubmit }: Fil
       mimeType: file.type || 'application/octet-stream',
       size: file.size,
       blob: file,
+      inInbox: Boolean(quickCapture),
     })
     reset()
   }
@@ -64,22 +113,29 @@ export function FileFormModal({ open, tasks, lifeAreas, onClose, onSubmit }: Fil
     <ModalShell titleId="file-form-title" onClose={handleClose}>
       <form onSubmit={handleSubmit}>
         <h3 id="file-form-title" className="text-lg font-semibold text-slate-900">
-          เพิ่มไฟล์
+          {quickCapture ? '+ Add to My Today — ไฟล์' : isEdit ? 'จัดเข้า Life Area' : 'เพิ่มไฟล์'}
         </h3>
+        {quickCapture && (
+          <p className="mt-1 text-xs text-slate-500">
+            เลือกไฟล์แล้วบันทึกได้เลย ตั้งชื่อ/หมวดหมู่/Life Area ทีหลังได้ที่ My Inbox
+          </p>
+        )}
 
         <div className="mt-4 space-y-3">
-          <div>
-            <label htmlFor="file-input" className="text-xs font-medium text-slate-500">
-              เลือกไฟล์ *
-            </label>
-            <input
-              id="file-input"
-              required
-              type="file"
-              onChange={handleFileChange}
-              className="mt-1 w-full rounded-lg text-sm text-slate-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            />
-          </div>
+          {!isEdit && (
+            <div>
+              <label htmlFor="file-input" className="text-xs font-medium text-slate-500">
+                เลือกไฟล์ *
+              </label>
+              <input
+                id="file-input"
+                required
+                type="file"
+                onChange={handleFileChange}
+                className="mt-1 w-full rounded-lg text-sm text-slate-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              />
+            </div>
+          )}
 
           <div>
             <label htmlFor="file-name" className="text-xs font-medium text-slate-500">
@@ -127,7 +183,7 @@ export function FileFormModal({ open, tasks, lifeAreas, onClose, onSubmit }: Fil
             </select>
           </div>
 
-          {tasks.length > 0 && (
+          {!quickCapture && tasks.length > 0 && (
             <div>
               <span className="text-xs font-medium text-slate-500">เชื่อมกับงาน (ไม่บังคับ)</span>
               <div className="mt-1 max-h-32 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-2">

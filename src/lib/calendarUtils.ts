@@ -4,7 +4,7 @@ import { getLifeAreaName } from './lifeAreaUtils'
 
 export function getDayItems(date: string, events: CalendarEvent[], tasks: Task[], lifeAreas: LifeArea[] = []): DayItem[] {
   const eventItems: DayItem[] = events
-    .filter((event) => event.date === date)
+    .filter((event) => !event.inInbox && event.date === date)
     .map((event) => {
       const lifeAreaName = getLifeAreaName(lifeAreas, event.lifeAreaId)
       const place = event.location || event.type
@@ -19,7 +19,7 @@ export function getDayItems(date: string, events: CalendarEvent[], tasks: Task[]
     })
 
   const taskItems: DayItem[] = tasks
-    .filter((task) => task.dueDate === date)
+    .filter((task) => !task.inInbox && task.dueDate === date)
     .map((task) => {
       const lifeAreaName = getLifeAreaName(lifeAreas, task.lifeAreaId)
       return {

@@ -20,6 +20,7 @@ export function createSeedEvents(): CalendarEvent[] {
       location: 'ห้อง A301',
       description: '',
       lifeAreaId: 'la-study',
+      inInbox: false,
       createdAt: now,
     },
     {
@@ -32,6 +33,7 @@ export function createSeedEvents(): CalendarEvent[] {
       location: 'ห้องสมุดชั้น 3',
       description: '',
       lifeAreaId: 'la-work',
+      inInbox: false,
       createdAt: now,
     },
     {
@@ -44,6 +46,7 @@ export function createSeedEvents(): CalendarEvent[] {
       location: 'ห้องพักอาจารย์ 214',
       description: '',
       lifeAreaId: 'la-study',
+      inInbox: false,
       createdAt: now,
     },
     {
@@ -56,6 +59,7 @@ export function createSeedEvents(): CalendarEvent[] {
       location: 'คลินิกทันตกรรมใกล้บ้าน',
       description: '',
       lifeAreaId: 'la-health',
+      inInbox: false,
       createdAt: now,
     },
     {
@@ -68,6 +72,7 @@ export function createSeedEvents(): CalendarEvent[] {
       location: 'ห้อง A301',
       description: '',
       lifeAreaId: 'la-study',
+      inInbox: false,
       createdAt: now,
     },
   ]

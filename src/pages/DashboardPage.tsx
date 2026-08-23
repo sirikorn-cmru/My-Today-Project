@@ -38,14 +38,15 @@ export function DashboardPage({
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const navigate = useNavigate()
 
-  const todayTasks = tasks.filter((t) => isDueToday(t))
+  const todayTasks = tasks.filter((t) => !t.inInbox && isDueToday(t))
   const completed = todayTasks.filter((t) => t.status === 'Done').length
   const total = todayTasks.length
   const pending = total - completed
-  const todayEvents = events.filter((e) => e.date === todayISO())
+  const todayEvents = events.filter((e) => !e.inInbox && e.date === todayISO())
 
   const upcomingTasks = tasks
     .filter((t) => {
+      if (t.inInbox) return false
       const diff = daysUntil(t.dueDate)
       return diff > 0 && diff <= UPCOMING_WINDOW_DAYS && t.status !== 'Done'
     })

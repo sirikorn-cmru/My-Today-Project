@@ -24,6 +24,7 @@ export function FilesPage({ files, loaded, error, clearError, tasks, lifeAreas, 
 
   const visibleFiles = files
     .filter((file) => {
+      if (file.inInbox) return false
       if (lifeAreaFilter !== 'All' && file.lifeAreaId !== lifeAreaFilter) return false
       const q = search.trim().toLowerCase()
       if (!q) return true
@@ -35,7 +36,7 @@ export function FilesPage({ files, loaded, error, clearError, tasks, lifeAreas, 
     <div className="min-h-screen bg-slate-50 pb-24">
       <header className={pageHeaderClass}>
         <h1 className="text-xl font-semibold">ไฟล์</h1>
-        <p className="mt-1 text-sm text-blue-100">{files.length} ไฟล์ทั้งหมด</p>
+        <p className="mt-1 text-sm text-blue-100">{files.filter((f) => !f.inInbox).length} ไฟล์ทั้งหมด</p>
       </header>
 
       {error && (

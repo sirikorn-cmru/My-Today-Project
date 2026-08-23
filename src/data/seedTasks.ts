@@ -19,6 +19,7 @@ export function createSeedTasks(): Task[] {
       dueTime: '23:59',
       priority: 'High',
       status: 'To Do',
+      inInbox: false,
       createdAt: now,
     },
     {
@@ -30,6 +31,7 @@ export function createSeedTasks(): Task[] {
       dueTime: '17:00',
       priority: 'Medium',
       status: 'Doing',
+      inInbox: false,
       createdAt: now,
     },
     {
@@ -41,6 +43,7 @@ export function createSeedTasks(): Task[] {
       dueTime: '13:00',
       priority: 'Medium',
       status: 'Done',
+      inInbox: false,
       createdAt: now,
     },
     {
@@ -52,6 +55,7 @@ export function createSeedTasks(): Task[] {
       dueTime: '12:00',
       priority: 'Medium',
       status: 'To Do',
+      inInbox: false,
       createdAt: now,
     },
     {
@@ -63,6 +67,7 @@ export function createSeedTasks(): Task[] {
       dueTime: '09:00',
       priority: 'High',
       status: 'To Do',
+      inInbox: false,
       createdAt: now,
     },
     {
@@ -74,6 +79,7 @@ export function createSeedTasks(): Task[] {
       dueTime: '17:00',
       priority: 'Low',
       status: 'To Do',
+      inInbox: false,
       createdAt: now,
     },
     {
@@ -85,6 +91,7 @@ export function createSeedTasks(): Task[] {
       dueTime: '20:00',
       priority: 'High',
       status: 'To Do',
+      inInbox: false,
       createdAt: now,
     },
   ]

@@ -10,6 +10,9 @@ interface EventFormModalProps {
   lifeAreas: LifeArea[]
   onClose: () => void
   onSubmit: (input: CalendarEventInput) => void
+  // Quick Capture mode (Sprint 8): only "ชื่อกิจกรรม" is required — วันที่และฟิลด์อื่นๆ
+  // ถูกเลื่อนไปกรอกทีหลังตอน "จัดเข้า Life Area" จาก Inbox
+  quickCapture?: boolean
 }
 
 function emptyForm(defaultDate?: string): CalendarEventInput {
@@ -22,10 +25,19 @@ function emptyForm(defaultDate?: string): CalendarEventInput {
     location: '',
     description: '',
     lifeAreaId: '',
+    inInbox: false,
   }
 }
 
-export function EventFormModal({ open, initialEvent, defaultDate, lifeAreas, onClose, onSubmit }: EventFormModalProps) {
+export function EventFormModal({
+  open,
+  initialEvent,
+  defaultDate,
+  lifeAreas,
+  onClose,
+  onSubmit,
+  quickCapture,
+}: EventFormModalProps) {
   const [form, setForm] = useState<CalendarEventInput>(emptyForm(defaultDate))
 
   useEffect(() => {
@@ -41,6 +53,7 @@ export function EventFormModal({ open, initialEvent, defaultDate, lifeAreas, onC
             location: initialEvent.location,
             description: initialEvent.description,
             lifeAreaId: initialEvent.lifeAreaId,
+            inInbox: initialEvent.inInbox,
           }
         : emptyForm(defaultDate),
     )
@@ -49,20 +62,25 @@ export function EventFormModal({ open, initialEvent, defaultDate, lifeAreas, onC
   if (!open) return null
 
   const isEdit = Boolean(initialEvent)
-  const canSubmit = form.title.trim().length > 0 && form.date.trim().length > 0
+  const canSubmit = form.title.trim().length > 0 && (quickCapture || form.date.trim().length > 0)
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!canSubmit) return
-    onSubmit(form)
+    onSubmit({ ...form, inInbox: Boolean(quickCapture) })
   }
 
   return (
     <ModalShell titleId="event-form-title" onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <h3 id="event-form-title" className="text-lg font-semibold text-slate-900">
-          {isEdit ? 'แก้ไขกิจกรรม' : 'เพิ่มกิจกรรม/นัดหมาย'}
+          {quickCapture ? '+ Add to My Today — กิจกรรม' : isEdit ? 'แก้ไขกิจกรรม' : 'เพิ่มกิจกรรม/นัดหมาย'}
         </h3>
+        {quickCapture && (
+          <p className="mt-1 text-xs text-slate-500">
+            กรอกแค่ชื่อกิจกรรมก่อนได้ รายละเอียดอื่นๆ ไปกรอกทีหลังตอนจัดเข้า Life Area ที่ My Inbox
+          </p>
+        )}
 
         <div className="mt-4 space-y-3">
           <div>
@@ -94,11 +112,11 @@ export function EventFormModal({ open, initialEvent, defaultDate, lifeAreas, onC
 
           <div>
             <label htmlFor="event-date" className="text-xs font-medium text-slate-500">
-              วันที่ *
+              วันที่ {quickCapture ? '' : '*'}
             </label>
             <input
               id="event-date"
-              required
+              required={!quickCapture}
               type="date"
               value={form.date}
               onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}

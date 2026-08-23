@@ -88,6 +88,21 @@ export function useFiles() {
     }
   }
 
+  async function updateFile(
+    fileId: string,
+    patch: Partial<Pick<FileRecord, 'name' | 'category' | 'lifeAreaId' | 'linkedTaskIds' | 'inInbox'>>,
+  ) {
+    const file = files.find((f) => f.id === fileId)
+    if (!file) return
+    const updated: FileRecord = { ...file, ...patch }
+    try {
+      await putFile(updated)
+      setFiles((prev) => prev.map((f) => (f.id === fileId ? updated : f)))
+    } catch (err) {
+      setError(`อัปเดตไฟล์ไม่สำเร็จ: ${toErrorMessage(err)}`)
+    }
+  }
+
   function clearError() {
     setError(null)
   }
@@ -102,5 +117,6 @@ export function useFiles() {
     linkFileToTask,
     unlinkFileFromTask,
     updateFileLifeArea,
+    updateFile,
   }
 }
