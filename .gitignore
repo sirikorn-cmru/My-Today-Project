@@ -4,3 +4,6 @@
 node_modules/
 dist/
 *.local
+
+# Obsidian workspace config at repo root (not the vault's own .docs/.obsidian/, which is tracked)
+/.obsidian/
