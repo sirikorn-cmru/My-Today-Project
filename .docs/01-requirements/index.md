@@ -6,4 +6,6 @@
 - [[02-plan/index|02-plan]] — แผนงานและ roadmap (จะทำเมื่อไหร่ ทำอย่างไร)
 - [[03-task/index|03-task]] — งานย่อยที่แตกออกมาให้ลงมือทำได้จริง (ทำทีละอย่างอย่างไร)
 
+นอกจากนี้ยังมีไฟล์ flat ระดับเดียวกับโฟลเดอร์นี้ที่รวบรวมข้อมูลข้าม Sprint: `backlog.md` (Product Backlog), `feature-list.md` (Feature List รวมทุก Sprint), และ `user-journey.md` (User Journey แยกตาม Persona) — ทั้งสามไฟล์นี้ generate/อัปเดตผ่าน skill (`requirement-intake`, `feature-journey-intake`) ไม่ได้เขียนมือ ดูรายละเอียดที่ `CLAUDE.md`
+
 โฟลเดอร์นี้คือจุดเริ่มต้นของทุกโปรเจกต์ ก่อนจะต่อยอดไปสู่การออกแบบใน [[../02-design/index|02-design]]
