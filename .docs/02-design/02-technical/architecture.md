@@ -58,7 +58,9 @@ Container ทั้งหมดตั้งชื่อตาม**หน้า�
 - **Binary / Blob Local Persistence** — ที่เก็บเนื้อหาไฟล์แนบ (ขนาดใหญ่กว่าและมีลักษณะไบนารี จึงแยกจาก Structured Persistence)
 - **Reminder / Notification Derivation** — ไม่ใช่ที่เก็บข้อมูลถาวร แต่เป็นตรรกะที่คำนวณ "อะไรใกล้ถึงกำหนด/เลยกำหนดแล้ว" จากข้อมูล Task/Event สดทุกครั้งที่ต้องแสดงผล
 
-> **หมายเหตุการ implement ปัจจุบัน:** Presentation Layer คือ React components ใน `src/pages/` และ `src/components/`; Application/Domain Logic Layer คือ `src/App.tsx` ร่วมกับ hooks ใน `src/hooks/` (`useTasks`, `useEvents`, `useFiles`, `useLifeAreas`, `useProfile`, `useNotifications`) และ pure logic ใน `src/lib/`; Structured Local Persistence คือ LocalStorage ผ่าน `src/lib/storage.ts`; Binary/Blob Local Persistence คือ IndexedDB ผ่าน `src/lib/fileDb.ts`; Reminder/Notification Derivation คือ `src/lib/notificationUtils.ts` (`buildNotifications`) ซึ่งคำนวณใหม่ทุก render จาก `tasks`/`events` สด ไม่ได้เก็บเป็น record แยก
+Application/Domain Logic Layer ยังเป็นเจ้าของ**แนวคิดสถานะการจัดระเบียบข้อมูล (organization state)** ด้วย — record หนึ่งรายการสามารถอยู่ในสถานะ "รอการจัดระเบียบ" ชั่วคราวได้ โดยฟิลด์ที่ปกติต้องมีค่าถูกเลื่อนให้ยังไม่ต้องระบุตอนสร้าง จนกว่าจะมีการกระทำ "จัดระเบียบ" อย่างชัดเจนมาเติมค่าที่ขาดและล้างสถานะนั้นออก ทำให้ผู้ใช้บันทึกสิ่งที่นึกขึ้นได้ทันทีโดยยังไม่ต้องตัดสินใจรายละเอียดทั้งหมดในตอนนั้น แล้วค่อยกลับมาจัดระเบียบทีหลังได้
+
+> **หมายเหตุการ implement ปัจจุบัน:** Presentation Layer คือ React components ใน `src/pages/` และ `src/components/`; Application/Domain Logic Layer คือ `src/App.tsx` ร่วมกับ hooks ใน `src/hooks/` (`useTasks`, `useEvents`, `useFiles`, `useLifeAreas`, `useProfile`, `useNotifications`, และล่าสุด `useNotes`/`useLinks`) และ pure logic ใน `src/lib/`; Structured Local Persistence คือ LocalStorage ผ่าน `src/lib/storage.ts`; Binary/Blob Local Persistence คือ IndexedDB ผ่าน `src/lib/fileDb.ts`; Reminder/Notification Derivation คือ `src/lib/notificationUtils.ts` (`buildNotifications`) ซึ่งคำนวณใหม่ทุก render จาก `tasks`/`events` สด ไม่ได้เก็บเป็น record แยก; แนวคิด "organization state" ข้างต้นถูก implement เป็นฟิลด์ `inInbox: boolean` บน `Task`/`CalendarEvent`/`FileRecord`/`Note`/`Link` ทุกตัว (เพิ่มโดย Sprint 8)
 
 ## 3. Core Domain Concepts
 
@@ -72,8 +74,8 @@ flowchart LR
     FileC["File<br/>(เอกสาร/ไฟล์แนบ)"]
     Notif["Notification<br/>(ไม่ใช่ entity ที่เก็บถาวร — derive สดจาก Task/Event)"]
     Profile["Personal Profile<br/>(ข้อมูลผู้ใช้ — standalone, ไม่เชื่อมกับ entity อื่น)"]
-    Note["Note (แผนในอนาคต — ยังไม่ build)"]
-    Link["Link (แผนในอนาคต — ยังไม่ build)"]
+    Note["Note<br/>(บันทึกข้อความอิสระ)"]
+    Link["Link<br/>(ลิงก์อ้างอิงภายนอก)"]
 
     Task -.->|"อ้างอิง Life Area ได้ (ไม่บังคับ)"| LifeArea
     Event -.->|"อ้างอิง Life Area ได้ (ไม่บังคับ)"| LifeArea
@@ -81,34 +83,32 @@ flowchart LR
     FileC -->|"เชื่อมกับ Task ได้หลายรายการ (จากฝั่ง File)"| Task
     Task -.-o|"คำนวณสด ไม่ได้ถูกอ้างถึงจริง"| Notif
     Event -.-o|"คำนวณสด ไม่ได้ถูกอ้างถึงจริง"| Notif
-    Note -.->|"แผน: อ้างอิง Life Area ได้ เหมือน Task/Event/File"| LifeArea
-    Link -.->|"แผน: อ้างอิง Life Area ได้ เหมือน Task/Event/File"| LifeArea
+    Note -.->|"อ้างอิง Life Area ได้ (ไม่บังคับ)"| LifeArea
+    Link -.->|"อ้างอิง Life Area ได้ (ไม่บังคับ)"| LifeArea
 
-    style Note stroke-dasharray: 5 5
-    style Link stroke-dasharray: 5 5
     style Notif stroke-dasharray: 3 3
 ```
 
 ประเด็นสำคัญของความสัมพันธ์:
 
 - **Life Area** เป็นแนวคิดเดี่ยว (standalone) ที่ไม่ขึ้นกับ entity อื่น — ลบ Life Area ได้โดยไม่ลบ Task/Event/File ที่เคยอ้างถึงมัน (แค่เคลียร์การอ้างอิงทิ้ง เพราะเป็นความสัมพันธ์แบบ many-to-one ที่ไม่บังคับ)
-- **Task / Event / File** แต่ละอย่างอ้างอิง Life Area ได้อย่างมากหนึ่งอัน (optional many-to-one)
+- **Task / Event / File / Note / Link** แต่ละอย่างอ้างอิง Life Area ได้อย่างมากหนึ่งอัน (optional many-to-one) — **Note และ Link** ถูกสร้างขึ้นจริงแล้ว (Sprint 8) และเข้าสู่โมเดลความสัมพันธ์เดียวกันกับ Task/Event/File ตั้งแต่ต้น ไม่ได้มีรูปแบบความสัมพันธ์แยกต่างหาก
 - **File ↔ Task** เป็นความสัมพันธ์ many-to-many ที่ File เป็นฝ่ายถือรายการ Task ที่เชื่อมด้วย — Task เองไม่ได้เก็บรายการไฟล์ของตัวเอง "ไฟล์ที่เกี่ยวข้องกับ Task นี้" เป็นสิ่งที่คำนวณจากฝั่ง File เสมอ ไม่ใช่ field ที่เก็บไว้บน Task
 - **Notification** ไม่ใช่ entity ที่ถูกเก็บถาวร — เป็นผลลัพธ์ที่ derive จากข้อมูล Task/Event สดทุกครั้งที่ต้องแสดง (จำแนกเป็น Overdue/Due Today/Due Soon) มีเพียงสถานะ "อ่านแล้วหรือยัง" เท่านั้นที่ถูกเก็บถาวรแยกต่างหาก
 - **Personal Profile** เป็นแนวคิดเดี่ยวลักษณะ singleton (มีชุดเดียวต่อผู้ใช้) ไม่มีความสัมพันธ์กับ entity อื่นใดเลย
-- **Note และ Link** เป็นแนวคิดที่**วางแผนไว้ในอนาคต (Sprint 8)** ยังไม่ถูกสร้างขึ้นจริงตามสถานะปัจจุบันใน backlog — เมื่อถูกสร้างจะเข้าสู่โมเดลความสัมพันธ์แบบเดียวกับ Task/Event/File คือเชื่อมกับ Life Area ได้แบบ optional
+- **สถานะการจัดระเบียบ (organization state)** — Task/Event/File/Note/Link ทุกตัวสามารถอยู่ในสถานะ "รอการจัดระเบียบ" ได้ตอนเพิ่มแบบรวดเร็ว (ฟิลด์ที่ปกติต้องมีค่า เช่น การอ้างอิง Life Area ถูกเลื่อนให้ยังไม่ต้องระบุ) จนกว่าผู้ใช้จะทำการ "จัดระเบียบ" ให้ครบภายหลัง แนวคิดนี้ใช้ร่วมกันข้าม entity ทั้งห้าแบบเดียวกัน ไม่ใช่กลไกเฉพาะของ entity ใด entity หนึ่ง
 
 ## 4. Data Flow per User Journey
 
-หัวข้อนี้อ้างอิง narrative ของ [[../01-prototypes/user-journey-student|User Journey: นักศึกษา]] และ [[../01-prototypes/user-journey-general-person|User Journey: บุคคลทั่วไป]] โดยตรง — ไม่สร้าง narrative ใหม่ เพียง annotate ว่าแต่ละขั้นตอนที่มีอยู่แล้วในสอง journey นั้นไหลผ่าน Container ใดบ้างและทิศทางไหน สถานะ **เสร็จแล้ว/แผนในอนาคต** ของแต่ละขั้นตอนคงไว้ตรงตามที่ระบุใน journey docs (ยึด backlog.md ณ วันที่เขียน 20260816)
+หัวข้อนี้อ้างอิง narrative ของ [[../01-prototypes/user-journey-student|User Journey: นักศึกษา]] และ [[../01-prototypes/user-journey-general-person|User Journey: บุคคลทั่วไป]] โดยตรง — ไม่สร้าง narrative ใหม่ เพียง annotate ว่าแต่ละขั้นตอนที่มีอยู่แล้วในสอง journey นั้นไหลผ่าน Container ใดบ้างและทิศทางไหน สถานะ **เสร็จแล้ว/แผนในอนาคต** ของแต่ละขั้นตอนคงไว้ตรงตามที่ระบุใน journey docs (ยึด backlog.md ณ วันที่ตรวจสอบล่าสุด 20260823)
 
 ### 4.1 นักศึกษา (Task "ส่งรายงาน HCI", Life Area "Study")
 
 | # | ขั้นตอน (ตาม user-journey-student.md) | Container ที่เกี่ยวข้อง | ทิศทาง | FR อ้างอิง | สถานะ |
 |---|---|---|---|---|---|
-| 1 | เพิ่ม Task ผ่าน Quick Capture | Presentation → Domain Logic → Structured Persistence | เขียน | FR-13 | แผนในอนาคต |
-| 2 | เข้า My Inbox | Structured Persistence → Domain Logic → Presentation | อ่าน | FR-14 | แผนในอนาคต |
-| 3 | จัดเข้า Life Area "Study" จาก Inbox | Presentation → Domain Logic → Structured Persistence | เขียน (อัปเดตการอ้างอิง Life Area) | FR-14 | แผนในอนาคต |
+| 1 | เพิ่ม Task ผ่าน Quick Capture | Presentation → Domain Logic → Structured Persistence | เขียน | FR-13 | เสร็จแล้ว |
+| 2 | เข้า My Inbox | Structured Persistence → Domain Logic → Presentation | อ่าน | FR-14 | เสร็จแล้ว |
+| 3 | จัดเข้า Life Area "Study" จาก Inbox | Presentation → Domain Logic → Structured Persistence | เขียน (อัปเดตการอ้างอิง Life Area) | FR-14 | เสร็จแล้ว |
 | 4 | กำหนด Deadline ของ Task | Presentation → Domain Logic → Structured Persistence | เขียน | FR-04 | เสร็จแล้ว |
 | 5 | แนบไฟล์รายงาน (Related Files) | Presentation → Domain Logic → Binary/Blob Persistence (เนื้อหาไฟล์) + Structured Persistence (ความสัมพันธ์ File↔Task) | เขียน | FR-09 | เสร็จแล้ว |
 | 6 | เห็น Deadline ปรากฏใน Calendar อัตโนมัติ | Structured Persistence → Domain Logic (รวมมุมมอง Task+Event) → Presentation | อ่าน | FR-07 | เสร็จแล้ว |
@@ -122,9 +122,9 @@ flowchart LR
 
 | # | ขั้นตอน (ตาม user-journey-general-person.md) | Container ที่เกี่ยวข้อง | ทิศทาง | FR อ้างอิง | สถานะ |
 |---|---|---|---|---|---|
-| 1 | เพิ่ม Task ผ่าน Quick Capture | Presentation → Domain Logic → Structured Persistence | เขียน | FR-13 | แผนในอนาคต |
-| 2 | เข้า My Inbox | Structured Persistence → Domain Logic → Presentation | อ่าน | FR-14 | แผนในอนาคต |
-| 3 | จัดเข้า Life Area "Finance" จาก Inbox + กำหนด Deadline | Presentation → Domain Logic → Structured Persistence | เขียน | FR-14 | แผนในอนาคต |
+| 1 | เพิ่ม Task ผ่าน Quick Capture | Presentation → Domain Logic → Structured Persistence | เขียน | FR-13 | เสร็จแล้ว |
+| 2 | เข้า My Inbox | Structured Persistence → Domain Logic → Presentation | อ่าน | FR-14 | เสร็จแล้ว |
+| 3 | จัดเข้า Life Area "Finance" จาก Inbox + กำหนด Deadline | Presentation → Domain Logic → Structured Persistence | เขียน | FR-14 | เสร็จแล้ว |
 | 4 | แนบไฟล์ใบแจ้งหนี้ค่าไฟ (Related Files) | Presentation → Domain Logic → Binary/Blob Persistence + Structured Persistence (ความสัมพันธ์ File↔Task) | เขียน | FR-09 | เสร็จแล้ว |
 | 5 | เห็น Deadline ใน Timeline Now/Next/Later | Structured Persistence → Domain Logic → Presentation | อ่าน | FR-16 | แผนในอนาคต |
 | 6 | ได้รับการเตือนเมื่อใกล้ถึงกำหนด (Due Soon/Overdue) | Structured Persistence → Domain Logic → Reminder/Notification Derivation → Presentation | อ่าน | FR-10 | เสร็จแล้ว |
@@ -143,10 +143,8 @@ flowchart LR
 
 ## 6. Known Gaps / Not-yet-built Extensions
 
-รายการนี้คือ container/flow ที่ narrative ของ Sprint 8-11 (Competition Track ที่เหลือ) บอกเป็นนัยว่าจะต้องมี แต่ **ยังไม่ถูกสร้างจริง** ตามสถานะล่าสุดใน backlog.md (ตรวจสอบล่าสุด 20260808 ยังไม่มี commit ใดๆ เข้า Sprint 8-11):
+รายการนี้คือ container/flow ที่ narrative ของ Sprint 9-11 (Competition Track ที่เหลือ) บอกเป็นนัยว่าจะต้องมี แต่ **ยังไม่ถูกสร้างจริง** ตามสถานะล่าสุดใน backlog.md (ตรวจสอบล่าสุด 20260823 — Sprint 8 มี commit เข้าแล้ว เหลือเฉพาะ Sprint 9-10 ที่ยังไม่มี commit ใดๆ):
 
-- **Inbox / Quick Capture path** (Sprint 8, FR-13/FR-14) — ยังไม่มี flow ให้ Presentation Layer บันทึกรายการแบบขั้นต่ำเข้า Structured Persistence โดยไม่ผ่านฟอร์มเต็ม และยังไม่มีสถานะ "ยังไม่จัด Life Area" ที่ต้องกรองแยกออกมา
-- **Note / Link เป็น entity ใหม่** (Sprint 8, FR-15) — ยังไม่มีที่เก็บข้อมูลสำหรับสอง entity นี้ใน Structured Persistence เลย
 - **Timeline (Now/Next/Later) + Smart Priority** (Sprint 9, FR-16) — ยังไม่มีตรรกะจัดลำดับอัตโนมัติแยกจาก Domain Logic Layer ปัจจุบัน ที่รวม Task+Event จากทุก Life Area แล้วเรียงตามกฎ Overdue → Due Today → Upcoming → High Priority → Normal
 - **Life Progress aggregation** (Sprint 9, FR-17) — ยังไม่มีตรรกะสรุปจำนวนงานเสร็จวันนี้ทั้งรวมและแยกตาม Life Area
 - **What/When/Information unified linking + custom reminder lead time** (Sprint 10, FR-18/FR-19) — Domain Logic Layer ปัจจุบันยังไม่รองรับ Task/Event เชื่อมกับ Note/Link (มีแค่ File↔Task) และ Reminder/Notification Derivation ยังใช้ค่า default เดียวกันทั้งระบบ ยังไม่มีการ override เป็นรายรายการ
@@ -156,3 +154,4 @@ Sprint 11 (Demo/Polish/Freeze) ไม่เพิ่ม container หรือ f
 ## 7. Change Log
 
 - 20260816 — สร้างเอกสารนี้ครั้งแรก: C4 Context + Container diagram, Core Domain Concepts, Data Flow ของทั้งสอง persona journey (นักศึกษา/บุคคลทั่วไป) อ้างอิงจาก user-journey docs ที่มีอยู่แล้ว, cross-cutting principles, และ known gaps จาก Sprint 8-11 ที่ยังไม่ build
+- 20260823 — อัปเดตสะท้อน Sprint 8 (Universal Inbox + Quick Capture) เสร็จแล้ว: ย้าย Note/Link จากแผนในอนาคตมาเป็น entity ที่ build จริงแล้วใน Core Domain Concepts (หัวข้อ 3), ปรับสถานะขั้นตอน Quick Capture/Inbox ในทั้งสอง persona journey (หัวข้อ 4) เป็น "เสร็จแล้ว", ตัด known gaps ของ Sprint 8 ออกเหลือเฉพาะ Sprint 9-10 (หัวข้อ 6), และเพิ่มคำอธิบายแนวคิด "organization state" ที่ Application/Domain Logic Layer เป็นเจ้าของ (หัวข้อ 2/3)
