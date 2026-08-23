@@ -1,6 +1,6 @@
 # My Today — API Spec (Domain Logic Layer Operation Contract)
 
-เชื่อมโยงกลับ: [[index|02-technical]], [[architecture|architecture]], [[database-schema|database-schema]], [[tech-stack|tech-stack]] (เอกสาร stack-specific ที่ใช้เป็นแหล่งอ้างอิงของหมายเหตุ "การ implement ปัจจุบัน" ท้ายเอกสารนี้เท่านั้น)
+เชื่อมโยงกลับ: [[index|02-technical]], [[architecture|architecture]], [[database-schema|database-schema]], [[tech-stack|tech-stack]] (เอกสาร stack-specific ที่ใช้เป็นแหล่งอ้างอิงของหมายเหตุ "การ implement ปัจจุบัน" ท้ายเอกสารนี้เท่านั้น), [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]]
 
 ## ขอบเขตของเอกสารนี้
 
@@ -107,6 +107,7 @@ Operation กลุ่มนี้ narrative ของ Sprint ที่ยัง
 - **Link Note to Task/Event** และ **Link Link to Task/Event** (Sprint 10, FR-18) — operation เพิ่ม/ลบ `linkedNoteIds`/`linkedLinkIds` บน Task และ Event (คู่ขนานกับ "Link File to Task"/"Unlink File from Task" ที่มีอยู่แล้วในหัวข้อ 1.4 แต่ปัจจุบันมีเฉพาะฝั่ง File→Task)
 - **Set Custom Reminder Lead Time** (Sprint 10, FR-19) — operation ตั้งค่า `reminderLeadTime` เฉพาะ Task/Event รายการหนึ่ง ให้ "Build Notifications" ใช้ค่านี้แทนค่า default กลางของระบบเฉพาะรายการนั้น
 - **Get Task/Event Detail (What/When/Information unified view)** (Sprint 10) — query รวมข้อมูล Task/Event เดียวกับไฟล์/Note/Link/reminder ที่เชื่อมไว้ทั้งหมด ให้แสดงในหน้าเดียวโดยไม่ต้องสลับหน้า
+- **Get Storage Usage Estimate / Warn Near Quota** (NFR-08, [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]]) — operation แบบ derived/read-only ที่ query ความจุที่ใช้ไป/เหลืออยู่ของ Binary/Blob Local Persistence container เอง (ไม่ใช่การอ่าน record ของ entity ใด) ใช้ผลลัพธ์เพื่อ trigger คำเตือนบน UI ก่อนที่ผู้ใช้จะเจอ error แบบไม่มีการเตือนล่วงหน้าเมื่อพื้นที่จัดเก็บไฟล์แนบใกล้เต็ม ยังไม่กำหนดค่า threshold % ที่แน่นอน (รอ Sprint ที่นำไปพัฒนาจริงกำหนด) — ยังไม่ถูกสร้างจริงใน Domain Logic Layer ปัจจุบัน
 
 **ข้อควรระวังเรื่องความสอดคล้องของ spec (แก้ไขแล้ว):** ดูหมายเหตุใน [[database-schema|database-schema.md]] หัวข้อ 4 — เดิม spec ของ Sprint 10 อ้างถึง `linkedFileIds` บน Task ราวกับมีอยู่แล้ว ซึ่งไม่ตรงกับ operation "Link File to Task"/"Unlink File from Task" ที่มีอยู่จริงในหัวข้อ 1.4 ข้างบน (เขียนที่ฝั่ง File ไม่ใช่ Task) ประเด็นนี้ได้รับการแก้ไขแล้วผ่าน commit `83a38ee` ("Correct Sprint 10 spec's incorrect Task.linkedFileIds claim") ซึ่งเพิ่มหัวข้อ `## เพิ่มเติม (20260823): แก้ไขข้อความคลาดเคลื่อนเรื่อง Task↔File relationship (linkedFileIds)` ต่อท้าย spec Sprint 10 ยืนยันว่าความสัมพันธ์จริงคือ File→Task ผ่าน `linkedTaskIds` และ `linkedNoteIds`/`linkedLinkIds` ของ Sprint 10 เป็นการตัดสินใจออกแบบใหม่บน Task ไม่ใช่การขยายฟิลด์เดิม การแก้ไขนี้ยืนยันว่า operation contract ที่บันทึกไว้ในเอกสารนี้ถูกต้องมาตั้งแต่แรก **ไม่ต้องแก้ไข operation ใดๆ เพิ่มเติม** — ที่ผิดคือถ้อยคำของ spec Sprint 10 เท่านั้น คงหมายเหตุนี้ไว้เป็นบันทึกประวัติความไม่สอดคล้องและการแก้ไข แทนการลบทิ้ง
 
@@ -115,6 +116,7 @@ Operation กลุ่มนี้ narrative ของ Sprint ที่ยัง
 - 20260823 — สร้างเอกสารนี้ครั้งแรก: operation contract ต่อ entity ครบ 7 กลุ่ม (Life Area, Task, Event, File, Note, Link, Personal Profile), cross-cutting operations (Delete Life Area, Quick Capture, Organize from Inbox, List Inbox Items), derived/read-only operations (Build Notifications, Get Day Items, Get Today Dashboard Summary, ฯลฯ), known gaps จาก Sprint 9-10, และหมายเหตุความไม่สอดคล้องของ spec Sprint 10 เรื่อง `linkedFileIds`
 - 20260823 (อัปเดตภายหลัง) — อัปเดตหมายเหตุความไม่สอดคล้องของ spec Sprint 10 ในหัวข้อ 4 จากคำแนะนำเชิง forward-looking ให้เป็นบันทึกแบบ resolved: spec Sprint 10 ถูกแก้ไขแล้ว (commit `83a38ee`) ยืนยันว่า operation contract เดิมถูกต้อง ไม่ต้องแก้ operation เพิ่ม
 - 20260823 (อัปเดตภายหลังอีกครั้ง) — เพิ่มความละเอียดของหมายเหตุ "การ implement ปัจจุบัน" ท้ายเอกสาร โดยอ้างอิง [[tech-stack|tech-stack.md]] ที่เพิ่งถูกสร้างขึ้น (ระบุเวอร์ชัน hook/library จริง และผูกเหตุผล "local function call ไม่ใช่ network call" กับ Fixed Constraint/state-ownership ที่ระบุใน tech-stack.md โดยตรง) ไม่มีการแก้ไข operation contract ตาราง/cross-cutting operations/derived operations/known gaps ใดๆ
+- 20260823 (อัปเดตอีกครั้ง — NFR master list) — เพิ่ม cross-link ไปยัง [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]] ในหัวข้อเชื่อมโยงกลับ และเพิ่ม known gap ใหม่ในหัวข้อ 4: "Get Storage Usage Estimate / Warn Near Quota" (NFR-08) — derived/read-only operation query ความจุที่เหลือของ Binary/Blob Local Persistence container ไม่มีการแก้ไข operation contract ตาราง/cross-cutting/derived operations เดิมใดๆ
 
 ---
 

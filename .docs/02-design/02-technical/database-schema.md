@@ -1,6 +1,6 @@
 # My Today — Database Schema (Conceptual)
 
-เชื่อมโยงกลับ: [[index|02-technical]], [[architecture|architecture]], [[../../01-requirements/feature-list|feature-list]], [[tech-stack|tech-stack]] (เอกสาร stack-specific ที่ใช้เป็นแหล่งอ้างอิงของหมายเหตุ "การ implement ปัจจุบัน" ท้ายเอกสารนี้เท่านั้น)
+เชื่อมโยงกลับ: [[index|02-technical]], [[architecture|architecture]], [[../../01-requirements/feature-list|feature-list]], [[tech-stack|tech-stack]] (เอกสาร stack-specific ที่ใช้เป็นแหล่งอ้างอิงของหมายเหตุ "การ implement ปัจจุบัน" ท้ายเอกสารนี้เท่านั้น), [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]]
 
 ## ขอบเขตของเอกสารนี้
 
@@ -231,6 +231,7 @@ erDiagram
 - **Event.linkedNoteIds / Event.linkedLinkIds — Reference-array(→ Note) / Reference-array(→ Link), optional** (Sprint 10, Business Rule ข้อ 4): Event เชื่อมกับ Note/Link/File ได้เช่นเดียวกับ Task ด้วยกลไกเดียวกัน
 - **Task.reminderLeadTime / Event.reminderLeadTime — Number (นาทีหรือชั่วโมงล่วงหน้า), optional** (Sprint 10, FR-19): ค่า override ระยะเวลาแจ้งเตือนล่วงหน้าเฉพาะรายการ แทนค่า default เดียวกันทั้งระบบที่ Reminder/Notification Derivation ใช้อยู่ปัจจุบัน (Sprint 5)
 - **Timeline (Now/Next/Later) และ Life Progress (Sprint 9, FR-16/FR-17)** ไม่ต้องการฟิลด์ schema ใหม่ — เป็น query/aggregation ที่คำนวณจาก field ที่มีอยู่แล้ว (`dueDate`/`dueTime`/`status`/`lifeAreaId`) ดูรายละเอียดใน [[api-spec|api-spec]] หัวข้อ 4 แทน
+- **IndexedDB Quota-Warning** (NFR-08, [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]]) — ไม่ต้องการฟิลด์ schema ใหม่บน entity `File` เลยเช่นกัน เพราะเป็นการ query ความจุที่เหลือของกลไกจัดเก็บเอง (storage mechanism's own capacity) ไม่ใช่ข้อมูลที่เก็บต่อ record ("พื้นที่ที่เหลือ" ไม่ใช่ attribute ของ File แต่ละไฟล์ แต่เป็นคุณสมบัติของที่เก็บทั้งก้อน) ดู operation ที่เกี่ยวข้อง "Get Storage Usage Estimate / Warn Near Quota" ใน [[api-spec|api-spec]] หัวข้อ 4 — ยังไม่ถูกสร้างจริง
 
 **ข้อควรระวังเรื่องความสอดคล้องของ spec (แก้ไขแล้ว):** เดิมเอกสาร Sprint 10 (`20260806-011-my-today-sprint10-task-event-file-linking.md`) เคยระบุว่า Task "เพิ่ม field ความสัมพันธ์ใหม่: `linkedNoteIds` และ `linkedLinkIds` (เพิ่มจาก `linkedFileIds` **ที่มีอยู่แล้วจาก Sprint 4**)" — ถ้อยคำนี้สื่อผิดว่า Task ปัจจุบันมีฟิลด์ `linkedFileIds` อยู่แล้ว ทั้งที่ `src/types.ts` และ architecture.md ยืนยันตรงกันว่าความสัมพันธ์ File↔Task ถือทิศทางเดียวที่ **File** (`FileRecord.linkedTaskIds`) ไม่ใช่ที่ Task ประเด็นนี้ได้รับการแก้ไขแล้วผ่าน commit `83a38ee` ("Correct Sprint 10 spec's incorrect Task.linkedFileIds claim") ซึ่งเพิ่มหัวข้อ `## เพิ่มเติม (20260823): แก้ไขข้อความคลาดเคลื่อนเรื่อง Task↔File relationship (linkedFileIds)` ต่อท้าย spec Sprint 10 ยืนยันความสัมพันธ์ที่ถูกต้อง (File→Task ผ่าน `linkedTaskIds`) และชี้แจงว่า `linkedNoteIds`/`linkedLinkIds` ของ Sprint 10 เป็นการตัดสินใจออกแบบใหม่บน Task เอง ไม่ใช่การขยายฟิลด์ที่มีอยู่เดิม การแก้ไขนี้ยืนยันว่า schema ที่บันทึกไว้ในเอกสารนี้ (Task ได้ `linkedNoteIds`/`linkedLinkIds` เป็นฟิลด์ใหม่บน Task เอง, ส่วน File↔Task ยังคงเดิมผ่าน `linkedTaskIds`) ถูกต้องมาตั้งแต่แรก **ไม่ต้องแก้ไข schema ใดๆ เพิ่มเติม** — ที่ผิดคือถ้อยคำของ spec Sprint 10 เท่านั้น ไม่ใช่การออกแบบที่ตั้งใจไว้ คงหมายเหตุนี้ไว้เป็นบันทึกประวัติความไม่สอดคล้องและการแก้ไข แทนการลบทิ้ง
 
@@ -239,6 +240,7 @@ erDiagram
 - 20260823 — สร้างเอกสารนี้ครั้งแรก: ER diagram ครอบคลุม Life Area/Task/Event/File/Note/Link/Personal Profile/Notification Read State, รายละเอียดฟิลด์ต่อ entity พร้อมกฎทางธุรกิจ, ฟิลด์ข้ามระบบ (`lifeAreaId`/`inInbox`), known gaps จาก Sprint 9-10, และหมายเหตุความไม่สอดคล้องของ spec Sprint 10 เรื่อง `linkedFileIds`
 - 20260823 (อัปเดตภายหลัง) — อัปเดตหมายเหตุความไม่สอดคล้องของ spec Sprint 10 ในหัวข้อ 4 จากคำแนะนำเชิง forward-looking ให้เป็นบันทึกแบบ resolved: spec Sprint 10 ถูกแก้ไขแล้ว (commit `83a38ee`) ยืนยันว่า schema เดิมถูกต้อง ไม่ต้องแก้ schema เพิ่ม
 - 20260823 (อัปเดตภายหลังอีกครั้ง) — เพิ่มความละเอียดของหมายเหตุ "การ implement ปัจจุบัน" ท้ายเอกสาร โดยอ้างอิง [[tech-stack|tech-stack.md]] ที่เพิ่งถูกสร้างขึ้น (ระบุเวอร์ชัน API/เหตุผลของ quota constraint ที่มาของการแยก storage เป็นสองระบบ) ไม่มีการแก้ไข ER diagram/รายละเอียดตาราง/ฟิลด์ข้ามระบบ/known gaps ใดๆ
+- 20260823 (อัปเดตอีกครั้ง — NFR master list) — เพิ่ม cross-link ไปยัง [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]] ในหัวข้อเชื่อมโยงกลับ และเพิ่ม known gap ใหม่ในหัวข้อ 4: IndexedDB Quota-Warning (NFR-08) — ไม่ต้องการฟิลด์ schema ใหม่บน `File` ไม่มีการแก้ไข ER diagram/รายละเอียดตาราง/ฟิลด์ข้ามระบบอื่นใด
 
 ---
 
