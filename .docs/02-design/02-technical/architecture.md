@@ -1,6 +1,6 @@
 # My Today — High-Level Architecture (Conceptual)
 
-เชื่อมโยงกลับ: [[index|02-technical]], [[../../01-requirements/01-spec/20260806-008-my-today-functional-requirements-master|FR master list]], [[../../01-requirements/feature-list|feature-list]]
+เชื่อมโยงกลับ: [[index|02-technical]], [[../../01-requirements/01-spec/20260806-008-my-today-functional-requirements-master|FR master list]], [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]], [[../../01-requirements/feature-list|feature-list]]
 
 ## ขอบเขตของเอกสารนี้
 
@@ -150,6 +150,7 @@ flowchart LR
 - **จุดเดียวเป็นเจ้าของ state** — มี Application/Domain Logic Layer เพียงชุดเดียวในระบบที่ถือ state จริงและกระจายให้ Presentation Layer ใช้ ไม่มีสำเนา state ที่สองที่อาจไม่ตรงกัน (อธิบายเชิงหน้าที่ ไม่ใช่ชื่อ class/file เฉพาะเจาะจง)
 - **ไม่มี AI และไม่มี external integration ในขอบเขตปัจจุบัน** — ทั้งสองอย่างถูกระบุเป็น out-of-scope อย่างชัดเจนสำหรับทั้ง Version 1/Core และ Version 2/Competition Track (AI อาจกลับมาเป็น phase หลัง Freeze ในอนาคตแบบ optional "Daily Orchestrator" แต่ไม่ใช่ส่วนหนึ่งของสถาปัตยกรรมนี้)
 - **ทิศทางการขยายระบบ** — entity ใหม่ในอนาคต (เช่น Note, Link) เข้าสู่โมเดลความสัมพันธ์แบบเดียวกับที่ Task/Event/File ใช้อยู่แล้ว (อ้างอิง Life Area แบบ optional many-to-one) แทนที่จะสร้างรูปแบบความสัมพันธ์ใหม่ — Life Area ยังคงเป็นแกนกลางของระบบต่อไปแม้ entity จะเพิ่มขึ้น
+- **Non-Functional Requirements** — หลักการข้างต้นเป็นเพียงภาพรวมเชิงสถาปัตยกรรม ไม่ได้ลงรายละเอียดครบทุกด้าน ชุด NFR แบบเต็ม (Performance, Reliability/Data Integrity, Usability/UX, Accessibility, Security/Privacy/Compliance, Compatibility/Portability, Offline Capability, Scalability/Capacity, Maintainability) ถูกจัดทำเป็นเอกสารทางการแล้วที่ [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]]
 
 ## 6. Known Gaps / Not-yet-built Extensions
 
@@ -158,6 +159,8 @@ flowchart LR
 - **Timeline (Now/Next/Later) + Smart Priority** (Sprint 9, FR-16) — ยังไม่มีตรรกะจัดลำดับอัตโนมัติแยกจาก Domain Logic Layer ปัจจุบัน ที่รวม Task+Event จากทุก Life Area แล้วเรียงตามกฎ Overdue → Due Today → Upcoming → High Priority → Normal
 - **Life Progress aggregation** (Sprint 9, FR-17) — ยังไม่มีตรรกะสรุปจำนวนงานเสร็จวันนี้ทั้งรวมและแยกตาม Life Area
 - **What/When/Information unified linking + custom reminder lead time** (Sprint 10, FR-18/FR-19) — Domain Logic Layer ปัจจุบันยังไม่รองรับ Task/Event เชื่อมกับ Note/Link (มีแค่ File↔Task) และ Reminder/Notification Derivation ยังใช้ค่า default เดียวกันทั้งระบบ ยังไม่มีการ override เป็นรายรายการ
+- **Accessibility Baseline** ([[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]]) — ยังไม่มีการรับประกัน semantic HTML/keyboard-focus/contrast อย่างเป็นระบบใน Presentation/Interaction Layer ปัจจุบัน เป็น requirement ใหม่ที่ยังไม่ถูก build/ตรวจสอบ
+- **IndexedDB Quota-Warning** ([[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]]) — Binary/Blob Local Persistence ปัจจุบันยังไม่มีกลไกเตือนผู้ใช้เมื่อใกล้เต็ม quota ของที่เก็บไฟล์แนบ เป็น requirement ใหม่ที่ยังไม่ถูก build
 
 Sprint 11 (Demo/Polish/Freeze) ไม่เพิ่ม container หรือ flow ใหม่ จึงไม่มีรายการเพิ่มในหัวข้อนี้
 
@@ -166,3 +169,4 @@ Sprint 11 (Demo/Polish/Freeze) ไม่เพิ่ม container หรือ f
 - 20260816 — สร้างเอกสารนี้ครั้งแรก: C4 Context + Container diagram, Core Domain Concepts, Data Flow ของทั้งสอง persona journey (นักศึกษา/บุคคลทั่วไป) อ้างอิงจาก user-journey docs ที่มีอยู่แล้ว, cross-cutting principles, และ known gaps จาก Sprint 8-11 ที่ยังไม่ build
 - 20260823 — อัปเดตสะท้อน Sprint 8 (Universal Inbox + Quick Capture) เสร็จแล้ว: ย้าย Note/Link จากแผนในอนาคตมาเป็น entity ที่ build จริงแล้วใน Core Domain Concepts (หัวข้อ 3), ปรับสถานะขั้นตอน Quick Capture/Inbox ในทั้งสอง persona journey (หัวข้อ 4) เป็น "เสร็จแล้ว", ตัด known gaps ของ Sprint 8 ออกเหลือเฉพาะ Sprint 9-10 (หัวข้อ 6), และเพิ่มคำอธิบายแนวคิด "organization state" ที่ Application/Domain Logic Layer เป็นเจ้าของ (หัวข้อ 2/3)
 - 20260823 — เพิ่มความละเอียดของหมายเหตุการ implement ปัจจุบันในหัวข้อ 2 (Container View) จากหมายเหตุก้อนเดียวรวม เป็นหมายเหตุแยกต่อ container พร้อมชื่อ/เวอร์ชันเทคโนโลยีที่แม่นยำ (React 18.3.1, Vite 5.3.1, TypeScript 5.5.2 strict, React Router 7.18.2, Tailwind CSS 3.4.4, LocalStorage, IndexedDB, Vercel free tier) โดยอ้างอิงจากเอกสารใหม่ [[tech-stack|tech-stack.md]] ที่เพิ่งสร้างขึ้น — ไม่มีการเปลี่ยนเนื้อหาเชิงแนวคิดของหัวข้อ 1/3/4/5/6
+- 20260823 — เพิ่ม cross-link ไปยัง [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]] ฉบับใหม่ในหัวข้อเชื่อมโยงกลับ, เพิ่มบรรทัดชี้ในหัวข้อ 5 ว่าชุด NFR แบบเต็มอยู่ที่เอกสารนี้, และเพิ่ม known gap ใหม่ 2 รายการในหัวข้อ 6 (Accessibility Baseline กระทบ Presentation/Interaction Layer, IndexedDB Quota-Warning กระทบ Binary/Blob Local Persistence) — ไม่รวม Browser Compatibility Matrix เพราะเป็นขอบเขตการทดสอบ ไม่ใช่ gap เชิงสถาปัตยกรรม/container — ไม่มีการเปลี่ยนเนื้อหาหัวข้อ 1/2/3/4
