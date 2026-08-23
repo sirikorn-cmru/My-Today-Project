@@ -5,6 +5,8 @@ description: สร้าง/ปรับปรุงเอกสาร Detailed
 
 Skill นี้จัดการ workflow ของการสร้าง/ปรับปรุงเอกสาร **Detailed Design** (conceptual, sequence-flow level) สำหรับโปรเจกต์ "My Today Project" — เอกสารนี้ต่อยอดจาก `architecture.md` (Container) และ `api-spec.md` (operation contract) มาเป็นระดับ **sequence flow ทีละขั้นตอนจริง** ของแต่ละ scenario ต้อง**ไม่ผูกมัดกับ technical stack** เหมือนกับ `architecture-doc-sync`/`data-api-doc-sync` — ห้ามระบุชื่อ framework/library/Web API เฉพาะเจาะจงในเนื้อหาหลัก ใช้เฉพาะเชิงอรรถ "หมายเหตุการ implement ปัจจุบัน" เท่านั้น ทำตามลำดับนี้ทุกครั้ง อย่าข้ามขั้นตอน และอย่าเรียก subagent ก่อนที่จุดไม่ชัดเจนจะถูก clarify กับ user แล้ว
 
+ตั้งแต่มี [[../../.docs/02-design/02-technical/tech-stack|tech-stack.md]] แล้ว — เอกสารนี้ควรมี**เชิงอรรถ "หมายเหตุการ implement ปัจจุบัน" แบบรวมท้ายเอกสาร** (เดิมเอกสารนี้ยังไม่มีกลไกนี้เลย ต่างจากอีกสอง skill) ที่โยงแต่ละ sequence diagram/ขั้นตอนกลับไปยังฟังก์ชัน/component จริงที่ implement มันอยู่ พร้อมอ้างอิงชื่อ/เวอร์ชันเทคโนโลยีจริงจาก tech-stack.md — หลักการ "ห้ามผูกกับ stack ใน diagram/เนื้อหาหลัก" ยังคงเดิมทุกประการ เพิ่มแค่เชิงอรรถท้ายเอกสารเท่านั้น
+
 ## 1. อ่านแหล่งข้อมูลต้นทาง
 
 อ่านไฟล์เหล่านี้ให้ครบก่อนเริ่มวิเคราะห์:
@@ -14,6 +16,7 @@ Skill นี้จัดการ workflow ของการสร้าง/ป
 - `.docs/02-design/02-technical/database-schema.md` — ใช้ตรวจสอบ field/entity ให้ตรงกันตอนอธิบายแต่ละ step
 - `.docs/02-design/01-prototypes/user-journey-student.md` และ `user-journey-general-person.md` — narrative ที่ต้องแปลงเป็น sequence diagram โดยตรง ไม่สร้างเรื่องเล่าใหม่
 - `.docs/01-requirements/feature-list.md` และ `.docs/01-requirements/backlog.md` — สถานะ Sprint ปัจจุบัน (ใช้ตัดสินว่า flow ไหน build แล้ว วาด sequence diagram เต็ม กับ flow ไหนยังไม่ build ให้พูดถึงแบบย่อ)
+- `.docs/02-design/02-technical/tech-stack.md` (ถ้ามีอยู่แล้ว) — แหล่งอ้างอิงหลักสำหรับรายละเอียดที่จะใส่ในเชิงอรรถ "หมายเหตุการ implement ปัจจุบัน" ท้ายเอกสาร — ถ้ายังไม่มีไฟล์นี้ ใช้แนวทางเดิม (เดาจาก `package.json`/config อย่างระมัดระวัง) และแจ้ง user ให้พิจารณารัน `tech-stack-advisor` ก่อนถ้าต้องการหมายเหตุที่แม่นยำที่สุด
 - ถ้ามีอยู่แล้ว: `.docs/02-design/02-technical/detailed-design.md` เดิม — อ่านเพื่อรักษาการตัดสินใจที่ user เคย confirm ไว้ในรอบก่อน แทนที่จะเขียนใหม่หมดทุกครั้ง
 
 ## 2. เช็ค backlog แบบเบาๆ (ไม่ deep-audit)
@@ -34,6 +37,7 @@ Skill นี้จัดการ workflow ของการสร้าง/ป
 - การตัดสินใจที่ clarify กับ user แล้วในขั้นตอนที่ 3 (ถ้ามี)
 - หมายเหตุเรื่อง backlog staleness จากขั้นตอนที่ 2 (ถ้ามี)
 - ถ้าเป็นการอัปเดตไฟล์เดิม ให้ระบุด้วยว่าอะไรเปลี่ยนไปจากรอบก่อน (เช่น flow ใหม่ที่เพิ่งเกี่ยวข้องจาก Sprint ที่เพิ่ง build เสร็จ ต้องเปลี่ยนจาก "ย่อ" เป็น sequence diagram เต็ม)
+- บอก subagent ให้อ่าน `.docs/02-design/02-technical/tech-stack.md` เอง (ถ้ามี) เพื่อดึงรายละเอียดเทคโนโลยีที่แม่นยำมาใส่ในเชิงอรรถ "หมายเหตุการ implement ปัจจุบัน" ท้ายเอกสาร — ไม่ต้องสรุปเนื้อหาให้ล่วงหน้า
 
 ## 5. รายงานสรุปให้ user
 

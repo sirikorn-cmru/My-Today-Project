@@ -275,6 +275,43 @@ sequenceDiagram
 
 Sprint 11 (Demo/Polish/Freeze) ไม่เพิ่ม flow ใหม่ จึงไม่มีรายการเพิ่มในหัวข้อนี้
 
-## 5. Change Log
+## 5. หมายเหตุการ implement ปัจจุบัน
+
+> เนื้อหาส่วนนี้ผูกกับ stack เทคโนโลยีจริง (อ้างอิงรายละเอียดฉบับเต็มที่ [[tech-stack|tech-stack.md]]) — ไม่ใช่ส่วนหนึ่งของ sequence diagram เชิงแนวคิดในหัวข้อ 1/2 ด้านบน และไม่ผูกมัดว่าต้อง implement แบบนี้ตลอดไป ระบุไว้ที่นี่รวมศูนย์เดียว (แทนที่จะแทรกในทุกไดอะแกรม) เพื่อบอกว่าแต่ละ participant ในแต่ละ sequence diagram ถูก implement ด้วยฟังก์ชัน/component/ไฟล์จริงตัวไหน สอดคล้องกับหมายเหตุแบบเดียวกันใน [[architecture|architecture.md]] หัวข้อ 2 และ [[api-spec|api-spec.md]] หัวข้อ 5
+
+### 1.1 นักศึกษา (persona journey)
+
+- **Quick Capture (ขั้นตอนที่ 1):** Presentation = `src/components/QuickCaptureModal.tsx` (type picker เลือก Task แล้ว delegate ไปที่ `TaskFormModal` พร้อม prop `quickCapture`); Domain = `useTasks` hook's create function ที่ `App.tsx` เป็นเจ้าของ instance เดียว (ตั้ง `inInbox: Boolean(quickCapture)`); Structured Persistence = `src/lib/storage.ts` เขียนลง LocalStorage key `my-today:tasks:v2` — ทั้งหมดเขียนด้วย **React `^18.3.1`** + **TypeScript `^5.5.2` (`strict: true`)** ตาม [[tech-stack|tech-stack.md]] หัวข้อ 3
+- **เปิด My Inbox (ขั้นตอนที่ 2):** Presentation = `src/pages/InboxPage.tsx` (แท็บ "Inbox"); Domain = logic กรอง `tasks`/`events`/`files`/`notes`/`links` props ที่ `inInbox === true` ภายใน `InboxPage.tsx` เอง (ไม่ใช่ hook แยก)
+- **จัดเข้า Life Area จาก Inbox (ขั้นตอนที่ 3):** Presentation = `InboxPage.tsx` เปิด `TaskFormModal` แบบ non-quickCapture pre-filled จาก record เดิม; Domain = `useTasks`'s `updateTask` (ตั้ง `lifeAreaId` และ `inInbox=false`)
+- **กำหนด Deadline (ขั้นตอนที่ 4):** Presentation = `TaskFormModal`; Domain = `useTasks`'s `updateTask` (`dueDate`/`dueTime`)
+- **แนบไฟล์ (ขั้นตอนที่ 5):** Presentation = `FileFormModal.tsx` (ส่วน "Related Files"/attach-existing-file picker); Domain = `useFiles`'s create function + `updateFile` (ตั้ง `linkedTaskIds`); Binary/Blob Persistence = `src/lib/fileDb.ts`'s `putFile` เขียนลง IndexedDB object store `files` (metadata + `Blob` รวม record เดียว) — `useFiles` ยังเป็น hook เดียวที่ expose flag `loaded` ให้ page เช็คก่อน render เพราะ IndexedDB อ่าน/เขียนแบบ asynchronous
+- **เปิด Calendar (ขั้นตอนที่ 6):** Presentation = `src/pages/CalendarPage.tsx` + `DayAgenda`; Domain = `getDayItems` ใน `src/lib/calendarUtils.ts`
+- **เปิด My Today ตอนเช้า (ขั้นตอนที่ 8):** Presentation = `src/pages/DashboardPage.tsx` (`SummaryCards`, `TodayTasks`, `TodaySchedule`, `Upcoming`); Domain = pure function ใน `src/lib/taskUtils.ts`/`src/lib/calendarUtils.ts` ที่คำนวณสรุปจาก `tasks`/`events` props สด
+- **กด Done (ขั้นตอนที่ 10):** Presentation = `TaskCard.tsx` (ปุ่ม/checkbox Done ใช้ร่วมกันทั้งใน `TodayTasks` และ `TasksPage`); Domain = `useTasks`'s `updateTask` (ตั้ง `status="Done"`)
+
+### 1.2 บุคคลทั่วไป (persona journey)
+
+- ขั้นตอนที่ 1-4, 7 implement ด้วยฟังก์ชัน/component ชุดเดียวกันกับ 1.1 ข้างต้นทุกประการ (ไม่มี code path แยกตาม persona ตามที่ [[architecture|architecture.md]] หัวข้อ 4 ยืนยันไว้แล้ว)
+- **เปิดหน้า Notifications/Dashboard ประเมินความเร่งด่วน (ขั้นตอนที่ 6):** Presentation = `NotificationBell.tsx`/`NotificationList.tsx`/`src/pages/DashboardPage.tsx`; Domain = `src/hooks/useNotifications.ts` (เรียกทุก render, ไม่เก็บ record แยก); Reminder/Notification Derivation = `buildNotifications` ใน `src/lib/notificationUtils.ts` (pure TypeScript function คำนวณ Overdue/DueToday/DueSoon สดจาก `tasks`/`events`) — สถานะ "อ่านแล้ว/แจ้งเตือนแล้ว" เท่านั้นที่ persist ผ่าน `src/lib/storage.ts` (key `my-today:notifications-read`, `my-today:notifications-notified`)
+
+### 2.1 Delete Life Area
+
+Presentation = `src/pages/LifeAreasPage.tsx` (ปุ่มลบ ไม่เรียก hook ตรงๆ); Domain = `App.tsx`'s `handleDeleteLifeArea` เป็นจุดเดียวที่ implement ลำดับ two-phase clear-then-delete จริง — เรียก `updateTask`/`updateEvent`/`useFiles().updateFileLifeArea`/`updateNote`/`updateLink` ให้ครบทุก entity ก่อน (phase 1) แล้วจึงเรียก `deleteLifeArea` จาก `useLifeAreas` (phase 2); Structured Persistence = `src/lib/storage.ts` เขียนทับ key ของแต่ละ entity ตามลำดับเดียวกัน
+
+### 2.2 Quick Capture / 2.3 Organize from Inbox
+
+Presentation ของทั้งสอง operation implement อยู่ใน `src/components/QuickCaptureModal.tsx` (type picker + delegate ไปยัง `TaskFormModal`/`EventFormModal`/`FileFormModal`/`NoteFormModal`/`LinkFormModal` ตัวใดตัวหนึ่งพร้อม prop `quickCapture`) และ `src/pages/InboxPage.tsx` (เปิด modal ชุดเดียวกันแบบ non-quickCapture pre-filled เพื่อ "จัดระเบียบ") ตามลำดับ; Domain = create function (`inInbox: Boolean(quickCapture)`) หรือ update function (ตั้ง `inInbox=false`) ของ `useTasks`/`useEvents`/`useFiles`/`useNotes`/`useLinks` แล้วแต่ประเภทที่เลือก — กลไก "relaxed-then-full validation" implement เป็น `canSubmit` check ที่ผ่อนคลายลงในแต่ละ `*FormModal` เมื่อได้รับ prop `quickCapture`
+
+### 2.4 List Inbox Items
+
+Presentation = `src/pages/InboxPage.tsx`; Domain = logic รวม (aggregate) `tasks`/`events`/`files`/`notes`/`links` props ที่ `inInbox === true` ภายใน `InboxPage.tsx` เอง — ไม่มี hook หรือฟังก์ชันรวมศูนย์แยกต่างหากสำหรับ operation นี้ในปัจจุบัน (เป็น derived computation ระดับ page component)
+
+### เหตุผลที่ทุก message ในไดอะแกรมเป็น local call
+
+อ้างอิงตรงจาก [[tech-stack|tech-stack.md]] หัวข้อ 1 "Fixed Constraints" ("client-only, ไม่มี backend") และหัวข้อ 3 (Hosting = Vercel free tier, static SPA เท่านั้น) — ทุกลูกศรระหว่าง participant ในไดอะแกรมข้างต้น implement เป็น TypeScript function call ภายใน process เดียวกัน (synchronous สำหรับ entity ที่ backed ด้วย LocalStorage, asynchronous ผ่าน Promise เฉพาะ entity File ที่ backed ด้วย IndexedDB) ไม่มีขั้นตอนใดข้าม network ออกจากเครื่องผู้ใช้เลย ทั้งหมด build ด้วย **Vite `^5.3.1`** และ deploy เป็น static SPA เดียวบน **Vercel free tier**
+
+## 6. Change Log
 
 - 20260823 — สร้างเอกสารนี้ครั้งแรก: sequence diagram ของทั้งสอง persona journey (นักศึกษา/บุคคลทั่วไป) ครอบคลุมเฉพาะขั้นตอนที่ build เสร็จแล้ว, sequence diagram ของ cross-cutting operations ทั้งสี่ (Delete Life Area, Quick Capture, Organize from Inbox, List Inbox Items), error/edge-case notes ต่อไดอะแกรม, และ known gaps จาก Sprint 9-10 ที่ยังไม่ build (ไม่มี diagram ให้ ตามกฎ)
+- 20260823 (อัปเดตภายหลัง) — เพิ่มหัวข้อ 5 "หมายเหตุการ implement ปัจจุบัน" ใหม่ทั้งหมด (เดิมเอกสารนี้ไม่มีกลไก implementation-footnote เลย ต่างจาก [[architecture|architecture.md]]/[[api-spec|api-spec.md]]/[[database-schema|database-schema.md]] ที่มีอยู่แล้ว) โดยอ้างอิง [[tech-stack|tech-stack.md]] ที่เพิ่งถูกสร้างขึ้น ระบุฟังก์ชัน/component/ไฟล์จริงที่ implement แต่ละ participant ของทุกไดอะแกรมในหัวข้อ 1 และ 2 พร้อมเลื่อน Change Log เดิมมาเป็นหัวข้อ 6 — ไม่มีการแก้ไขเนื้อหาของหัวข้อ 1/2/3/4
