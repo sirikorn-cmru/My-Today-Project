@@ -56,4 +56,13 @@ Test Case ทั้งหมดในเอกสารนี้เป็นแ�
 
 ---
 
-**สรุปจำนวน Test Case:** 17 รายการ (TC-004-01 ถึง TC-004-17) ครอบคลุมทุก Scenario AC-004-01 ถึง AC-004-07 ใน [[../acceptance-criteria#Sprint 4: File Organizer|acceptance-criteria.md]]
+## Non-Functional Test Cases (อ้างอิง test-plan.md § Non-Functional Requirements)
+
+| Test ID | Test Case Name | Pre-condition | Test Steps | Expected Result | Test Data | อ้างอิง (Requirement/AC) |
+|---|---|---|---|---|---|---|
+| TC-004-18 | Reliability: แสดง Error Message ที่ผู้ใช้เห็นได้ชัดเจนเมื่อบันทึกไฟล์ล้มเหลว และส่วนอื่นของระบบยังทำงานได้ปกติ | เปิดหน้า Files ในสภาวะที่การจัดเก็บไฟล์ในเบราว์เซอร์ถูกบล็อก (เช่น เปิดผ่านโหมด Private/Incognito ที่ทราบว่าบล็อกกลไกนี้) หรือเตรียมไฟล์ขนาดใหญ่ที่จะทำให้โควตาที่จัดสรรไว้เต็ม | 1. เปิดแอปในโหมด Private/Incognito (หรือสภาวะที่บล็อกการจัดเก็บไฟล์)<br>2. ไปหน้า Files กดปุ่ม "เพิ่มไฟล์"<br>3. เลือกไฟล์และกดบันทึก<br>4. สังเกตข้อความที่ระบบแสดงเมื่อบันทึกไม่สำเร็จ<br>5. ปิดข้อความ Error (ถ้ามีปุ่มปิด) แล้วไปหน้า Tasks และหน้า Calendar ทดลอง เพิ่ม/แก้ไข Task และ Event | ระบบแสดงข้อความ Error ที่ผู้ใช้เข้าใจได้ชัดเจนเป็น banner ที่สามารถปิดได้ (ไม่ใช่ silent failure และไม่ crash หน้าเว็บ) และหน้า Tasks/Calendar ยังทำงานได้ปกติครบถ้วนแม้ฟีเจอร์ File จะมี Error | ไฟล์ทดสอบ: `large-test-file.zip` (ขนาดเกินโควตาที่จัดสรรไว้) หรือเปิดผ่านโหมด Private/Incognito | [[../test-plan#Non-Functional Requirements\|test-plan.md — Non-Functional Requirements § Reliability / Data Persistence]] |
+| TC-004-19 | Scalability: หน้า Files ยังทำงานได้ลื่นไหลเมื่อขนาดไฟล์รวมใกล้เพดานอ้างอิง (~5-8MB) | เพิ่มไฟล์หลายไฟล์ในระบบให้ขนาดรวมใกล้เคียง 5-8MB (เช่น 6 ไฟล์ ขนาดไฟล์ละ ~1MB) | 1. เพิ่มไฟล์ทีละไฟล์จนขนาดรวมของไฟล์ทั้งหมดในระบบใกล้เคียง 6-7MB<br>2. เปิดหน้า Files สังเกตความเร็วในการแสดงรายการไฟล์ทั้งหมด<br>3. ทดลอง Search หาไฟล์หนึ่งรายการด้วยชื่อ<br>4. ทดลอง Preview ไฟล์หนึ่งรายการ (เช่นไฟล์ PDF) | หน้า Files แสดงรายการ, Search, และ Preview ได้ตามปกติ ไม่มีอาการหน้าค้าง (lag ที่สังเกตได้ด้วยตา) และไม่ crash แม้ขนาดไฟล์รวมใกล้เพดานอ้างอิง ~5-8MB | ไฟล์ทดสอบ 6 ไฟล์ ขนาดไฟล์ละ ~1MB (เช่น `bulk-test-01.pdf` ถึง `bulk-test-06.pdf`) รวม ~6MB | [[../test-plan#Non-Functional Requirements\|test-plan.md — Non-Functional Requirements § Scalability]] |
+
+---
+
+**สรุปจำนวน Test Case:** 19 รายการ (TC-004-01 ถึง TC-004-19) ครอบคลุมทุก Scenario AC-004-01 ถึง AC-004-07 ใน [[../acceptance-criteria#Sprint 4: File Organizer|acceptance-criteria.md]] และ NFR หมวด Reliability/Scalability ใน [[../test-plan#Non-Functional Requirements|test-plan.md]] (เพิ่มเติม 20260823)

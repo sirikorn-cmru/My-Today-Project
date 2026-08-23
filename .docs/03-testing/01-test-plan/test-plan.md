@@ -16,14 +16,14 @@
 
 - [[../../01-requirements/01-spec/20260806-001-my-today-sprint1-today-dashboard|Sprint 1: Today Dashboard]] — สถานะ: เสร็จแล้ว
 - [[../../01-requirements/01-spec/20260806-002-my-today-sprint2-task-management|Sprint 2: Task Management]] — สถานะ: เสร็จแล้ว
+- [[../../01-requirements/01-spec/20260806-003-my-today-sprint3-calendar-schedule|Sprint 3: Calendar & Schedule]] — สถานะ: เสร็จแล้ว
+- [[../../01-requirements/01-spec/20260806-004-my-today-sprint4-file-organizer|Sprint 4: File Organizer]] — สถานะ: เสร็จแล้ว
+- [[../../01-requirements/01-spec/20260806-005-my-today-sprint5-notification-deadline-awareness|Sprint 5: Notification & Deadline Awareness]] — สถานะ: เสร็จแล้ว
+- [[../../01-requirements/01-spec/20260806-006-my-today-sprint6-integration-ux-final-testing|Sprint 6: Integration, UX & Final Testing]] — สถานะ: เสร็จแล้ว (เนื้อหา Responsive/PDPA ของ spec นี้ถูกนำมาใช้เป็นเกณฑ์ NFR หลักในเอกสารนี้ด้วย — ดูหมายเหตุด้านบน)
+- [[../../01-requirements/01-spec/20260806-007-my-today-sprint7-category-profile|Sprint 7: Life Area & Personal Profile]] — สถานะ: เสร็จแล้ว
 
 ### Out of scope — ยังไม่ build ตาม `backlog.md` (ช่องว่างนี้คือ "ยังไม่ถึงคิว build" ไม่ใช่ "ถูกลืม")
 
-- [[../../01-requirements/01-spec/20260806-003-my-today-sprint3-calendar-schedule|Sprint 3: Calendar & Schedule]] — ยังไม่เริ่ม
-- [[../../01-requirements/01-spec/20260806-004-my-today-sprint4-file-organizer|Sprint 4: File Organizer]] — ยังไม่เริ่ม
-- [[../../01-requirements/01-spec/20260806-005-my-today-sprint5-notification-deadline-awareness|Sprint 5: Notification & Deadline Awareness]] — ยังไม่เริ่ม
-- [[../../01-requirements/01-spec/20260806-006-my-today-sprint6-integration-ux-final-testing|Sprint 6: Integration, UX & Final Testing]] — ยังไม่เริ่ม (แม้ยังไม่ build แต่เนื้อหา Responsive/PDPA ของ spec นี้ถูกนำมาใช้เป็นเกณฑ์ NFR ล่วงหน้าในเอกสารนี้แล้ว — ดูหมายเหตุด้านบน)
-- [[../../01-requirements/01-spec/20260806-007-my-today-sprint7-category-profile|Sprint 7: Life Area & Personal Profile]] — ยังไม่เริ่ม
 - [[../../01-requirements/01-spec/20260806-009-my-today-sprint8-universal-inbox-quick-capture|Sprint 8: Universal Inbox + Quick Capture]] — ยังไม่เริ่ม
 - [[../../01-requirements/01-spec/20260806-010-my-today-sprint9-timeline-priority-progress|Sprint 9: Timeline + Smart Priority + Life Progress]] — ยังไม่เริ่ม
 - [[../../01-requirements/01-spec/20260806-011-my-today-sprint10-task-event-file-linking|Sprint 10: Task–Event–File Linking]] — ยังไม่เริ่ม
