@@ -1,0 +1,119 @@
+# My Today — API Spec (Domain Logic Layer Operation Contract)
+
+เชื่อมโยงกลับ: [[index|02-technical]], [[architecture|architecture]], [[database-schema|database-schema]]
+
+## ขอบเขตของเอกสารนี้
+
+เอกสารนี้เป็น **operation contract เชิงแนวคิดของ Application/Domain Logic Layer** ตาม Container View ของ [[architecture|architecture.md]] (หัวข้อ 2) — **ไม่ใช่ REST/GraphQL API spec** เพราะแอปนี้ไม่มี backend server ใดๆ (client-side only by design) เอกสารนี้บันทึกว่า Domain Logic Layer เปิด operation อะไรให้ Presentation Layer เรียกใช้บ้าง โดยอธิบายแบบไม่ผูกกับเทคโนโลยี (technology-agnostic) — operation แต่ละอย่างใช้ได้เหมือนกันไม่ว่าจะ implement เป็น local function call ธรรมดา (ตามปัจจุบัน) หรือในอนาคตจะเปลี่ยนเป็น network call ก็ตาม เนื้อหาหลักจึงจะไม่เอ่ยชื่อ HTTP method, route, หรือ status code ใดๆ รายละเอียดการ implement จริงปัจจุบันอยู่ในหมายเหตุท้ายเอกสารเท่านั้น
+
+Operation และกฎที่ระบุในเอกสารนี้อ้างอิงจาก entity/field ที่นิยามใน [[database-schema|database-schema.md]] และ Business Rules ของแต่ละ Sprint spec โดยตรง ไม่ใช่การคิดเพิ่มเอง
+
+## 1. Operation Contract ต่อ Entity
+
+### 1.1 Life Area
+
+| Operation | Input | Output | Notes / กฎทางธุรกิจที่บังคับใช้ |
+|---|---|---|---|
+| Create Life Area | `name` | Life Area record ที่สร้างใหม่ (พร้อม `id`/`createdAt`) | ต้องการแค่ `name` เท่านั้น (field ขั้นต่ำตาม Business Rule Sprint 7 ข้อ 1) |
+| Update Life Area | `id`, `name` ใหม่ | Life Area record ที่อัปเดตแล้ว | — |
+| Delete Life Area | `id` | ไม่มี (การอ้างอิงที่เคยชี้มาที่ Life Area นี้ถูกเคลียร์แล้วก่อนลบจริง — ดูหัวข้อ 2) | ไม่ cascade ลบ Task/Event/File/Note/Link ที่อ้างอิงถึง (Sprint 7 Acceptance Criteria) — operation นี้ต้อง**เรียกผ่าน cross-cutting operation "Delete Life Area" ในหัวข้อ 2 เท่านั้น** ไม่ใช่เรียก delete ตรงๆ |
+| List Life Areas | — | รายการ Life Area ทั้งหมด | ใช้เติม dropdown เลือก Life Area ในทุกฟอร์มของ Task/Event/File/Note/Link |
+
+### 1.2 Task
+
+| Operation | Input | Output | Notes / กฎทางธุรกิจที่บังคับใช้ |
+|---|---|---|---|
+| Create Task | `title`, `description?`, `lifeAreaId?`, `dueDate?`, `dueTime?`, `priority?`, `status?` | Task record ใหม่ (`inInbox` ตั้งตาม context ที่เรียก — ดูหมายเหตุ) | ฟอร์มเต็ม (Sprint 2): ต้องมี `title`; `priority`/`status` มีค่า default ถ้าไม่ระบุ, สร้างด้วย `inInbox = false` — ถ้าสร้างผ่าน Quick Capture (Sprint 8) ต้องการแค่ `title` เท่านั้น ฟิลด์อื่นปล่อยว่างได้ และสร้างด้วย `inInbox = true` เสมอ |
+| Update Task | `id`, ฟิลด์ที่จะเปลี่ยน | Task record ที่อัปเดตแล้ว | ใช้ทั้งแก้ไขทั่วไปและเปลี่ยน Priority/Deadline (FR-04) |
+| Set Task Status | `id`, `status` ใหม่ | Task record ที่อัปเดตแล้ว | รองรับ To Do/Doing/Done รวมถึงกดทำเครื่องหมายว่าเสร็จ (FR-03) |
+| Delete Task | `id` | ไม่มี | ลบ Task record ตรงๆ — ไม่กระทบ Life Area (ทิศทางตรงข้ามกับ "Delete Life Area") |
+| List Tasks (filter/search/sort) | `status?`, `priority?`, `searchText?`, `sortBy?` | รายการ Task ที่กรอง/เรียงแล้ว | ใช้กับหน้า Tasks (FR-03, Sprint 2 Business Rule ข้อ 8) |
+
+### 1.3 Event
+
+| Operation | Input | Output | Notes / กฎทางธุรกิจที่บังคับใช้ |
+|---|---|---|---|
+| Create Event | `title`, `type?`, `date?`, `startTime?`, `endTime?`, `location?`, `description?`, `lifeAreaId?` | Event record ใหม่ | ฟอร์มเต็ม (Sprint 3): ต้องมี `title`; ผ่าน Quick Capture (Sprint 8) ต้องการแค่ `title` เท่านั้น สร้างด้วย `inInbox = true` |
+| Update Event | `id`, ฟิลด์ที่จะเปลี่ยน | Event record ที่อัปเดตแล้ว | — |
+| Delete Event | `id` | ไม่มี | ไม่กระทบ Task ที่ Deadline ถูกรวมแสดงในมุมมองเดียวกัน (เพราะไม่ใช่ entity เดียวกัน) |
+| List Events by Date Range | `startDate`, `endDate` | รายการ Event ในช่วงวันที่ | ใช้กับมุมมอง Today/Week/Month ของ Calendar (FR-07) |
+
+### 1.4 File
+
+| Operation | Input | Output | Notes / กฎทางธุรกิจที่บังคับใช้ |
+|---|---|---|---|
+| Create File (Upload) | `name`, `category?`, `lifeAreaId?`, `linkedTaskIds?`, `content` (binary), `mimeType`, `size` | File record ใหม่ | ฟอร์มเต็ม (Sprint 4): ต้องมี `name` + เนื้อหาไฟล์จริง; ผ่าน Quick Capture (Sprint 8) ต้องการแค่ชื่อ/เนื้อหาขั้นต่ำ สร้างด้วย `inInbox = true` |
+| Update File Metadata | `id`, `name?`, `category?`, `lifeAreaId?` | File record ที่อัปเดตแล้ว | ไม่แก้เนื้อหาไฟล์จริง มีแต่ metadata |
+| Link File to Task | `fileId`, `taskId` | File record ที่อัปเดตแล้ว (`linkedTaskIds` เพิ่ม `taskId`) | เก็บ FK ทิศทางเดียวที่ File (ดู database-schema 2.4) |
+| Unlink File from Task | `fileId`, `taskId` | File record ที่อัปเดตแล้ว (`linkedTaskIds` เอา `taskId` ออก) | — |
+| Delete File | `id` | ไม่มี | ลบทั้ง metadata และเนื้อหาไฟล์จริง |
+| Search/Filter Files | `searchText?`, `lifeAreaId?` | รายการ File ที่กรองแล้ว | ใช้กับหน้า Files (FR-08) |
+| Get Related Files for Task | `taskId` | รายการ File ที่ `linkedTaskIds` มี `taskId` นี้อยู่ | นี่คือ query ไม่ใช่ field ที่เก็บบน Task (ดูหัวข้อ 3) |
+
+### 1.5 Note
+
+| Operation | Input | Output | Notes / กฎทางธุรกิจที่บังคับใช้ |
+|---|---|---|---|
+| Create Note | `title`, `content?`, `lifeAreaId?` | Note record ใหม่ | ผ่านฟอร์มเต็มหรือ Quick Capture ก็ต้องการแค่ `title` เป็นอย่างน้อย (Sprint 8 Business Rule ข้อ 3) |
+| Update Note | `id`, ฟิลด์ที่จะเปลี่ยน | Note record ที่อัปเดตแล้ว | — |
+| Delete Note | `id` | ไม่มี | — |
+| List Notes | `lifeAreaId?` | รายการ Note | Note ไม่มี status/priority ให้ filter เหมือน Task โดยเจตนา |
+
+### 1.6 Link
+
+| Operation | Input | Output | Notes / กฎทางธุรกิจที่บังคับใช้ |
+|---|---|---|---|
+| Create Link | `title`, `url`, `lifeAreaId?` | Link record ใหม่ | ต้องการแค่ `title`+`url` เป็นอย่างน้อย (Sprint 8 Business Rule ข้อ 4) |
+| Update Link | `id`, ฟิลด์ที่จะเปลี่ยน | Link record ที่อัปเดตแล้ว | — |
+| Delete Link | `id` | ไม่มี | — |
+| List Links | `lifeAreaId?` | รายการ Link | — |
+
+### 1.7 Personal Profile
+
+| Operation | Input | Output | Notes / กฎทางธุรกิจที่บังคับใช้ |
+|---|---|---|---|
+| Get Profile | — | Profile record ปัจจุบัน (record เดียวเสมอ) | ไม่มี `id` ให้ระบุ เพราะเป็น singleton |
+| Update Profile | ฟิลด์ที่จะเปลี่ยน (`name`, `profileImage?`, `email?`, `preferredName?`, `studentId?`, `faculty?`, `major?`, `organization?`, `position?`) | Profile record ที่อัปเดตแล้ว | ห้ามบังคับ `studentId`/`faculty`/`major`/`organization`/`position` เป็นเงื่อนไขบันทึกสำเร็จ (Sprint 7 Business Rule ข้อ 4) — มีแค่ `name` ที่ควรบังคับ |
+
+## 2. Cross-cutting Operations
+
+| Operation | Input | Output | Notes / กฎทางธุรกิจที่บังคับใช้ |
+|---|---|---|---|
+| **Delete Life Area** (cascade-safe) | `lifeAreaId` | ไม่มี | ต้องทำสองขั้นตอนตามลำดับเสมอ: (1) หา Task/Event/File/Note/Link ทุกรายการที่ `lifeAreaId` เท่ากับค่านี้ แล้วเคลียร์ฟิลด์นั้นให้ว่างทีละ entity, (2) จึงลบ Life Area record ทิ้ง — ห้ามลบ Life Area ก่อนแล้วปล่อยให้มี record อื่นค้าง `lifeAreaId` ที่ชี้ไปยังอะไรไม่ได้ (orphaned reference) เด็ดขาด (Sprint 7 Acceptance Criteria: "Task ที่เคยผูกกับ Life Area ที่ถูกลบยังคงอยู่ ไม่หาย แค่ไม่มี Life Area แล้ว") |
+| **Quick Capture** | `kind` (Task/Event/File/Note/Link), `title` (หรือข้อความอิสระที่ผู้ใช้พิมพ์) | record ใหม่ของประเภทที่เลือก ด้วย `inInbox = true` | เข้าถึงได้จากทุกหน้าผ่านปุ่มกลาง "+ Add to My Today" ต้องการแค่ประเภท + title เท่านั้น ห้ามใช้ AI แยกวิเคราะห์ข้อความอิสระใดๆ (Sprint 8 Business Rule ข้อ 5) — ฟิลด์อื่นที่ entity นั้นควรมีตามปกติเป็น optional จนกว่าจะจัดระเบียบทีหลัง |
+| **Organize from Inbox** | `id`, `kind`, `lifeAreaId`, ฟิลด์ที่ขาดอื่นๆ ที่ผู้ใช้เติม (เช่น `dueDate`/`priority` ของ Task) | record เดิมที่อัปเดตแล้วด้วย `inInbox = false` | เปลี่ยนสถานะจาก "รอการจัดระเบียบ" เป็นรายการปกติ ไม่สร้าง entity ใหม่ซ้อนสองชุด (Sprint 8 Business Rule ข้อ 2) — record ที่ผ่าน operation นี้ใช้ operation ปกติของ entity นั้นต่อได้ทันที (Update/Delete/List ตามหัวข้อ 1) |
+| **List Inbox Items** | — | รายการรวมของ Task/Event/File/Note/Link ทุกตัวที่ `inInbox = true` ข้ามทุก entity | ใช้กับหน้า "My Inbox" (FR-14) — เป็น query ข้าม entity ไม่ใช่ operation เฉพาะของ entity ใดเดียว |
+
+## 3. Derived / Read-only Operations
+
+Operation กลุ่มนี้**ไม่ได้อ่าน record ที่เก็บถาวรตรงๆ** แต่คำนวณผลลัพธ์จากข้อมูลสดของ entity อื่นทุกครั้งที่ถูกเรียก — ไม่ใช่ CRUD ต่อ entity ที่ถูกเก็บไว้:
+
+| Operation | Input | Output | หมายเหตุ |
+|---|---|---|---|
+| **Build Notifications** | Task ทั้งหมด, Event ทั้งหมด, ชุด id ที่อ่านแล้ว | รายการ notification ที่จำแนกเป็น Overdue/DueToday/DueSoon พร้อมสถานะอ่าน/ยังไม่อ่าน | คำนวณใหม่จาก Task/Event สดทุกครั้ง ไม่ได้อ่านจาก record ที่เก็บถาวร (FR-10) — ผลลัพธ์แต่ละรายการมี id แบบ `{kind}-{sourceId}-{level}` ที่เปลี่ยนเมื่อ level เปลี่ยน จึงกลายเป็น "รายการใหม่ที่ยังไม่อ่าน" โดยอัตโนมัติเมื่อข้าม threshold |
+| **Mark Notification Read** | `notificationId` | Notification Read State record ที่อัปเดต/สร้างใหม่ | เป็น operation เดียวใต้กลุ่มนี้ที่เขียนลงที่เก็บถาวรจริง (เขียนแค่สถานะอ่าน ไม่ใช่ตัว notification) |
+| **Mark All Notifications Read** | รายการ `notificationId` ปัจจุบันทั้งหมด | Notification Read State ที่อัปเดตครบ | ใช้กับปุ่ม "mark all read" |
+| **Get Day Items (Calendar merge view)** | `date`, Task ทั้งหมด, Event ทั้งหมด, Life Area ทั้งหมด | รายการรวม Event + Task ที่มี Deadline ตรงวันนั้น เรียงตามเวลา พร้อมชื่อ Life Area | ทำให้ "Task Deadline ปรากฏใน Calendar อัตโนมัติ" โดยไม่สร้าง Event record ซ้ำ (Sprint 3 Business Rule ข้อ 3) |
+| **Get Today Dashboard Summary** | Task ทั้งหมด, Event ทั้งหมด | จำนวนงานทั้งหมด/เสร็จแล้ว/ยังไม่เสร็จ/ใกล้ครบกำหนด + รายการวันนี้ | ใช้กับ Today Dashboard (FR-05, FR-11, FR-12) |
+| **Get Life Area Display Name** | `lifeAreaId`, Life Area ทั้งหมด | ชื่อ Life Area หรือค่าว่างถ้าไม่พบ/ถูกลบไปแล้ว | ใช้ทุกที่ที่ต้องแสดงชื่อ Life Area จาก id ที่เก็บไว้ |
+
+## 4. Known Gaps / ส่วนขยายที่ยังไม่ถูกสร้าง
+
+Operation กลุ่มนี้ narrative ของ Sprint ที่ยังไม่เริ่ม (ตาม backlog.md ณ วันที่ 20260823 — Sprint 9-10 ยังไม่มี commit ใดๆ) บอกเป็นนัยว่าจะต้องมี แต่ **ยังไม่ถูกสร้างจริงใน Domain Logic Layer ปัจจุบัน**:
+
+- **Get Timeline (Now/Next/Later)** (Sprint 9, FR-16) — query ที่รวม Task deadline + Event จากทุก Life Area ของ "วันนี้" เท่านั้น แล้วแบ่งเป็น 3 กลุ่มตามเวลาปัจจุบัน (Now = ถึงเวลาแล้ว/เริ่มภายใน 1 ชม., Next = ที่เหลือของวันนี้, Later = ไกลออกไป/ไม่ระบุเวลาแน่นอน)
+- **Smart Priority Sort** (Sprint 9, FR-16) — operation จัดลำดับรายการตามกฎตายตัว: Overdue → Due Today → Upcoming → High Priority → Normal ใช้ร่วมกับทั้ง Today's Tasks และ Timeline ไม่ใช้ AI/machine learning
+- **Get Life Progress** (Sprint 9, FR-17) — aggregation นับ Task ที่ Status = Done เทียบกับ Task ทั้งหมดที่ครบกำหนดวันนี้ ทั้งแบบรวมและแยกตาม Life Area ต้องแสดงเป็นตัวเลขสถานะเฉยๆ ห้ามใช้คำว่า "Score"
+- **Link Note to Task/Event** และ **Link Link to Task/Event** (Sprint 10, FR-18) — operation เพิ่ม/ลบ `linkedNoteIds`/`linkedLinkIds` บน Task และ Event (คู่ขนานกับ "Link File to Task"/"Unlink File from Task" ที่มีอยู่แล้วในหัวข้อ 1.4 แต่ปัจจุบันมีเฉพาะฝั่ง File→Task)
+- **Set Custom Reminder Lead Time** (Sprint 10, FR-19) — operation ตั้งค่า `reminderLeadTime` เฉพาะ Task/Event รายการหนึ่ง ให้ "Build Notifications" ใช้ค่านี้แทนค่า default กลางของระบบเฉพาะรายการนั้น
+- **Get Task/Event Detail (What/When/Information unified view)** (Sprint 10) — query รวมข้อมูล Task/Event เดียวกับไฟล์/Note/Link/reminder ที่เชื่อมไว้ทั้งหมด ให้แสดงในหน้าเดียวโดยไม่ต้องสลับหน้า
+
+**ข้อควรระวังเรื่องความสอดคล้องของ spec:** ดูหมายเหตุใน [[database-schema|database-schema.md]] หัวข้อ 4 — spec ของ Sprint 10 อ้างถึง `linkedFileIds` บน Task ราวกับมีอยู่แล้ว ซึ่งไม่ตรงกับ operation "Link File to Task"/"Unlink File from Task" ที่มีอยู่จริงในหัวข้อ 1.4 ข้างบน (เขียนที่ฝั่ง File ไม่ใช่ Task) เอกสารนี้ยึดตาม operation ที่มีอยู่จริงและ architecture.md เป็นหลัก
+
+## 5. Change Log
+
+- 20260823 — สร้างเอกสารนี้ครั้งแรก: operation contract ต่อ entity ครบ 7 กลุ่ม (Life Area, Task, Event, File, Note, Link, Personal Profile), cross-cutting operations (Delete Life Area, Quick Capture, Organize from Inbox, List Inbox Items), derived/read-only operations (Build Notifications, Get Day Items, Get Today Dashboard Summary, ฯลฯ), known gaps จาก Sprint 9-10, และหมายเหตุความไม่สอดคล้องของ spec Sprint 10 เรื่อง `linkedFileIds`
+
+---
+
+> **หมายเหตุการ implement ปัจจุบัน:** operation กลุ่ม Task/Event/File/Note/Link/Life Area/Profile ข้างต้น implement จริงเป็น hook ใน `src/hooks/` (`useTasks`, `useEvents`, `useFiles`, `useNotes`, `useLinks`, `useLifeAreas`, `useProfile`) ที่ `src/App.tsx` เป็นเจ้าของ instance เดียวแล้วส่ง callback ลงไปเป็น props — Presentation Layer (`src/pages/`, `src/components/`) ไม่เรียก hook เหล่านี้ตรงๆ เพิ่มเอง cross-cutting operation "Delete Life Area" implement อยู่ที่ `App.tsx`'s `handleDeleteLifeArea` (เรียก `updateTask`/`updateEvent`/`useFiles().updateFileLifeArea` ให้ครบก่อน แล้วจึงเรียก `deleteLifeArea`) "Quick Capture"/"Organize from Inbox"/"List Inbox Items" implement อยู่ใน `src/components/QuickCaptureModal.tsx` และ `src/pages/InboxPage.tsx` "Build Notifications" คือฟังก์ชัน `buildNotifications` ใน `src/lib/notificationUtils.ts` เรียกจาก `src/hooks/useNotifications.ts` ทุก render "Get Day Items" คือ `getDayItems` ใน `src/lib/calendarUtils.ts` "Get Life Area Display Name" คือ `getLifeAreaName` ใน `src/lib/lifeAreaUtils.ts`
