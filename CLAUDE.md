@@ -64,7 +64,7 @@ The project is in its earliest phase. Work here should concentrate on `.docs/01-
 
 `02-plan/` (roadmap/milestones) and `03-task/` (task breakdown) are secondary right now and not the backlog — don't conflate them with `backlog.md`.
 
-The later stages — `04-retrospectives/` and `03-testing/02-test-result/` — are not active yet; don't create content there unless explicitly asked, since there's no test-execution work to document until there's a running build to test. `02-design/01-prototypes/` (via `prototype-intake`), `02-design/02-technical/` (via `architecture-intake` and `db-api-intake`, all conceptual — technology-choice docs in that same folder are still not active), and `03-testing/01-test-plan/` (via `test-intake`) are the exceptions — see below.
+The later stages — `04-retrospectives/` and `03-testing/02-test-result/` — are not active yet; don't create content there unless explicitly asked, since there's no test-execution work to document until there's a running build to test. `02-design/01-prototypes/` (via `prototype-intake`), `02-design/02-technical/` (via `architecture-intake`, `db-api-intake`, and `detailed-design-intake`, all conceptual — technology-choice docs in that same folder are still not active), and `03-testing/01-test-plan/` (via `test-intake`) are the exceptions — see below.
 
 ### Requirement intake workflow
 
@@ -100,6 +100,10 @@ Use the `architecture-intake` skill (`.claude/skills/architecture-intake/SKILL.m
 
 Use the `db-api-intake` skill (`.claude/skills/db-api-intake/SKILL.md`) to create or refresh `.docs/02-design/02-technical/database-schema.md` (per-table/entity field details, constraints, relationships, and a field-level Mermaid ER diagram) and `.docs/02-design/02-technical/api-spec.md` (an **Internal Data Access Contract** — conceptual create/read/update/delete/query operations per Conceptual Component, e.g. `createTask(input) → Task` — **not** an HTTP/REST/GraphQL API, since this app is client-only with no backend). Both are conceptual and technology-agnostic like `architecture.md`, which they reuse for consistent component/entity naming (`database-schema-writer` runs before `api-spec-writer` for this reason). Living documents, same full-regeneration-vs-incremental pattern as `architecture-intake`; each writer self-checks for accidental tech-stack or network-API language before reporting done.
 
+### Detailed design
+
+Use the `detailed-design-intake` skill (`.claude/skills/detailed-design-intake/SKILL.md`) to create or refresh `.docs/02-design/02-technical/detailed-design.md` — one level more detailed than `architecture.md`'s cross-journey data flow: a Mermaid `sequenceDiagram` per multi-step/cross-component operation from `api-spec.md` (single-step CRUD that doesn't cross a component is deliberately skipped), plus a Mermaid `stateDiagram-v2` per entity with a status/lifecycle field (Task's status, the shared Inbox-assignment state, Notification's level/read progression). Deliberately excludes a separate decision/branching-logic section — conditional branches belong inside the sequence diagrams themselves (`alt`/`opt` blocks), not duplicated as prose, to avoid re-stating what's already in the specs' Business Rules and `api-spec.md`'s side-effect notes. Conceptual and technology-agnostic like its siblings; the `detailed-design-writer` subagent self-checks for accidental tech-stack references before reporting done.
+
 ### Prototype generation
 
 Use the `prototype-intake` skill (`.claude/skills/prototype-intake/SKILL.md`) to create or update UI/UX prototypes under `.docs/02-design/01-prototypes/{topic-slug}/v{N}/`, drawing on Requirement specs, `backlog.md`, and `feature-list.md`/`user-journey.md` (falling back to deriving the equivalent content from a spec's own sections if those two files don't exist yet). It always checks `DESIGN.md` first (asking the user to help build it — color tone, style, reference/logo images — if it doesn't exist yet), always proposes a plan for the user to review/confirm before creating anything, and on repeat runs always asks whether to start a new version folder or edit the latest one (with a recommendation either way) before delegating the actual file writes to the `prototype-writer` subagent (`.claude/agents/prototype-writer.md`), which builds self-contained static HTML/CSS mockup screens (no CDN/external dependencies) styled from `DESIGN.md`'s tokens, an `index.md`, and a log entry.
@@ -119,7 +123,7 @@ All existing docs in `.docs/` are written in Thai. Write new spec and backlog co
   - `02-plan/`, `03-task/` — roadmap and task breakdown (secondary right now)
 - `02-design/` — design built on top of requirements
   - `01-prototypes/` — UI/UX mockups and wireframes, generated via the `prototype-intake` skill (see above)
-  - `02-technical/` — `architecture.md` (conceptual, via `architecture-intake`), `database-schema.md` and `api-spec.md` (conceptual, via `db-api-intake`, see above); technology-choice docs are not yet active
+  - `02-technical/` — `architecture.md` (conceptual, via `architecture-intake`), `database-schema.md` and `api-spec.md` (conceptual, via `db-api-intake`), `detailed-design.md` (conceptual, via `detailed-design-intake`, see above); technology-choice docs are not yet active
 - `03-testing/` — testing built on top of design
   - `01-test-plan/` — `acceptance-criteria.md`, `test-plan.md`, and `test-cases/{topic-slug}.md`, all generated/updated via the `test-intake` skill (see above)
   - `02-test-result/` — actual test results and bugs found (not yet active — no build to test against yet for most Sprints)
