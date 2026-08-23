@@ -6,7 +6,7 @@
 
 เอกสารนี้คือ **แผนกลยุทธ์การทดสอบระดับโปรเจกต์ (Test Strategy)** มีไฟล์เดียวสำหรับทั้งโปรเจกต์ (ตรงข้ามกับ `test-cases/{feature-slug}.md` ที่มีหนึ่งไฟล์ต่อหนึ่ง Sprint สำหรับ test case แบบ step-by-step) เป็น living document ที่ **regenerate ใหม่ทั้งหมด** จาก `backlog.md` และ spec ปัจจุบันทุกครั้งที่มีการรัน `test-intake` แบบ full refresh — ไม่ใช่ประวัติสะสม
 
-**หมายเหตุสำคัญเรื่องแหล่งข้อมูล NFR:** โปรเจกต์นี้ไม่มีเอกสาร Non-Functional Requirements (NFR) แยกต่างหาก เนื้อหาด้าน Performance, Responsive/Device Support และ Legal/Privacy (PDPA) ในเอกสารนี้จึงสกัดมาจาก [[../../01-requirements/01-spec/20260806-006-my-today-sprint6-integration-ux-final-testing|Sprint 6: Integration, UX & Final Testing]] เป็นหลัก (Sprint เดียวที่ระบุข้อกำหนดเหล่านี้ไว้อย่างชัดเจน) ไม่ได้มาจากเอกสาร NFR โดยเฉพาะ
+**หมายเหตุสำคัญเรื่องแหล่งข้อมูล NFR:** โปรเจกต์นี้ไม่มีเอกสาร Non-Functional Requirements (NFR) แยกต่างหากมาตั้งแต่แรก เนื้อหาด้าน NFR ในเอกสารนี้จึงถูกรวบรวมและ formalize ไว้ที่ส่วน [[#Non-Functional Requirements|Non-Functional Requirements]] ด้านล่าง ซึ่งถือเป็น**แหล่งอ้างอิงหลักที่เป็นทางการที่สุด ณ ปัจจุบัน** สำหรับ Performance, Usability, Compatibility, Reliability, Security/Privacy (PDPA), Maintainability, Scalability, Testability, Accessibility และ Localization — โดยมี [[../../01-requirements/01-spec/20260806-006-my-today-sprint6-integration-ux-final-testing|Sprint 6: Integration, UX & Final Testing]] เป็น**เมล็ดพันธุ์ดั้งเดิม (original seed)** ของเนื้อหาด้าน Usability, Compatibility และ Security/Privacy (PDPA) ก่อนจะถูกขยายและ formalize เพิ่มเติมร่วมกับแหล่งอื่น (ดูรายละเอียดแหล่งอ้างอิงในหัวข้อนั้น)
 
 ---
 
@@ -30,6 +30,34 @@
 - [[../../01-requirements/01-spec/20260806-012-my-today-sprint11-competition-demo-freeze|Sprint 11: Competition Demo + UX Polish, then Freeze]] — ยังไม่เริ่ม
 
 (หมายเหตุ: `20260806-008-my-today-functional-requirements-master.md` เป็นเอกสารอ้างอิงกลาง FR ทั้งหมด ไม่ใช่ Sprint จึงไม่รวมอยู่ใน scope การทดสอบนี้)
+
+---
+
+## Non-Functional Requirements
+
+เอกสารนี้ **ไม่มี** เอกสาร Non-Functional Requirements (NFR) แยกต่างหากในระดับ vault มาก่อน — ตารางด้านล่างคือ**ชุด NFR แบบทางการชุดแรกของโปรเจกต์** ที่ถูกวิเคราะห์และยืนยันร่วมกับผู้ใช้แล้ว (ผ่านการซักถามยืนยันสองรอบนอกเอกสารนี้) จึงบันทึกไว้ที่นี่แบบสรุปผลลัพธ์ที่ตกลงแล้ว ไม่ใช่การวิเคราะห์ใหม่
+
+**แหล่งอ้างอิงที่ใช้ประกอบกัน:**
+
+- [[../../01-requirements/01-spec/20260806-006-my-today-sprint6-integration-ux-final-testing|Sprint 6: Integration, UX & Final Testing]] — แหล่งหลัก/เมล็ดพันธุ์ดั้งเดิมของเกณฑ์ Usability (Responsive/UX), Compatibility (breakpoint), และ Security/Privacy (PDPA)
+- [[../../02-design/02-technical/technology-choices|technology-choices.md]] — อ้างอิงเรื่อง client-only architecture (ไม่มี Data Controller ตาม PDPA), การแยก LocalStorage/IndexedDB ตามชนิดข้อมูล, สถานะ "ยังไม่มี test runner", และจุดที่ควรทบทวนเรื่อง automated testing ในช่วง Sprint 11
+- [[../../02-design/02-technical/architecture|architecture.md]] — อ้างอิงเรื่อง Data Flow per User Journey ที่ยืนยันว่าไม่มี network round-trip (เป็นเหตุผลรองรับเกณฑ์ Performance ที่ตั้งไว้เข้มได้)
+- `CLAUDE.md` (root ของ repo, section "Architecture" และ "Commands") — อ้างอิงเรื่อง LocalStorage quota (~5-10MB), convention การบัมพ์ storage key เมื่อ schema เปลี่ยนแบบ breaking (เช่น `my-today:tasks` → `my-today:tasks:v2` ใน Sprint 7), และสถานะ build/lint tooling ปัจจุบัน
+
+4 หมวดต่อไปนี้ไม่มีเอกสารใดในโปรเจกต์พูดถึงมาก่อน (เป็นช่องว่างเดิม) และถูกกำหนดขึ้นใหม่ผ่านการตัดสินใจของผู้ใช้โดยตรง: **Performance, Compatibility, Scalability, Accessibility**
+
+| หมวด | เกณฑ์/ตัวเลข | เหตุผล/แหล่งอ้างอิง |
+|---|---|---|
+| **1. Performance** | หน้าหลัก (Dashboard/Tasks/Calendar/Files) ต้องโหลด ≤2 วินาที; ทุก interaction (add/edit/delete/filter/sort) ต้องตอบสนอง ≤300ms บนเครื่องทั่วไป | ระบบเป็น client-only ไม่มี network round-trip (ดู [[../../02-design/02-technical/architecture|architecture.md]] ส่วน Data Flow) จึงตั้งเกณฑ์เข้มได้ — เกณฑ์นี้ไม่มีเอกสารเดิมระบุไว้มาก่อน กำหนดขึ้นใหม่โดยผู้ใช้ ควรใช้เป็น regression gate เมื่อข้อมูลโตขึ้นในช่วง Sprint 8-11 |
+| **2. Usability** | คงเกณฑ์เดิมจาก Sprint 6: Mobile-first, มี Empty State, Loading State, Form Validation, Confirmation ก่อน Delete, Error Message ที่ผู้ใช้เข้าใจ, Navigation สม่ำเสมอทั้งระบบ — ยกระดับเป็น NFR บังคับตรวจซ้ำทุก Sprint ใหม่ (Sprint 7-11) ไม่ใช่ผูกกับ Sprint 6 เพียง Sprint เดียว | ที่มา: [[../../01-requirements/01-spec/20260806-006-my-today-sprint6-integration-ux-final-testing|Sprint 6]] Business Rules — เดิมผูกกับ Sprint 6 เพียง Sprint เดียว ยกเป็น NFR ระดับโปรเจกต์เพื่อให้บังคับใช้ต่อเนื่อง |
+| **3. Compatibility (Browser/Device)** | รองรับ Chrome/Edge/Firefox/Safari evergreen 2 เวอร์ชันล่าสุด (ไม่รองรับ browser เก่า/legacy อย่างเป็นทางการ); ทดสอบ responsive อย่างน้อย 3 breakpoint: Mobile 390px / Tablet / Desktop | Breakpoint มาจาก [[../../01-requirements/01-spec/20260806-006-my-today-sprint6-integration-ux-final-testing|Sprint 6]]; ขอบเขต browser evergreen ไม่มีเอกสารเดิมระบุไว้ กำหนดขึ้นใหม่โดยผู้ใช้ |
+| **4. Reliability / Data Persistence** | ข้อมูลต้อง persist ข้าม refresh/session 100% ของกรณีใช้งานปกติ; ต้องมี error state ที่ผู้ใช้เห็นได้ชัดเจนเมื่อ storage ล้มเหลว (private-browsing block, quota exceeded) | อ้างอิงกลไก error handling ของ `useFiles` (ตาม `CLAUDE.md` section "Architecture") เป็นตัวอย่างมาตรฐานที่ hook อื่นควรทำตามหากจำเป็นในอนาคต |
+| **5. Security & Privacy (PDPA)** | ต้องไม่มี network request ออกนอกเครื่องผู้ใช้เลย (ตรวจผ่าน network inspection); Privacy Notice/Terms of Use เข้าถึงได้จาก Footer ทุกหน้าและเนื้อหาครบตามที่กำหนด; ไม่ต้องทำ consent management หรือมี DPO เพราะระบบไม่ได้เป็น Data Controller ตาม PDPA (ไม่มี backend เก็บข้อมูลส่วนกลาง) | ที่มา: [[../../01-requirements/01-spec/20260806-006-my-today-sprint6-integration-ux-final-testing|Sprint 6]] section "ข้อกำหนดด้านกฎหมาย IT และ PDPA" และยืนยันเพิ่มเติมใน [[../../02-design/02-technical/technology-choices|technology-choices.md]] section "Client-only ไม่มี backend โดยตั้งใจ" |
+| **6. Maintainability** | `npm run build` (รวม `tsc --noEmit` type-check) ต้องผ่านโดยไม่มี error 100% ก่อนเริ่มทดสอบทุก Sprint (ผูกกับ Entry Criteria ด้านล่างอยู่แล้ว แต่ยกเป็น NFR ด้วย); การเปลี่ยนแปลง storage key แบบ breaking change ต้องบันทึกเหตุผลไว้เสมอ | บทเรียนจาก Sprint 7 ที่บัมพ์ `my-today:tasks` เป็น `my-today:tasks:v2` (ที่มา: `CLAUDE.md` section "Architecture") |
+| **7. Scalability** | ระบบต้องทำงานลื่นไหล (ไม่มี lag ที่สังเกตได้) จนถึงประมาณ 500 รายการ Task/Event/Note/Link รวมกัน และไฟล์ที่แนบรวมกันไม่เกินประมาณ 5-8MB ก่อนใกล้ quota ของ LocalStorage/IndexedDB | เป็นตัวเลขอ้างอิง/ประมาณการ ไม่ใช่ผลจาก user research จริง — อ้างอิงจาก quota ~5-10MB ของ LocalStorage ตามที่ `CLAUDE.md` ระบุไว้ (ดูเพิ่มใน [[../../02-design/02-technical/technology-choices|technology-choices.md]] section "Client-side Storage") |
+| **8. Testability** | คงการทดสอบแบบ manual/black-box 100% ต่อไปจนถึงอย่างน้อย Sprint 11 — ยังไม่บังคับ automated test coverage เป็น NFR ในตอนนี้ เพราะยังไม่มี Sprint Gate ใดต้องการ | อ้างอิงสถานะ "ยังไม่มี test runner" ใน [[../../02-design/02-technical/technology-choices|technology-choices.md]] section "Testing" — จุดที่ควรทบทวนอีกครั้งคือช่วง Sprint 11 Black Box Testing ตามที่ระบุไว้ในเอกสารเดียวกัน |
+| **9. Accessibility** | กำหนดระดับพื้นฐาน (basic) เท่านั้น: ทุกฟังก์ชันหลักต้องใช้งานได้ด้วย keyboard navigation, contrast ของสีต้องอ่านง่ายไม่ต่ำกว่ามาตรฐาน default ของ browser, ทุก form field ต้องมี label ที่ถูกต้องเชื่อมกับ input — ไม่ทำ WCAG 2.1 AA audit อย่างเป็นทางการ | ไม่มี requirement เดิมรองรับ WCAG audit และไม่คุ้มเวลากับ timeline ของ Sprint 8-11 ที่เหลือ — เป็นช่องว่างเดิมที่ไม่มีเอกสารใดพูดถึงมาก่อน กำหนดขึ้นใหม่โดยผู้ใช้ |
+| **10. Localization** | Thai เป็นภาษาหลักของทั้ง UI และเอกสารทั้งหมด ไม่ทำ i18n/multi-language support | ไม่มี Functional Requirement ใดขอความสามารถนี้ (ยืนยันจากการสำรวจ spec ทั้งหมด) |
 
 ---
 
