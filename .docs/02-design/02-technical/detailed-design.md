@@ -1,6 +1,6 @@
 # My Today — Detailed Design (Conceptual Sequence Flows)
 
-เชื่อมโยงกลับ: [[index|02-technical]], [[architecture|architecture]], [[api-spec|api-spec]], [[database-schema|database-schema]], [[../01-prototypes/user-journey-student|user-journey-student]], [[../01-prototypes/user-journey-general-person|user-journey-general-person]]
+เชื่อมโยงกลับ: [[index|02-technical]], [[architecture|architecture]], [[api-spec|api-spec]], [[database-schema|database-schema]], [[../01-prototypes/user-journey-student|user-journey-student]], [[../01-prototypes/user-journey-general-person|user-journey-general-person]], [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]]
 
 ## ขอบเขตของเอกสารนี้
 
@@ -273,6 +273,8 @@ sequenceDiagram
 - **Custom Reminder Lead Time (Sprint 10, FR-19):** flow ที่คาดว่าจะเกิดคือ Presentation Layer ส่ง "Set Custom Reminder Lead Time" ให้ Domain Logic Layer บันทึกค่าเฉพาะรายการ แล้ว "Build Notifications" (Reminder/Notification Derivation) ต้องอ่านค่านี้เพิ่มจากค่า default กลางของระบบก่อนคำนวณระดับความเร่งด่วน
 - **Task/Event Detail แบบ What/When/Information รวมหน้าเดียว (Sprint 10):** flow ที่คาดว่าจะเกิดคือ query รวมที่ดึง Task/Event เดียวกันกับ File/Note/Link/reminder ที่เชื่อมไว้ทั้งหมดในคำขอเดียว แทนที่จะให้ Presentation Layer เรียกหลาย operation แยกกันแล้วประกอบเองเหมือนปัจจุบัน
 
+- **IndexedDB Quota-Warning (NFR-08):** ตามข้อกำหนดใหม่ใน [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]] ระบบควรเตือนผู้ใช้เมื่อพื้นที่เก็บไฟล์แนบใกล้เต็ม quota ของ Binary/Blob Local Persistence — operation ที่รองรับ ("Get Storage Usage Estimate / Warn Near Quota") ยังไม่ build จึงยังไม่มี sequence diagram ให้ในเอกสารนี้
+
 Sprint 11 (Demo/Polish/Freeze) ไม่เพิ่ม flow ใหม่ จึงไม่มีรายการเพิ่มในหัวข้อนี้
 
 ## 5. หมายเหตุการ implement ปัจจุบัน
@@ -315,3 +317,4 @@ Presentation = `src/pages/InboxPage.tsx`; Domain = logic รวม (aggregate) `
 
 - 20260823 — สร้างเอกสารนี้ครั้งแรก: sequence diagram ของทั้งสอง persona journey (นักศึกษา/บุคคลทั่วไป) ครอบคลุมเฉพาะขั้นตอนที่ build เสร็จแล้ว, sequence diagram ของ cross-cutting operations ทั้งสี่ (Delete Life Area, Quick Capture, Organize from Inbox, List Inbox Items), error/edge-case notes ต่อไดอะแกรม, และ known gaps จาก Sprint 9-10 ที่ยังไม่ build (ไม่มี diagram ให้ ตามกฎ)
 - 20260823 (อัปเดตภายหลัง) — เพิ่มหัวข้อ 5 "หมายเหตุการ implement ปัจจุบัน" ใหม่ทั้งหมด (เดิมเอกสารนี้ไม่มีกลไก implementation-footnote เลย ต่างจาก [[architecture|architecture.md]]/[[api-spec|api-spec.md]]/[[database-schema|database-schema.md]] ที่มีอยู่แล้ว) โดยอ้างอิง [[tech-stack|tech-stack.md]] ที่เพิ่งถูกสร้างขึ้น ระบุฟังก์ชัน/component/ไฟล์จริงที่ implement แต่ละ participant ของทุกไดอะแกรมในหัวข้อ 1 และ 2 พร้อมเลื่อน Change Log เดิมมาเป็นหัวข้อ 6 — ไม่มีการแก้ไขเนื้อหาของหัวข้อ 1/2/3/4
+- 20260823 (อัปเดตภายหลังอีกครั้ง) — เพิ่มลิงก์ [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]] ในหัวข้อ cross-link ด้านบน และเพิ่มประโยคใน §4 Known Gaps สำหรับ IndexedDB Quota-Warning (NFR-08) ให้สอดคล้องกับ known gap ใหม่ที่เพิ่งเพิ่มใน [[api-spec|api-spec.md]] หัวข้อ 4 — ไม่มีการแก้ไขหัวข้อ 1/2/3/5
