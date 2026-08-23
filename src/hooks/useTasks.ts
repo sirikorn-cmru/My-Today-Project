@@ -3,7 +3,10 @@ import type { Task, TaskInput } from '../types'
 import { readJSON, writeJSON } from '../lib/storage'
 import { createSeedTasks } from '../data/seedTasks'
 
-const STORAGE_KEY = 'my-today:tasks'
+// v2: Sprint 7 replaced Task.subject (free text) with Task.lifeAreaId (Life Area reference).
+// Bumping the key forces a clean reseed instead of writing migration logic, per the spec's
+// own guidance — there was no real user data to preserve yet.
+const STORAGE_KEY = 'my-today:tasks:v2'
 
 function loadInitialTasks(): Task[] {
   const stored = readJSON<Task[] | null>(STORAGE_KEY, null)

@@ -1,3 +1,5 @@
+import { cardClass } from '../lib/uiClasses'
+
 interface SummaryCardsProps {
   total: number
   completed: number
@@ -16,7 +18,7 @@ export function SummaryCards(props: SummaryCardsProps) {
   return (
     <section className="grid grid-cols-2 gap-3 px-4 py-4 sm:grid-cols-4 sm:px-6">
       {cards(props).map((card) => (
-        <div key={card.label} className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        <div key={card.label} className={cardClass}>
           <p className={`text-2xl font-bold ${card.accent}`}>{card.value}</p>
           <p className="mt-1 text-xs text-slate-500">{card.label}</p>
         </div>
