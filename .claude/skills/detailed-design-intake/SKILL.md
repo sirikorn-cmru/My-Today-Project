@@ -17,14 +17,18 @@ Skill นี้สร้างหรืออัปเดตเอกสาร `
 - **ยังไม่มี (ครั้งแรก):** โหมด full regeneration ไม่ต้องถาม user
 - **มีอยู่แล้ว:** ถามเหมือน `architecture-intake`/`db-api-intake` — อัปเดตเฉพาะ Sprint ที่เปลี่ยน หรือ regenerate ทั้งหมด พร้อมคำแนะนำตามสถานการณ์
 
-## 3. เรียก subagent `detailed-design-writer`
+## 3. ตรวจสอบว่ามี `technology-choices.md` หรือยัง (optional grounding)
+
+ถ้ามี `.docs/02-design/02-technical/technology-choices.md` อยู่แล้ว `detailed-design-writer` จะอ่านมันเพื่อ **cross-reference เท่านั้น** — เช่น ระบุในบาง sequence diagram ที่มี component ตัวรวมศูนย์ (เช่น Today Dashboard) ว่าทุก component อ่านจาก state ที่เป็นเจ้าของศูนย์กลางจุดเดียว (มาจาก State Management Approach), wikilink ไปยัง Open/Future Decisions สำหรับ diagram ที่แตะ operation/entity ที่ยัง spec-derived เท่านั้น, หรือระบุว่า diagram เหล่านี้ยืนยันผลผ่าน manual test case เท่านั้น (มาจาก Testing entry) — **ไม่ใช่เพื่อเอ่ยชื่อเทคโนโลยี** เอกสารยังคง conceptual/technology-agnostic เหมือนเดิมทุกประการ ไม่ต้องถาม user เรื่องนี้ ถ้ายังไม่มีไฟล์นี้ก็ไม่เป็นไร subagent จะข้ามส่วนนี้ไปเอง
+
+## 4. เรียก subagent `detailed-design-writer`
 
 ส่ง: โหมด (full regeneration / incremental), path ของ spec ที่เกี่ยวข้อง, วันที่ปัจจุบันแบบ `YYYYMMDD`
 
-subagent จะอ่าน `api-spec.md`/`architecture.md`/`database-schema.md` เอง เลือก operation ที่ควรมี sequence diagram (หลายขั้นตอน/ข้าม component เท่านั้น ข้าม CRUD เดี่ยวๆ) และ entity ที่ควรมี state diagram (มี field สถานะ) แล้วสร้าง/อัปเดตไฟล์ พร้อม log — subagent มีหน้าที่ตรวจสอบตัวเองว่าไม่มีการเอ่ยชื่อเทคโนโลยีใดๆ ถ้าพบว่าเผลอใส่เข้าไป ให้แก้ไขออกก่อนรายงาน user
+subagent จะอ่าน `api-spec.md`/`architecture.md`/`database-schema.md`/`technology-choices.md` (ถ้ามี) เอง เลือก operation ที่ควรมี sequence diagram (หลายขั้นตอน/ข้าม component เท่านั้น ข้าม CRUD เดี่ยวๆ) และ entity ที่ควรมี state diagram (มี field สถานะ) แล้วสร้าง/อัปเดตไฟล์ พร้อม log — subagent มีหน้าที่ตรวจสอบตัวเองว่าไม่มีการเอ่ยชื่อเทคโนโลยีใดๆ ถ้าพบว่าเผลอใส่เข้าไป ให้แก้ไขออกก่อนรายงาน user — รวมถึงถ้า cross-reference ไปยัง `technology-choices.md` กลายเป็นการสรุปเนื้อหาซ้ำ ให้แก้ไขให้กระชับลงก่อนรายงาน
 
-## 4. รายงานผลให้ user
+## 5. รายงานผลให้ user
 
 - สรุปว่าเป็น full regeneration หรือ incremental, operation ไหนได้ sequence diagram, entity ไหนได้ state diagram, และ operation ไหนที่ข้ามไปเพราะเป็น CRUD เดี่ยวไม่ข้าม component (เพื่อความโปร่งใส ไม่ใช่ตกหล่น)
-- ยืนยันกับ user ว่าเอกสารไม่มีการเอ่ยชื่อ technical stack ใดๆ ตามที่ตั้งใจไว้
+- ยืนยันกับ user ว่าเอกสารไม่มีการเอ่ยชื่อ technical stack ใดๆ ตามที่ตั้งใจไว้ และแจ้งว่ามี cross-reference ไปยัง `technology-choices.md` กี่จุด (ถ้ามี)
 - ไม่ต้อง push ขึ้น GitHub เองโดยอัตโนมัติ — ถามยืนยันกับ user ก่อนเสมอ ตาม convention ที่กำหนดไว้ใน `CLAUDE.md`

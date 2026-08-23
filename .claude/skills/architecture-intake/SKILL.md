@@ -22,17 +22,21 @@ Skill นี้สร้างหรืออัปเดตเอกสาร�
 
 Data Flow ส่วนที่ 3 ของเอกสารต้องอ้างอิง `.docs/01-requirements/user-journey.md` — ถ้ายังไม่มีไฟล์นี้ (ยังไม่เคยรัน `feature-journey-intake`) ให้แจ้ง user และถามว่าจะรัน `feature-journey-intake` ก่อนไหม หรือจะทำ Conceptual Components + Data Model ไปก่อนแล้วเว้น Data Flow ไว้ (ไม่ใช่เงื่อนไขบังคับเหมือน `DESIGN.md` ใน `prototype-intake` แต่ Data Flow จะทำได้ไม่ดีถ้าไม่มี user-journey.md)
 
-## 3. เรียก subagent `architecture-writer` ให้เขียนไฟล์จริง
+## 3. ตรวจสอบว่ามี `technology-choices.md` หรือยัง (optional grounding)
+
+ถ้ามี `.docs/02-design/02-technical/technology-choices.md` อยู่แล้ว `architecture-writer` จะอ่านมันเพื่อ **cross-reference เท่านั้น** (เช่น State Management Approach ที่ยืนยันว่า state เป็นศูนย์กลางจุดเดียว, หรือ Open/Future Decisions ที่ยังไม่ตัดสินใจสำหรับ Sprint 8-11) — **ไม่ใช่เพื่อเอ่ยชื่อเทคโนโลยี** เอกสาร `architecture.md` ยังคง conceptual/technology-agnostic เหมือนเดิมทุกประการ ไม่ต้องถาม user เรื่องนี้ ถ้ายังไม่มีไฟล์นี้ก็ไม่เป็นไร subagent จะข้ามส่วนนี้ไปเอง (ไม่ใช่เงื่อนไขบังคับ)
+
+## 4. เรียก subagent `architecture-writer` ให้เขียนไฟล์จริง
 
 เรียก Agent tool ด้วย `subagent_type: "architecture-writer"` พร้อมส่ง:
 
 - โหมด (full regeneration / incremental) และถ้า incremental ให้ระบุ path ของ spec ที่อยู่ในขอบเขตชัดเจน
 - วันที่ปัจจุบันแบบ `YYYYMMDD`
 
-subagent จะอ่าน spec และ `user-journey.md` เอง แล้วสร้าง/อัปเดตไฟล์ พร้อม log — subagent มีหน้าที่ตรวจสอบตัวเองว่าไม่มีการเอ่ยชื่อเทคโนโลยีใดๆ ในเอกสาร ถ้าพบว่า subagent เผลอใส่ชื่อ framework/library เข้าไป (เช่น "React", "LocalStorage", "IndexedDB", "Tailwind") ให้แก้ไขออกก่อนรายงาน user
+subagent จะอ่าน spec, `user-journey.md`, และ `technology-choices.md` (ถ้ามี) เอง แล้วสร้าง/อัปเดตไฟล์ พร้อม log — subagent มีหน้าที่ตรวจสอบตัวเองว่าไม่มีการเอ่ยชื่อเทคโนโลยีใดๆ ในเอกสาร ถ้าพบว่า subagent เผลอใส่ชื่อ framework/library เข้าไป (เช่น "React", "LocalStorage", "IndexedDB", "Tailwind") ให้แก้ไขออกก่อนรายงาน user — รวมถึงถ้า cross-reference ไปยัง `technology-choices.md` กลายเป็นการสรุปเนื้อหาของมันซ้ำ (ไม่ใช่แค่ wikilink ประกอบจุดที่สั้นๆ) ให้แก้ไขให้กระชับลงก่อนรายงาน
 
-## 4. รายงานผลให้ user
+## 5. รายงานผลให้ user
 
 - สรุปว่าเป็น full regeneration หรือ incremental ครอบคลุม component/entity/flow ไหนบ้าง
-- ยืนยันกับ user ว่าเอกสารไม่มีการเอ่ยชื่อ technical stack ใดๆ ตามที่ตั้งใจไว้
+- ยืนยันกับ user ว่าเอกสารไม่มีการเอ่ยชื่อ technical stack ใดๆ ตามที่ตั้งใจไว้ และแจ้งว่ามี cross-reference ไปยัง `technology-choices.md` กี่จุด (ถ้ามี)
 - ไม่ต้อง push ขึ้น GitHub เองโดยอัตโนมัติ — ถามยืนยันกับ user ก่อนเสมอ ตาม convention ที่กำหนดไว้ใน `CLAUDE.md`
