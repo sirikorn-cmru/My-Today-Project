@@ -55,9 +55,9 @@ Built sprint-by-sprint (see `.docs/01-requirements/01-spec/`, and the cross-Spri
 
 Explicitly out of scope for both tracks: AI (until a possible future post-Freeze phase as an optional "Daily Orchestrator" — not part of Version 2), backend/server-side code, and integration with any external service (Google Calendar, Teams, Classroom, university systems, banking, hospitals, GPS/LMS).
 
-## Current focus: Requirements & Product Backlog
+## Current focus: Requirements & Design Documentation
 
-The project is in its earliest phase. Work here should concentrate on `.docs/01-requirements/`, specifically:
+The project has grown past pure requirements-gathering — work now spans two active vault stages: `.docs/01-requirements/` (what the system must do) and `.docs/02-design/` (prototypes + conceptual technical design). Six skills maintain this pipeline end to end; see "Documentation pipeline" below for the map before diving into any one piece.
 
 - `01-spec/` — the source-of-truth requirements docs, one file per requirement: `{YYYYMMDD}-{RUNNING_NO}-{topic-slug}.md` (English slug, Thai content). `RUNNING_NO` is a single global sequence across all spec docs (zero-padded to 3 digits), not reset per day.
 - `backlog.md` — a flat file directly under `01-requirements/` that is the **Product Backlog**: one entry per spec doc, linking back to it. This is generated/maintained alongside spec docs, not hand-authored from scratch.
@@ -65,7 +65,20 @@ The project is in its earliest phase. Work here should concentrate on `.docs/01-
 
 `02-plan/` (roadmap/milestones) and `03-task/` (task breakdown) are secondary right now and not the backlog — don't conflate them with `backlog.md`.
 
-`02-design/01-prototypes/` is active too, as of 2026-08-16 — it holds the User Journey docs (one per persona, see below). `02-design/02-technical/` is active as of 2026-08-16 too — it holds `architecture.md`, a conceptual/stack-agnostic High-Level Architecture doc (see below). The rest of the later stages — `03-testing/`, `04-retrospectives/` — are still not active; don't create content there unless explicitly asked, since there's no test work to document yet.
+`02-design/01-prototypes/` and `02-design/02-technical/` are both active (since 2026-08-16) — see "Documentation pipeline" below for what each skill puts where. The rest of the later stages — `03-testing/`, `04-retrospectives/` — are still not active; don't create content there unless explicitly asked, since there's no test work to document yet.
+
+### Documentation pipeline
+
+| Skill | Produces | Reads from |
+|---|---|---|
+| `requirement-intake` | New/amended spec doc + `backlog.md` entry + log | Raw requirement text from the user |
+| `backlog-sync-check` | Corrected `backlog.md` status | Spec docs + `src/` + git log |
+| `feature-journey-sync` | `feature-list.md` + `user-journey-{persona}.md` | `backlog.md` + spec docs |
+| `architecture-doc-sync` | `architecture.md` (Context + Container + Core Domain Concepts) | `backlog.md`/`feature-list.md` + user-journey docs |
+| `data-api-doc-sync` | `database-schema.md` + `api-spec.md` | `architecture.md` |
+| `detailed-design-doc-sync` | `detailed-design.md` (sequence diagrams) | `architecture.md` + `api-spec.md` + user-journey docs |
+
+**After a Sprint ships**, run these in this order to keep every derived doc in sync (each is independent enough to stop early if you only need a subset, but later ones assume earlier ones are current): `backlog-sync-check` → `feature-journey-sync` → `architecture-doc-sync` → `data-api-doc-sync` → `detailed-design-doc-sync`. This exact order was used after Sprint 8 shipped (2026-08-23) — it's the order in which each doc's own content feeds the next one.
 
 ### Requirement intake workflow
 
@@ -120,6 +133,8 @@ Each stage's `index.md` is written in Thai and cross-links to the stages it feed
 
 - `.claude/settings.local.json` is gitignored (local machine config) — do not commit it.
 - Keep this file itself committed and up to date — if you change it, commit it in the same batch as the doc changes it describes.
+- If a `*-doc-sync` skill finds that a spec doc contradicts the real code/architecture (e.g. Sprint 10's spec claiming `Task.linkedFileIds` already existed, caught by `data-api-doc-sync` on 2026-08-23 — see that Sprint's spec doc and `database-schema.md`/`api-spec.md`'s Known Gaps sections), don't silently fix the spec yourself — flag it prominently to the user and, if they want it corrected, run `requirement-intake` to amend the spec doc afterward, rather than editing it inline from within the doc-sync skill.
+- A stray `.obsidian/` folder can appear at the repo root (distinct from the tracked `.docs/.obsidian/`) if the whole repo is ever opened directly as an Obsidian vault — it's gitignored (see `.gitignore`) and unrelated to the vault's own config; don't confuse the two or try to track the root-level one.
 
 ## Git / GitHub workflow
 
