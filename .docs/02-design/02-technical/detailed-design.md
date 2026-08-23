@@ -1,0 +1,280 @@
+# My Today — Detailed Design (Conceptual Sequence Flows)
+
+เชื่อมโยงกลับ: [[index|02-technical]], [[architecture|architecture]], [[api-spec|api-spec]], [[database-schema|database-schema]], [[../01-prototypes/user-journey-student|user-journey-student]], [[../01-prototypes/user-journey-general-person|user-journey-general-person]]
+
+## ขอบเขตของเอกสารนี้
+
+เอกสารนี้เป็น **Detailed Design แบบ conceptual และไม่ผูกกับ technology stack** (stack-agnostic) อยู่ในระดับ **sequence-flow** — ขยาย Container View ของ [[architecture|architecture.md]] (หัวข้อ 2) และ operation contract ของ [[api-spec|api-spec.md]] ให้เห็นเป็นลำดับข้อความ (message) ทีละขั้นระหว่าง Container จริงๆ ว่าแต่ละ user journey/operation ไหลผ่านใครบ้างตามลำดับ ไม่ใช่แค่ระบุทิศทางรวมแบบที่ architecture.md หัวข้อ 4 ทำไว้แล้ว
+
+เนื้อหาหลัก (รวม sequence diagram ทุกอัน) **จะไม่เอ่ยชื่อภาษา, framework, library, หรือ Web API ใดๆ โดยตรง** — participant ของทุกไดอะแกรมจำกัดอยู่ที่ชุด Container คงที่จาก [[architecture|architecture.md]] หัวข้อ 2 เท่านั้น (Presentation / Interaction Layer, Application / Domain Logic Layer, Structured Local Persistence, Binary / Blob Local Persistence, Reminder / Notification Derivation) บวก User person จากหัวข้อ 1 ไม่มีการเพิ่ม container ใหม่ในเอกสารนี้ รายละเอียดการ implement จริงปัจจุบัน ถ้าเป็นประโยชน์ จะอยู่ในหมายเหตุที่ระบุชัดเจนว่า "หมายเหตุการ implement ปัจจุบัน" เท่านั้น
+
+ทุกไดอะแกรมแสดง **happy path เท่านั้น** — พฤติกรรมกรณี error/edge-case อยู่แยกเป็นข้อความสั้นๆ ใต้แต่ละไดอะแกรมในหัวข้อ 3 แทนการวาดเป็น `alt`/`opt` block ในไดอะแกรม
+
+## 1. Sequence Diagrams — Persona Journeys
+
+ทั้งสองไดอะแกรมด้านล่างเดินตามลำดับขั้นตอนที่มีอยู่แล้วใน [[../01-prototypes/user-journey-student|user-journey-student.md]] และ [[../01-prototypes/user-journey-general-person|user-journey-general-person.md]] ทุกประการ ไม่สร้าง narrative ใหม่ — วาด message เฉพาะขั้นตอนที่มีสถานะ "เสร็จแล้ว" ในเอกสารนั้นๆ (ตรวจสอบล่าสุด 20260823) ส่วนขั้นตอนที่เป็น "แผนในอนาคต" ถูกข้ามไปตามกฎของเอกสารนี้ และระบุไว้เป็นหมายเหตุใต้ไดอะแกรมแทน
+
+### 1.1 นักศึกษา (Task "ส่งรายงาน HCI", Life Area "Study")
+
+```mermaid
+sequenceDiagram
+    actor User as ผู้ใช้
+    participant Presentation as Presentation / Interaction Layer
+    participant Domain as Application / Domain Logic Layer
+    participant StructPersist as Structured Local Persistence
+    participant BlobPersist as Binary / Blob Local Persistence
+    participant Reminder as Reminder / Notification Derivation
+
+    User->>Presentation: พิมพ์ "ส่งรายงาน HCI" ผ่าน Quick Capture (1)
+    Presentation->>Domain: Quick Capture(kind=Task, title="ส่งรายงาน HCI")
+    Domain->>StructPersist: บันทึก Task ใหม่ (inInbox=true)
+    StructPersist-->>Domain: Task record ที่สร้างแล้ว
+    Domain-->>Presentation: ยืนยันบันทึกสำเร็จ
+
+    User->>Presentation: เปิดหน้า My Inbox (2)
+    Presentation->>Domain: List Inbox Items()
+    Domain->>StructPersist: อ่าน Task/Event/File/Note/Link ที่ inInbox=true
+    StructPersist-->>Domain: รายการที่รอจัดระเบียบ (รวม Task นี้)
+    Domain-->>Presentation: รายการ Inbox
+
+    User->>Presentation: เลือก Life Area "Study" ให้ Task นี้ (3)
+    Presentation->>Domain: Organize from Inbox(id, kind=Task, lifeAreaId="Study")
+    Domain->>StructPersist: อัปเดต Task (lifeAreaId="Study", inInbox=false)
+    StructPersist-->>Domain: Task record ที่อัปเดตแล้ว
+    Domain-->>Presentation: ยืนยันจัดระเบียบสำเร็จ
+
+    User->>Presentation: กำหนด Deadline ของ Task (4)
+    Presentation->>Domain: Update Task(id, dueDate, dueTime)
+    Domain->>StructPersist: บันทึก dueDate/dueTime
+    StructPersist-->>Domain: Task record ที่อัปเดตแล้ว
+    Domain-->>Presentation: ยืนยันบันทึกสำเร็จ
+
+    User->>Presentation: แนบไฟล์รายงาน (5)
+    Presentation->>Domain: Create File(content, ...) + Link File to Task(fileId, taskId)
+    Domain->>BlobPersist: เก็บเนื้อหาไฟล์จริง
+    BlobPersist-->>Domain: ยืนยันเก็บไฟล์สำเร็จ
+    Domain->>StructPersist: บันทึก File metadata (linkedTaskIds มี taskId)
+    StructPersist-->>Domain: File record ที่สร้างแล้ว
+    Domain-->>Presentation: ยืนยันแนบไฟล์สำเร็จ
+
+    User->>Presentation: เปิดหน้า Calendar (6)
+    Presentation->>Domain: Get Day Items(date)
+    Domain->>StructPersist: อ่าน Task (dueDate ตรงวัน) + Event ของวันนั้น
+    StructPersist-->>Domain: Task/Event ที่เกี่ยวข้อง
+    Domain-->>Presentation: รายการรวม Event+Deadline เรียงตามเวลา
+
+    User->>Presentation: เปิด My Today ตอนเช้า (8)
+    Presentation->>Domain: Get Today Dashboard Summary()
+    Domain->>StructPersist: อ่าน Task/Event ทั้งหมด
+    StructPersist-->>Domain: Task/Event สด
+    Domain-->>Presentation: สรุปวันนี้ (จำนวนงาน/รายการวันนี้)
+
+    User->>Presentation: กด Done เมื่อทำงานเสร็จ (10)
+    Presentation->>Domain: Set Task Status(id, status=Done)
+    Domain->>StructPersist: บันทึกสถานะ Done
+    StructPersist-->>Domain: Task record ที่อัปเดตแล้ว
+    Domain-->>Presentation: ยืนยันบันทึกสำเร็จ
+```
+
+**mapping กลับ journey-doc (user-journey-student.md):**
+
+1. ขั้นตอนที่ 1 (FR-13) — เพิ่ม Task ผ่าน Quick Capture
+2. ขั้นตอนที่ 2 (FR-14) — เข้า My Inbox
+3. ขั้นตอนที่ 3 (FR-14) — จัดเข้า Life Area "Study" จาก Inbox
+4. ขั้นตอนที่ 4 (FR-04) — กำหนด Deadline ของ Task
+5. ขั้นตอนที่ 5 (FR-09) — แนบไฟล์รายงาน (Related Files)
+6. ขั้นตอนที่ 6 (FR-07) — เห็น Deadline ใน Calendar โดยอัตโนมัติ
+7. ขั้นตอนที่ 8 (FR-05, FR-12) — เปิด My Today ตอนเช้า เห็นงานบน Today Dashboard
+8. ขั้นตอนที่ 10 (FR-03, FR-11) — ทำงานเสร็จ กด Done
+
+ขั้นตอนที่ **7** (Timeline Now/Next/Later, FR-16, Sprint 9), **9** (Reminder lead time ที่ตั้งเอง, FR-19, Sprint 10) และ **11** (Life Progress, FR-17, Sprint 9) ยังไม่รวมในไดอะแกรมนี้ เพราะ Sprint ที่เกี่ยวข้องยังไม่ build (สถานะ "แผนในอนาคต" ตาม journey doc และ backlog.md ณ 20260823)
+
+### 1.2 บุคคลทั่วไป (Task "จ่ายค่าไฟ", Life Area "Finance")
+
+```mermaid
+sequenceDiagram
+    actor User as ผู้ใช้
+    participant Presentation as Presentation / Interaction Layer
+    participant Domain as Application / Domain Logic Layer
+    participant StructPersist as Structured Local Persistence
+    participant BlobPersist as Binary / Blob Local Persistence
+    participant Reminder as Reminder / Notification Derivation
+
+    User->>Presentation: พิมพ์ "จ่ายค่าไฟ" ผ่าน Quick Capture (1)
+    Presentation->>Domain: Quick Capture(kind=Task, title="จ่ายค่าไฟ")
+    Domain->>StructPersist: บันทึก Task ใหม่ (inInbox=true)
+    StructPersist-->>Domain: Task record ที่สร้างแล้ว
+    Domain-->>Presentation: ยืนยันบันทึกสำเร็จ
+
+    User->>Presentation: เปิดหน้า My Inbox (2)
+    Presentation->>Domain: List Inbox Items()
+    Domain->>StructPersist: อ่าน Task/Event/File/Note/Link ที่ inInbox=true
+    StructPersist-->>Domain: รายการที่รอจัดระเบียบ (รวม Task นี้)
+    Domain-->>Presentation: รายการ Inbox
+
+    User->>Presentation: เลือก Life Area "Finance" + กำหนด Deadline ก่อนสิ้นเดือน (3)
+    Presentation->>Domain: Organize from Inbox(id, kind=Task, lifeAreaId="Finance", dueDate)
+    Domain->>StructPersist: อัปเดต Task (lifeAreaId="Finance", dueDate, inInbox=false)
+    StructPersist-->>Domain: Task record ที่อัปเดตแล้ว
+    Domain-->>Presentation: ยืนยันจัดระเบียบสำเร็จ
+
+    User->>Presentation: แนบไฟล์ใบแจ้งหนี้ค่าไฟ (4)
+    Presentation->>Domain: Create File(content, ...) + Link File to Task(fileId, taskId)
+    Domain->>BlobPersist: เก็บเนื้อหาไฟล์จริง
+    BlobPersist-->>Domain: ยืนยันเก็บไฟล์สำเร็จ
+    Domain->>StructPersist: บันทึก File metadata (linkedTaskIds มี taskId)
+    StructPersist-->>Domain: File record ที่สร้างแล้ว
+    Domain-->>Presentation: ยืนยันแนบไฟล์สำเร็จ
+
+    User->>Presentation: เปิดหน้า Notifications / Dashboard (6)
+    Presentation->>Domain: ขอข้อมูล Task/Event สดเพื่อประเมินความเร่งด่วน
+    Domain->>StructPersist: อ่าน Task/Event ทั้งหมด
+    StructPersist-->>Domain: Task/Event สด
+    Domain->>Reminder: Build Notifications(tasks, events, readIds)
+    Reminder-->>Domain: รายการแจ้งเตือน (Overdue/DueToday/DueSoon)
+    Domain-->>Presentation: รายการแจ้งเตือนที่จำแนกระดับความเร่งด่วนแล้ว
+
+    User->>Presentation: กด Done เมื่อจ่ายเงินเสร็จ (7)
+    Presentation->>Domain: Set Task Status(id, status=Done)
+    Domain->>StructPersist: บันทึกสถานะ Done
+    StructPersist-->>Domain: Task record ที่อัปเดตแล้ว
+    Domain-->>Presentation: ยืนยันบันทึกสำเร็จ
+```
+
+**mapping กลับ journey-doc (user-journey-general-person.md):**
+
+1. ขั้นตอนที่ 1 (FR-13) — เพิ่ม Task ผ่าน Quick Capture
+2. ขั้นตอนที่ 2 (FR-14) — เข้า My Inbox
+3. ขั้นตอนที่ 3 (FR-14) — จัดเข้า Life Area "Finance" จาก Inbox + กำหนด Deadline
+4. ขั้นตอนที่ 4 (FR-09) — แนบไฟล์ใบแจ้งหนี้ค่าไฟ (Related Files)
+5. ขั้นตอนที่ 6 (FR-10) — ได้รับการเตือนเมื่อใกล้ถึงกำหนด (Due Soon/Overdue)
+6. ขั้นตอนที่ 7 (FR-03, FR-11) — จ่ายเงินเสร็จ กด Done
+
+ขั้นตอนที่ **5** (Timeline Now/Next/Later, FR-16, Sprint 9) และ **8** (Life Progress, FR-17, Sprint 9) ยังไม่รวมในไดอะแกรมนี้ เพราะ Sprint ที่เกี่ยวข้องยังไม่ build (สถานะ "แผนในอนาคต" ตาม journey doc และ backlog.md ณ 20260823)
+
+## 2. Sequence Diagrams — Cross-cutting Operations
+
+ทั้งสี่ operation ต่อไปนี้อยู่ใน [[api-spec|api-spec.md]] หัวข้อ 2 และ build เสร็จแล้วทั้งหมดตาม backlog.md ณ 20260823 (Delete Life Area ตั้งแต่ Sprint 7, อีกสามอย่างตั้งแต่ Sprint 8) จึงวาดไดอะแกรมเต็มให้ครบทุกอัน
+
+### 2.1 Delete Life Area (cascade-safe, two-phase)
+
+```mermaid
+sequenceDiagram
+    actor User as ผู้ใช้
+    participant Presentation as Presentation / Interaction Layer
+    participant Domain as Application / Domain Logic Layer
+    participant StructPersist as Structured Local Persistence
+
+    User->>Presentation: ขอลบ Life Area
+    Presentation->>Domain: Delete Life Area(lifeAreaId)
+    Domain->>StructPersist: หา Task ทุกรายการที่ lifeAreaId ตรงกัน
+    StructPersist-->>Domain: รายการ Task ที่อ้างอิงอยู่
+    Domain->>StructPersist: เคลียร์ lifeAreaId ของ Task เหล่านั้นให้ว่าง (Update Task)
+    Domain->>StructPersist: หา Event ทุกรายการที่ lifeAreaId ตรงกัน
+    StructPersist-->>Domain: รายการ Event ที่อ้างอิงอยู่
+    Domain->>StructPersist: เคลียร์ lifeAreaId ของ Event เหล่านั้นให้ว่าง (Update Event)
+    Domain->>StructPersist: หา File ทุกรายการที่ lifeAreaId ตรงกัน
+    StructPersist-->>Domain: รายการ File ที่อ้างอิงอยู่
+    Domain->>StructPersist: เคลียร์ lifeAreaId ของ File เหล่านั้นให้ว่าง (Update File Metadata)
+    Domain->>StructPersist: หา Note ทุกรายการที่ lifeAreaId ตรงกัน
+    StructPersist-->>Domain: รายการ Note ที่อ้างอิงอยู่
+    Domain->>StructPersist: เคลียร์ lifeAreaId ของ Note เหล่านั้นให้ว่าง (Update Note)
+    Domain->>StructPersist: หา Link ทุกรายการที่ lifeAreaId ตรงกัน
+    StructPersist-->>Domain: รายการ Link ที่อ้างอิงอยู่
+    Domain->>StructPersist: เคลียร์ lifeAreaId ของ Link เหล่านั้นให้ว่าง (Update Link)
+    Domain->>StructPersist: ลบ Life Area record ทิ้ง (หลังเคลียร์ครบทุก entity แล้วเท่านั้น)
+    StructPersist-->>Domain: ยืนยันลบสำเร็จ
+    Domain-->>Presentation: ยืนยัน Life Area ถูกลบแล้ว
+    Presentation-->>User: แสดงผลลัพธ์ (Task/Event/File/Note/Link เดิมยังอยู่ ไม่มี Life Area แล้ว)
+```
+
+อ้างอิง: [[api-spec|api-spec.md]] หัวข้อ 2 แถว "Delete Life Area" และ [[database-schema|database-schema.md]] หัวข้อ 2.1 (Business Rule ของ Sprint 7 Acceptance Criteria) — ลำดับ phase 1 (เคลียร์การอ้างอิงทุก entity) ต้องเสร็จก่อน phase 2 (ลบ record) เสมอ ไม่สลับลำดับ
+
+### 2.2 Quick Capture
+
+```mermaid
+sequenceDiagram
+    actor User as ผู้ใช้
+    participant Presentation as Presentation / Interaction Layer
+    participant Domain as Application / Domain Logic Layer
+    participant StructPersist as Structured Local Persistence
+
+    User->>Presentation: กดปุ่มกลาง "+ Add to My Today" แล้วเลือกประเภท + พิมพ์ title
+    Presentation->>Domain: Quick Capture(kind, title)
+    Domain->>StructPersist: บันทึก record ใหม่ของประเภทที่เลือก (inInbox=true, ฟิลด์อื่นว่าง/default)
+    StructPersist-->>Domain: record ที่สร้างแล้ว
+    Domain-->>Presentation: ยืนยันบันทึกสำเร็จ
+    Presentation-->>User: แสดงว่าบันทึกแล้ว (ไม่ต้องกรอกรายละเอียดอื่นตอนนี้)
+```
+
+อ้างอิง: [[api-spec|api-spec.md]] หัวข้อ 2 แถว "Quick Capture" — ต้องการแค่ `kind` + `title` เท่านั้น ห้ามมี AI แยกวิเคราะห์ข้อความอิสระใดๆ (Sprint 8 Business Rule ข้อ 5)
+
+### 2.3 Organize from Inbox
+
+```mermaid
+sequenceDiagram
+    actor User as ผู้ใช้
+    participant Presentation as Presentation / Interaction Layer
+    participant Domain as Application / Domain Logic Layer
+    participant StructPersist as Structured Local Persistence
+
+    User->>Presentation: เปิด record จาก My Inbox แล้วเติมฟิลด์ที่ขาด (เช่น Life Area, Deadline)
+    Presentation->>Domain: Organize from Inbox(id, kind, lifeAreaId, ฟิลด์อื่นที่เติม)
+    Domain->>StructPersist: อัปเดต record เดิม (เติมฟิลด์ + ตั้ง inInbox=false)
+    StructPersist-->>Domain: record เดิมที่อัปเดตแล้ว
+    Domain-->>Presentation: ยืนยันจัดระเบียบสำเร็จ
+    Presentation-->>User: record ย้ายจาก Inbox ไปเป็นรายการปกติ
+```
+
+อ้างอิง: [[api-spec|api-spec.md]] หัวข้อ 2 แถว "Organize from Inbox" — เป็นการอัปเดต record เดิมให้ `inInbox` เปลี่ยนจาก `true` เป็น `false` เท่านั้น ไม่สร้าง entity ใหม่ซ้อนสองชุด (Sprint 8 Business Rule ข้อ 2)
+
+### 2.4 List Inbox Items
+
+```mermaid
+sequenceDiagram
+    actor User as ผู้ใช้
+    participant Presentation as Presentation / Interaction Layer
+    participant Domain as Application / Domain Logic Layer
+    participant StructPersist as Structured Local Persistence
+
+    User->>Presentation: เปิดหน้า My Inbox
+    Presentation->>Domain: List Inbox Items()
+    Domain->>StructPersist: อ่าน Task ทั้งหมดที่ inInbox=true
+    StructPersist-->>Domain: Task ที่รอจัดระเบียบ
+    Domain->>StructPersist: อ่าน Event ทั้งหมดที่ inInbox=true
+    StructPersist-->>Domain: Event ที่รอจัดระเบียบ
+    Domain->>StructPersist: อ่าน File ทั้งหมดที่ inInbox=true
+    StructPersist-->>Domain: File ที่รอจัดระเบียบ
+    Domain->>StructPersist: อ่าน Note ทั้งหมดที่ inInbox=true
+    StructPersist-->>Domain: Note ที่รอจัดระเบียบ
+    Domain->>StructPersist: อ่าน Link ทั้งหมดที่ inInbox=true
+    StructPersist-->>Domain: Link ที่รอจัดระเบียบ
+    Domain-->>Presentation: รายการรวมข้าม entity ทั้งห้าที่ inInbox=true
+    Presentation-->>User: แสดงรายการ My Inbox
+```
+
+อ้างอิง: [[api-spec|api-spec.md]] หัวข้อ 2 แถว "List Inbox Items" — เป็น query ข้าม entity ทั้งห้า ไม่ใช่ operation เฉพาะของ entity ใดเดียว ใช้กับหน้า "My Inbox" (FR-14)
+
+## 3. Error / Edge-case Notes
+
+- **Quick Capture / Organize from Inbox (2.2, 2.3):** ถ้าการเขียนลง Structured Local Persistence ล้มเหลว Application/Domain Logic Layer แจ้ง error กลับ Presentation Layer โดยไม่เปลี่ยนสถานะ `inInbox` ของ record เดิม (record ยังค้างอยู่ใน Inbox เหมือนก่อนพยายามบันทึก ไม่ถูกปล่อยอยู่ในสถานะครึ่งๆ กลางๆ)
+- **แนบไฟล์ (1.1 ขั้นตอนที่ 5 / 1.2 ขั้นตอนที่ 4):** ถ้า Binary/Blob Local Persistence เขียนเนื้อหาไฟล์ไม่สำเร็จ ระบบแสดง error กลับที่ Presentation Layer แบบ dismissible โดยไม่สร้าง File record ใน Structured Local Persistence ค้างไว้ (ไม่มี metadata ที่ไม่มีเนื้อหาไฟล์จริงคู่กัน)
+- **Delete Life Area (2.1):** ถ้าขั้นตอนเคลียร์การอ้างอิงของ entity ใด entity หนึ่งล้มเหลวระหว่างทาง ระบบต้องไม่ดำเนินการลบ Life Area record ต่อ (phase 2 เกิดขึ้นได้ก็ต่อเมื่อ phase 1 เคลียร์ครบทุก entity สำเร็จเท่านั้น) เพื่อป้องกัน orphaned reference ที่ยังชี้ไปยัง Life Area ที่ถูกลบไปแล้ว
+- **Build Notifications (1.2 ขั้นตอนที่ 6):** เป็นการคำนวณสดทุกครั้ง ไม่มีสถานะกลางที่ค้างพังได้ — ถ้าไม่มี Task/Event ที่เข้าเงื่อนไข Overdue/DueToday/DueSoon ผลลัพธ์คือรายการว่างเปล่า ไม่ใช่ error
+- **Get Day Items / Get Today Dashboard Summary (1.1 ขั้นตอนที่ 6, 8):** เป็น read-only query ล้วนๆ ไม่มีผลข้างเคียงต่อข้อมูล ถ้าไม่มี Task/Event ของวันนั้นก็แสดงรายการว่างตามจริง ไม่ถือเป็นสถานะ error
+
+## 4. Known Gaps / Not-yet-built Flows
+
+รายการนี้สอดคล้องกับ known gaps ใน [[architecture|architecture.md]] หัวข้อ 6 และ [[api-spec|api-spec.md]] หัวข้อ 4 — ยังไม่มี sequence diagram ให้เนื่องจาก Sprint ที่เกี่ยวข้องยังไม่ build ตาม backlog.md ณ 20260823 (Sprint 9-10 ยังไม่มี commit ใดๆ):
+
+- **Timeline (Now/Next/Later) + Smart Priority (Sprint 9, FR-16):** เมื่อ build แล้ว flow ที่คาดว่าจะเกิดคือ Presentation Layer ขอ "Get Timeline" จาก Domain Logic Layer ซึ่งอ่าน Task+Event ของวันนี้จาก Structured Local Persistence ทั้งหมด (ข้าม Life Area) แล้วจัดกลุ่มตามเวลาปัจจุบันเป็น Now/Next/Later พร้อมเรียงลำดับตามกฎ Overdue → Due Today → Upcoming → High Priority → Normal ก่อนส่งกลับ Presentation Layer — ไม่มี container ใหม่ที่ต้องเพิ่ม
+- **Life Progress aggregation (Sprint 9, FR-17):** flow ที่คาดว่าจะเกิดคือ Domain Logic Layer อ่าน Task ทั้งหมดจาก Structured Local Persistence แล้วนับจำนวน Status=Done เทียบกับ Task ที่ครบกำหนดวันนี้ ทั้งแบบรวมและแยกตาม Life Area ส่งกลับเป็นตัวเลขสถานะ (ไม่ใช้คำว่า "Score")
+- **Task/Event ↔ Note/Link linking (Sprint 10, FR-18):** flow ที่คาดว่าจะเกิดคือ "Link Note to Task"/"Link Link to Task" (และคู่ Event) ให้ Domain Logic Layer อัปเดต reference-array บน Task/Event เอง คู่ขนานกับ "Link File to Task" ที่มีอยู่แล้ว แต่กลับทิศทางการถือ FK (Task/Event เป็นฝ่ายถือ แทนที่จะเป็น Note/Link)
+- **Custom Reminder Lead Time (Sprint 10, FR-19):** flow ที่คาดว่าจะเกิดคือ Presentation Layer ส่ง "Set Custom Reminder Lead Time" ให้ Domain Logic Layer บันทึกค่าเฉพาะรายการ แล้ว "Build Notifications" (Reminder/Notification Derivation) ต้องอ่านค่านี้เพิ่มจากค่า default กลางของระบบก่อนคำนวณระดับความเร่งด่วน
+- **Task/Event Detail แบบ What/When/Information รวมหน้าเดียว (Sprint 10):** flow ที่คาดว่าจะเกิดคือ query รวมที่ดึง Task/Event เดียวกันกับ File/Note/Link/reminder ที่เชื่อมไว้ทั้งหมดในคำขอเดียว แทนที่จะให้ Presentation Layer เรียกหลาย operation แยกกันแล้วประกอบเองเหมือนปัจจุบัน
+
+Sprint 11 (Demo/Polish/Freeze) ไม่เพิ่ม flow ใหม่ จึงไม่มีรายการเพิ่มในหัวข้อนี้
+
+## 5. Change Log
+
+- 20260823 — สร้างเอกสารนี้ครั้งแรก: sequence diagram ของทั้งสอง persona journey (นักศึกษา/บุคคลทั่วไป) ครอบคลุมเฉพาะขั้นตอนที่ build เสร็จแล้ว, sequence diagram ของ cross-cutting operations ทั้งสี่ (Delete Life Area, Quick Capture, Organize from Inbox, List Inbox Items), error/edge-case notes ต่อไดอะแกรม, และ known gaps จาก Sprint 9-10 ที่ยังไม่ build (ไม่มี diagram ให้ ตามกฎ)
