@@ -1,0 +1,158 @@
+# My Today — High-Level Architecture (Conceptual)
+
+เชื่อมโยงกลับ: [[index|02-technical]], [[../../01-requirements/01-spec/20260806-008-my-today-functional-requirements-master|FR master list]], [[../../01-requirements/feature-list|feature-list]]
+
+## ขอบเขตของเอกสารนี้
+
+เอกสารนี้เป็น **High-Level Architecture แบบ conceptual และไม่ผูกกับ technology stack** (stack-agnostic) อธิบายระบบในระดับ **C4 Model — Context (Level 1) + Container (Level 2)** เท่านั้น ไม่ลงถึงระดับ Component/Code เจตนาของเอกสารนี้คือให้ยังคงถูกต้องแม้ทีมจะเปลี่ยนไปสร้างแอปนี้ด้วย stack เทคโนโลยีอื่นทั้งหมดในวันพรุ่งนี้ — เนื้อหาหลักจึงจะไม่เอ่ยชื่อภาษา, framework, library, หรือ Web API ใดๆ โดยตรง (รายละเอียดการ implement จริงปัจจุบัน ถ้าเป็นประโยชน์ จะอยู่ในหมายเหตุท้ายหัวข้อที่ระบุชัดเจนว่า "หมายเหตุการ implement ปัจจุบัน" เท่านั้น)
+
+เอกสารเชิงเทคนิคที่ผูกกับ stack จริง (เช่น เลือกใช้ library อะไร, data schema ระดับ field) อาจตามมาเป็นเอกสารแยกอีกฉบับในโฟลเดอร์ [[index|02-technical]] นี้ในภายหลัง — เอกสารนี้ไม่ใช่เอกสารนั้น
+
+## 1. System Context (C4 Level 1)
+
+```mermaid
+flowchart TD
+    User(["Person: ผู้ใช้<br/>(นักศึกษา / บุคคลทั่วไป)"])
+
+    subgraph SystemBoundary["My Today — Personal Daily Workspace (Software System)"]
+        MyToday["จัดการ Task / Event / File / Life Area / Profile ของผู้ใช้คนเดียว<br/>ให้เห็นภาพวันนี้ในที่เดียว"]
+    end
+
+    User -->|"ใช้งานผ่านหน้าจอ, ป้อนข้อมูล, อ่านสรุป/แจ้งเตือน"| SystemBoundary
+
+    style SystemBoundary fill:#eef3fb,stroke:#3b5a8a,stroke-width:2px
+```
+
+**ไม่มี external system dependency ใดๆ** — ระบบนี้ไม่เรียก third-party API ภายนอก ไม่มี backend server ของตัวเอง และไม่ผูกกับบริการภายนอกใดๆ (เช่น Google Calendar, ระบบมหาวิทยาลัย, ธนาคาร, GPS/LMS) นี่ไม่ใช่รายละเอียดการ implement แต่เป็น**ข้อกำหนดผลิตภัณฑ์โดยตรง** (client-only by design ตาม Project purpose) — Context diagram ด้านบนจึงมีเพียง Person กับ System เท่านั้น ไม่มีกล่อง external system ใดๆ ให้วาด
+
+## 2. Container View (C4 Level 2)
+
+```mermaid
+flowchart TD
+    User(["Person: ผู้ใช้"])
+
+    subgraph SystemBoundary["My Today"]
+        Presentation["Presentation / Interaction Layer<br/>รับ input, แสดงผลหน้าจอ/สรุป/แจ้งเตือน"]
+        Domain["Application / Domain Logic Layer<br/>ตรรกะกลาง: CRUD, กฎความสัมพันธ์ระหว่าง entity,<br/>เป็นเจ้าของ state หนึ่งเดียวของระบบ"]
+        StructPersist[("Structured Local Persistence<br/>เก็บข้อมูลที่มีโครงสร้าง เช่น Task/Event/Life Area/Profile/สถานะอ่านแล้ว")]
+        BlobPersist[("Binary / Blob Local Persistence<br/>เก็บไฟล์แนบ (เนื้อหาไฟล์จริง)")]
+        Reminder["Reminder / Notification Derivation<br/>คำนวณระดับความเร่งด่วนจากข้อมูลสดของ Task/Event"]
+    end
+
+    User --> Presentation
+    Presentation -->|"คำสั่งสร้าง/แก้ไข/ลบ"| Domain
+    Domain -->|"อ่าน/เขียนข้อมูลโครงสร้าง"| StructPersist
+    Domain -->|"อ่าน/เขียนไฟล์แนบ"| BlobPersist
+    Domain -->|"ข้อมูล Task/Event ปัจจุบัน"| Reminder
+    Reminder -->|"รายการแจ้งเตือนตามระดับความเร่งด่วน"| Presentation
+    Domain -->|"ข้อมูลสำหรับแสดงผล"| Presentation
+
+    style SystemBoundary fill:#eef3fb,stroke:#3b5a8a,stroke-width:2px
+```
+
+Container ทั้งหมดตั้งชื่อตาม**หน้าที่รับผิดชอบ** ไม่ใช่ตามเทคโนโลยีที่ใช้ implement:
+
+- **Presentation / Interaction Layer** — ทุกสิ่งที่ผู้ใช้เห็นและโต้ตอบด้วย (หน้าจอ Dashboard/Tasks/Calendar/Files/Notifications/Life Areas/Profile ฯลฯ)
+- **Application / Domain Logic Layer** — จุดเดียวที่ถือ state ของระบบและบังคับกฎทางธุรกิจ (เช่น การลบ Life Area ต้องไม่ลบ Task/Event/File ที่อ้างถึงมัน แค่เคลียร์การอ้างอิงทิ้ง) — Presentation Layer ไม่แก้ข้อมูลตรงๆ ต้องผ่านชั้นนี้เสมอ
+- **Structured Local Persistence** — ที่เก็บข้อมูลที่มีโครงสร้างชัดเจน (record/field) แบบถาวรบนเครื่องผู้ใช้เอง
+- **Binary / Blob Local Persistence** — ที่เก็บเนื้อหาไฟล์แนบ (ขนาดใหญ่กว่าและมีลักษณะไบนารี จึงแยกจาก Structured Persistence)
+- **Reminder / Notification Derivation** — ไม่ใช่ที่เก็บข้อมูลถาวร แต่เป็นตรรกะที่คำนวณ "อะไรใกล้ถึงกำหนด/เลยกำหนดแล้ว" จากข้อมูล Task/Event สดทุกครั้งที่ต้องแสดงผล
+
+> **หมายเหตุการ implement ปัจจุบัน:** Presentation Layer คือ React components ใน `src/pages/` และ `src/components/`; Application/Domain Logic Layer คือ `src/App.tsx` ร่วมกับ hooks ใน `src/hooks/` (`useTasks`, `useEvents`, `useFiles`, `useLifeAreas`, `useProfile`, `useNotifications`) และ pure logic ใน `src/lib/`; Structured Local Persistence คือ LocalStorage ผ่าน `src/lib/storage.ts`; Binary/Blob Local Persistence คือ IndexedDB ผ่าน `src/lib/fileDb.ts`; Reminder/Notification Derivation คือ `src/lib/notificationUtils.ts` (`buildNotifications`) ซึ่งคำนวณใหม่ทุก render จาก `tasks`/`events` สด ไม่ได้เก็บเป็น record แยก
+
+## 3. Core Domain Concepts
+
+แนวคิดโดเมนหลักของระบบวางอยู่บน **Life Area เป็นศูนย์กลางการจัดกลุ่ม** — ทุก entity ที่เป็น "เรื่องที่ต้องทำ/เกิดขึ้น/เกี่ยวข้อง" อ้างอิงกลับไปยัง Life Area เดียวกันได้ (แต่ไม่บังคับ):
+
+```mermaid
+flowchart LR
+    LifeArea["Life Area<br/>(แนวคิดกลาง — จัดกลุ่มบริบทชีวิต เช่น Study/Work/Finance)"]
+    Task["Task<br/>(สิ่งที่ต้องทำ มี Deadline/Priority/สถานะ)"]
+    Event["Event / Schedule<br/>(นัดหมาย/กิจกรรมที่มีช่วงเวลา)"]
+    FileC["File<br/>(เอกสาร/ไฟล์แนบ)"]
+    Notif["Notification<br/>(ไม่ใช่ entity ที่เก็บถาวร — derive สดจาก Task/Event)"]
+    Profile["Personal Profile<br/>(ข้อมูลผู้ใช้ — standalone, ไม่เชื่อมกับ entity อื่น)"]
+    Note["Note (แผนในอนาคต — ยังไม่ build)"]
+    Link["Link (แผนในอนาคต — ยังไม่ build)"]
+
+    Task -.->|"อ้างอิง Life Area ได้ (ไม่บังคับ)"| LifeArea
+    Event -.->|"อ้างอิง Life Area ได้ (ไม่บังคับ)"| LifeArea
+    FileC -.->|"อ้างอิง Life Area ได้ (ไม่บังคับ)"| LifeArea
+    FileC -->|"เชื่อมกับ Task ได้หลายรายการ (จากฝั่ง File)"| Task
+    Task -.-o|"คำนวณสด ไม่ได้ถูกอ้างถึงจริง"| Notif
+    Event -.-o|"คำนวณสด ไม่ได้ถูกอ้างถึงจริง"| Notif
+    Note -.->|"แผน: อ้างอิง Life Area ได้ เหมือน Task/Event/File"| LifeArea
+    Link -.->|"แผน: อ้างอิง Life Area ได้ เหมือน Task/Event/File"| LifeArea
+
+    style Note stroke-dasharray: 5 5
+    style Link stroke-dasharray: 5 5
+    style Notif stroke-dasharray: 3 3
+```
+
+ประเด็นสำคัญของความสัมพันธ์:
+
+- **Life Area** เป็นแนวคิดเดี่ยว (standalone) ที่ไม่ขึ้นกับ entity อื่น — ลบ Life Area ได้โดยไม่ลบ Task/Event/File ที่เคยอ้างถึงมัน (แค่เคลียร์การอ้างอิงทิ้ง เพราะเป็นความสัมพันธ์แบบ many-to-one ที่ไม่บังคับ)
+- **Task / Event / File** แต่ละอย่างอ้างอิง Life Area ได้อย่างมากหนึ่งอัน (optional many-to-one)
+- **File ↔ Task** เป็นความสัมพันธ์ many-to-many ที่ File เป็นฝ่ายถือรายการ Task ที่เชื่อมด้วย — Task เองไม่ได้เก็บรายการไฟล์ของตัวเอง "ไฟล์ที่เกี่ยวข้องกับ Task นี้" เป็นสิ่งที่คำนวณจากฝั่ง File เสมอ ไม่ใช่ field ที่เก็บไว้บน Task
+- **Notification** ไม่ใช่ entity ที่ถูกเก็บถาวร — เป็นผลลัพธ์ที่ derive จากข้อมูล Task/Event สดทุกครั้งที่ต้องแสดง (จำแนกเป็น Overdue/Due Today/Due Soon) มีเพียงสถานะ "อ่านแล้วหรือยัง" เท่านั้นที่ถูกเก็บถาวรแยกต่างหาก
+- **Personal Profile** เป็นแนวคิดเดี่ยวลักษณะ singleton (มีชุดเดียวต่อผู้ใช้) ไม่มีความสัมพันธ์กับ entity อื่นใดเลย
+- **Note และ Link** เป็นแนวคิดที่**วางแผนไว้ในอนาคต (Sprint 8)** ยังไม่ถูกสร้างขึ้นจริงตามสถานะปัจจุบันใน backlog — เมื่อถูกสร้างจะเข้าสู่โมเดลความสัมพันธ์แบบเดียวกับ Task/Event/File คือเชื่อมกับ Life Area ได้แบบ optional
+
+## 4. Data Flow per User Journey
+
+หัวข้อนี้อ้างอิง narrative ของ [[../01-prototypes/user-journey-student|User Journey: นักศึกษา]] และ [[../01-prototypes/user-journey-general-person|User Journey: บุคคลทั่วไป]] โดยตรง — ไม่สร้าง narrative ใหม่ เพียง annotate ว่าแต่ละขั้นตอนที่มีอยู่แล้วในสอง journey นั้นไหลผ่าน Container ใดบ้างและทิศทางไหน สถานะ **เสร็จแล้ว/แผนในอนาคต** ของแต่ละขั้นตอนคงไว้ตรงตามที่ระบุใน journey docs (ยึด backlog.md ณ วันที่เขียน 20260816)
+
+### 4.1 นักศึกษา (Task "ส่งรายงาน HCI", Life Area "Study")
+
+| # | ขั้นตอน (ตาม user-journey-student.md) | Container ที่เกี่ยวข้อง | ทิศทาง | FR อ้างอิง | สถานะ |
+|---|---|---|---|---|---|
+| 1 | เพิ่ม Task ผ่าน Quick Capture | Presentation → Domain Logic → Structured Persistence | เขียน | FR-13 | แผนในอนาคต |
+| 2 | เข้า My Inbox | Structured Persistence → Domain Logic → Presentation | อ่าน | FR-14 | แผนในอนาคต |
+| 3 | จัดเข้า Life Area "Study" จาก Inbox | Presentation → Domain Logic → Structured Persistence | เขียน (อัปเดตการอ้างอิง Life Area) | FR-14 | แผนในอนาคต |
+| 4 | กำหนด Deadline ของ Task | Presentation → Domain Logic → Structured Persistence | เขียน | FR-04 | เสร็จแล้ว |
+| 5 | แนบไฟล์รายงาน (Related Files) | Presentation → Domain Logic → Binary/Blob Persistence (เนื้อหาไฟล์) + Structured Persistence (ความสัมพันธ์ File↔Task) | เขียน | FR-09 | เสร็จแล้ว |
+| 6 | เห็น Deadline ปรากฏใน Calendar อัตโนมัติ | Structured Persistence → Domain Logic (รวมมุมมอง Task+Event) → Presentation | อ่าน | FR-07 | เสร็จแล้ว |
+| 7 | เห็น Deadline ใน Timeline Now/Next/Later | Structured Persistence → Domain Logic → Presentation | อ่าน | FR-16 | แผนในอนาคต |
+| 8 | เปิดแอปตอนเช้า เห็นงานบน Today Dashboard | Structured Persistence → Domain Logic → Presentation | อ่าน | FR-05, FR-12 | เสร็จแล้ว |
+| 9 | ระบบเตือนตาม Reminder lead time ที่ตั้งเอง | Structured Persistence → Domain Logic → Reminder/Notification Derivation → Presentation | อ่าน | FR-19 | แผนในอนาคต |
+| 10 | ทำงานเสร็จ กด Done | Presentation → Domain Logic → Structured Persistence | เขียน | FR-03, FR-11 | เสร็จแล้ว |
+| 11 | Life Progress อัปเดต | Structured Persistence → Domain Logic (aggregate ตาม Life Area) → Presentation | อ่าน | FR-17 | แผนในอนาคต |
+
+### 4.2 บุคคลทั่วไป (Task "จ่ายค่าไฟ", Life Area "Finance")
+
+| # | ขั้นตอน (ตาม user-journey-general-person.md) | Container ที่เกี่ยวข้อง | ทิศทาง | FR อ้างอิง | สถานะ |
+|---|---|---|---|---|---|
+| 1 | เพิ่ม Task ผ่าน Quick Capture | Presentation → Domain Logic → Structured Persistence | เขียน | FR-13 | แผนในอนาคต |
+| 2 | เข้า My Inbox | Structured Persistence → Domain Logic → Presentation | อ่าน | FR-14 | แผนในอนาคต |
+| 3 | จัดเข้า Life Area "Finance" จาก Inbox + กำหนด Deadline | Presentation → Domain Logic → Structured Persistence | เขียน | FR-14 | แผนในอนาคต |
+| 4 | แนบไฟล์ใบแจ้งหนี้ค่าไฟ (Related Files) | Presentation → Domain Logic → Binary/Blob Persistence + Structured Persistence (ความสัมพันธ์ File↔Task) | เขียน | FR-09 | เสร็จแล้ว |
+| 5 | เห็น Deadline ใน Timeline Now/Next/Later | Structured Persistence → Domain Logic → Presentation | อ่าน | FR-16 | แผนในอนาคต |
+| 6 | ได้รับการเตือนเมื่อใกล้ถึงกำหนด (Due Soon/Overdue) | Structured Persistence → Domain Logic → Reminder/Notification Derivation → Presentation | อ่าน | FR-10 | เสร็จแล้ว |
+| 7 | จ่ายเงินเสร็จ กด Done | Presentation → Domain Logic → Structured Persistence | เขียน | FR-03, FR-11 | เสร็จแล้ว |
+| 8 | Life Progress อัปเดต | Structured Persistence → Domain Logic (aggregate ตาม Life Area) → Presentation | อ่าน | FR-17 | แผนในอนาคต |
+
+ทั้งสอง journey ไหลผ่าน**ชุด Container เดียวกันทุกขั้นตอน** ไม่มี container หรือ data path แยกตาม persona ที่ไหนเลย — สอดคล้องกับหมายเหตุปิดท้ายของทั้งสอง journey docs ที่ย้ำว่าใช้ "กลไกหลักชุดเดียวกัน" โดยไม่มี code path แยกตาม persona
+
+## 5. Cross-cutting Architectural Principles
+
+- **No backend / local-first by design** — ไม่มี server-side component ใดๆ ในสถาปัตยกรรมนี้ ทุก Container ทำงานอยู่บนเครื่องผู้ใช้เพียงเครื่องเดียว นี่คือการตัดสินใจเชิงผลิตภัณฑ์ตั้งแต่ต้น ไม่ใช่ข้อจำกัดชั่วคราว
+- **Privacy-by-architecture** — เพราะไม่มี backend และไม่มี external system dependency (ดูข้อ 1) ข้อมูลของผู้ใช้จึงไม่มีทางออกจากเครื่องได้เลยโดยธรรมชาติของสถาปัตยกรรม ไม่ใช่แค่กฎการใช้งานที่ตั้งไว้
+- **จุดเดียวเป็นเจ้าของ state** — มี Application/Domain Logic Layer เพียงชุดเดียวในระบบที่ถือ state จริงและกระจายให้ Presentation Layer ใช้ ไม่มีสำเนา state ที่สองที่อาจไม่ตรงกัน (อธิบายเชิงหน้าที่ ไม่ใช่ชื่อ class/file เฉพาะเจาะจง)
+- **ไม่มี AI และไม่มี external integration ในขอบเขตปัจจุบัน** — ทั้งสองอย่างถูกระบุเป็น out-of-scope อย่างชัดเจนสำหรับทั้ง Version 1/Core และ Version 2/Competition Track (AI อาจกลับมาเป็น phase หลัง Freeze ในอนาคตแบบ optional "Daily Orchestrator" แต่ไม่ใช่ส่วนหนึ่งของสถาปัตยกรรมนี้)
+- **ทิศทางการขยายระบบ** — entity ใหม่ในอนาคต (เช่น Note, Link) เข้าสู่โมเดลความสัมพันธ์แบบเดียวกับที่ Task/Event/File ใช้อยู่แล้ว (อ้างอิง Life Area แบบ optional many-to-one) แทนที่จะสร้างรูปแบบความสัมพันธ์ใหม่ — Life Area ยังคงเป็นแกนกลางของระบบต่อไปแม้ entity จะเพิ่มขึ้น
+
+## 6. Known Gaps / Not-yet-built Extensions
+
+รายการนี้คือ container/flow ที่ narrative ของ Sprint 8-11 (Competition Track ที่เหลือ) บอกเป็นนัยว่าจะต้องมี แต่ **ยังไม่ถูกสร้างจริง** ตามสถานะล่าสุดใน backlog.md (ตรวจสอบล่าสุด 20260808 ยังไม่มี commit ใดๆ เข้า Sprint 8-11):
+
+- **Inbox / Quick Capture path** (Sprint 8, FR-13/FR-14) — ยังไม่มี flow ให้ Presentation Layer บันทึกรายการแบบขั้นต่ำเข้า Structured Persistence โดยไม่ผ่านฟอร์มเต็ม และยังไม่มีสถานะ "ยังไม่จัด Life Area" ที่ต้องกรองแยกออกมา
+- **Note / Link เป็น entity ใหม่** (Sprint 8, FR-15) — ยังไม่มีที่เก็บข้อมูลสำหรับสอง entity นี้ใน Structured Persistence เลย
+- **Timeline (Now/Next/Later) + Smart Priority** (Sprint 9, FR-16) — ยังไม่มีตรรกะจัดลำดับอัตโนมัติแยกจาก Domain Logic Layer ปัจจุบัน ที่รวม Task+Event จากทุก Life Area แล้วเรียงตามกฎ Overdue → Due Today → Upcoming → High Priority → Normal
+- **Life Progress aggregation** (Sprint 9, FR-17) — ยังไม่มีตรรกะสรุปจำนวนงานเสร็จวันนี้ทั้งรวมและแยกตาม Life Area
+- **What/When/Information unified linking + custom reminder lead time** (Sprint 10, FR-18/FR-19) — Domain Logic Layer ปัจจุบันยังไม่รองรับ Task/Event เชื่อมกับ Note/Link (มีแค่ File↔Task) และ Reminder/Notification Derivation ยังใช้ค่า default เดียวกันทั้งระบบ ยังไม่มีการ override เป็นรายรายการ
+
+Sprint 11 (Demo/Polish/Freeze) ไม่เพิ่ม container หรือ flow ใหม่ จึงไม่มีรายการเพิ่มในหัวข้อนี้
+
+## 7. Change Log
+
+- 20260816 — สร้างเอกสารนี้ครั้งแรก: C4 Context + Container diagram, Core Domain Concepts, Data Flow ของทั้งสอง persona journey (นักศึกษา/บุคคลทั่วไป) อ้างอิงจาก user-journey docs ที่มีอยู่แล้ว, cross-cutting principles, และ known gaps จาก Sprint 8-11 ที่ยังไม่ build
