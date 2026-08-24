@@ -5,6 +5,7 @@ import { QuickCaptureModal } from './components/QuickCaptureModal'
 import { DashboardPage } from './pages/DashboardPage'
 import { TasksPage } from './pages/TasksPage'
 import { CalendarPage } from './pages/CalendarPage'
+import { TimelinePage } from './pages/TimelinePage'
 import { FilesPage } from './pages/FilesPage'
 import { InboxPage } from './pages/InboxPage'
 import { NotificationsPage } from './pages/NotificationsPage'
@@ -112,6 +113,7 @@ function App() {
             />
           }
         />
+        <Route path="/timeline" element={<TimelinePage tasks={tasks} events={events} lifeAreas={lifeAreas} />} />
         <Route
           path="/files"
           element={

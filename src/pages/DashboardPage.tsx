@@ -5,10 +5,12 @@ import { SummaryCards } from '../components/SummaryCards'
 import { TodayTasks } from '../components/TodayTasks'
 import { TodaySchedule } from '../components/TodaySchedule'
 import { Upcoming } from '../components/Upcoming'
+import { LifeProgress } from '../components/LifeProgress'
 import { TaskFormModal } from '../components/TaskFormModal'
 import { NotificationList } from '../components/NotificationList'
 import { Footer } from '../components/Footer'
 import { isDueToday, daysUntil, todayISO } from '../lib/taskUtils'
+import { getLifeProgress, sortTasksBySmartPriority } from '../lib/timelineUtils'
 import { fabButtonClass } from '../lib/uiClasses'
 import type { CalendarEvent, LifeArea, NotificationItem, Task, TaskInput, TaskStatus } from '../types'
 
@@ -38,11 +40,12 @@ export function DashboardPage({
   const [quickAddOpen, setQuickAddOpen] = useState(false)
   const navigate = useNavigate()
 
-  const todayTasks = tasks.filter((t) => !t.inInbox && isDueToday(t))
+  const todayTasks = sortTasksBySmartPriority(tasks.filter((t) => !t.inInbox && isDueToday(t)))
   const completed = todayTasks.filter((t) => t.status === 'Done').length
   const total = todayTasks.length
   const pending = total - completed
   const todayEvents = events.filter((e) => !e.inInbox && e.date === todayISO())
+  const lifeProgress = getLifeProgress(tasks, lifeAreas)
 
   const upcomingTasks = tasks
     .filter((t) => {
@@ -68,6 +71,7 @@ export function DashboardPage({
     <div className="min-h-screen bg-slate-50 pb-24">
       <Header today={new Date()} unreadCount={unreadCount} />
       <SummaryCards total={total} completed={completed} pending={pending} dueSoon={upcomingTasks.length} />
+      <LifeProgress progress={lifeProgress} />
       {urgentNotifications.length > 0 && (
         <section className="px-4 py-4 sm:px-6">
           <h2 className="text-base font-semibold text-slate-900">การแจ้งเตือนสำคัญ</h2>

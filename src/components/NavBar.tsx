@@ -16,6 +16,9 @@ export function NavBar({ unreadCount = 0, inboxCount = 0 }: NavBarProps) {
       <NavLink to="/" end className={({ isActive }) => `${linkBase} ${isActive ? linkActive : linkInactive}`}>
         วันนี้
       </NavLink>
+      <NavLink to="/timeline" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : linkInactive}`}>
+        Timeline
+      </NavLink>
       <NavLink to="/inbox" className={({ isActive }) => `${linkBase} ${isActive ? linkActive : linkInactive}`}>
         Inbox
         {inboxCount > 0 && (
