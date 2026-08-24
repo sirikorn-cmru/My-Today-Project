@@ -14,12 +14,18 @@ export const levelBadge: Record<NotificationLevel, string> = {
 
 const levelOrder: Record<NotificationLevel, number> = { Overdue: 0, DueToday: 1, DueSoon: 2 }
 
+// Sprint 10 Business Rule 2: ถ้า Task/Event ตั้ง reminderLeadTime เอง ให้ใช้ค่านั้นแทน threshold
+// default ของ Sprint 5 ทั้งหมดสำหรับรายการนั้น — ยุบเหลือ tier เดียว (DueSoon) แทนสอง tier
+// (DueToday/DueSoon) ของ default เดิม เพราะ custom lead time คือจุดเตือนครั้งเดียวที่ผู้ใช้ตั้งใจเลือกเอง
 function taskLevel(task: Task, now: number): NotificationLevel | null {
   if (task.status === 'Done') return null
   if (task.inInbox || !task.dueDate) return null
   const deadline = new Date(`${task.dueDate}T${task.dueTime || '23:59'}:00`).getTime()
   const hoursUntil = (deadline - now) / (1000 * 60 * 60)
   if (hoursUntil < 0) return 'Overdue'
+  if (task.reminderLeadTime != null) {
+    return hoursUntil <= task.reminderLeadTime / 60 ? 'DueSoon' : null
+  }
   if (hoursUntil <= 24) return 'DueToday'
   if (hoursUntil <= 72) return 'DueSoon'
   return null
@@ -30,6 +36,9 @@ function eventLevel(event: CalendarEvent, now: number): NotificationLevel | null
   const start = new Date(`${event.date}T${event.startTime || '00:00'}:00`).getTime()
   const hoursUntil = (start - now) / (1000 * 60 * 60)
   if (hoursUntil < -2) return null
+  if (event.reminderLeadTime != null) {
+    return hoursUntil <= event.reminderLeadTime / 60 ? 'DueSoon' : null
+  }
   if (hoursUntil <= 2) return 'DueToday'
   if (hoursUntil <= 24) return 'DueSoon'
   return null
@@ -49,7 +58,9 @@ export function buildNotifications(tasks: Task[], events: CalendarEvent[], readI
       sourceId: task.id,
       level,
       title: task.title,
-      message: `งาน "${task.title}" ${levelLabel[level]} (กำหนดส่ง ${task.dueDate} ${task.dueTime || ''})`.trim(),
+      message: `งาน "${task.title}" ${levelLabel[level]} (กำหนดส่ง ${task.dueDate} ${task.dueTime || ''})${
+        task.reminderLeadTime != null ? ' — ตาม Reminder ที่ตั้งไว้เอง' : ''
+      }`.trim(),
       timeLabel: `${task.dueDate} ${task.dueTime || ''}`.trim(),
       read: readIds.has(id),
     })
@@ -65,7 +76,9 @@ export function buildNotifications(tasks: Task[], events: CalendarEvent[], readI
       sourceId: event.id,
       level,
       title: event.title,
-      message: `กิจกรรม "${event.title}" กำลังจะเริ่ม (${event.date} ${event.startTime || ''})`,
+      message: `กิจกรรม "${event.title}" กำลังจะเริ่ม (${event.date} ${event.startTime || ''})${
+        event.reminderLeadTime != null ? ' — ตาม Reminder ที่ตั้งไว้เอง' : ''
+      }`,
       timeLabel: `${event.date} ${event.startTime || ''}`.trim(),
       read: readIds.has(id),
     })

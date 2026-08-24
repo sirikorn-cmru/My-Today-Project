@@ -2,11 +2,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { DayAgenda } from '../components/DayAgenda'
 import { EventFormModal } from '../components/EventFormModal'
+import { EventDetailModal } from '../components/EventDetailModal'
 import { Footer } from '../components/Footer'
 import { getDayItems, getMonthGrid, getWeekDates, weekdayLabels } from '../lib/calendarUtils'
 import { todayISO } from '../lib/taskUtils'
 import { fabButtonClass, pageHeaderClass } from '../lib/uiClasses'
-import type { CalendarEvent, CalendarEventInput, CalendarViewMode, LifeArea, Task } from '../types'
+import type { CalendarEvent, CalendarEventInput, CalendarViewMode, FileRecord, LifeArea, Link, Note, Task } from '../types'
 
 interface CalendarPageProps {
   events: CalendarEvent[]
@@ -15,6 +16,11 @@ interface CalendarPageProps {
   addEvent: (input: CalendarEventInput) => void
   updateEvent: (id: string, input: CalendarEventInput) => void
   deleteEvent: (id: string) => void
+  files: FileRecord[]
+  notes: Note[]
+  links: Link[]
+  onLinkFile: (fileId: string, eventId: string) => void
+  onUnlinkFile: (fileId: string, eventId: string) => void
 }
 
 const viewLabels: Record<CalendarViewMode, string> = {
@@ -23,11 +29,25 @@ const viewLabels: Record<CalendarViewMode, string> = {
   month: 'เดือน',
 }
 
-export function CalendarPage({ events, tasks, lifeAreas, addEvent, updateEvent, deleteEvent }: CalendarPageProps) {
+export function CalendarPage({
+  events,
+  tasks,
+  lifeAreas,
+  addEvent,
+  updateEvent,
+  deleteEvent,
+  files,
+  notes,
+  links,
+  onLinkFile,
+  onUnlinkFile,
+}: CalendarPageProps) {
   const [searchParams, setSearchParams] = useSearchParams()
   const initialDate = searchParams.get('date')
   const [viewMode, setViewMode] = useState<CalendarViewMode>('today')
   const [selectedDate, setSelectedDate] = useState(() => initialDate || todayISO())
+  const [detailEventId, setDetailEventId] = useState<string | null>(null)
+  const detailEvent = events.find((e) => e.id === detailEventId) ?? null
   const [formOpen, setFormOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
 
@@ -121,6 +141,7 @@ export function CalendarPage({ events, tasks, lifeAreas, addEvent, updateEvent, 
           <DayAgenda
             date={selectedDate}
             items={getDayItems(selectedDate, events, tasks, lifeAreas)}
+            onViewEventDetail={setDetailEventId}
             onEditEvent={openEditById}
             onDeleteEvent={handleDeleteById}
           />
@@ -227,6 +248,19 @@ export function CalendarPage({ events, tasks, lifeAreas, addEvent, updateEvent, 
           setEditingEvent(null)
         }}
         onSubmit={handleSubmit}
+      />
+
+      <EventDetailModal
+        open={detailEventId !== null}
+        event={detailEvent}
+        lifeAreas={lifeAreas}
+        files={files}
+        notes={notes}
+        links={links}
+        onClose={() => setDetailEventId(null)}
+        onUpdateEvent={updateEvent}
+        onLinkFile={onLinkFile}
+        onUnlinkFile={onUnlinkFile}
       />
     </div>
   )

@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { TaskCard } from '../components/TaskCard'
 import { TaskFormModal } from '../components/TaskFormModal'
+import { TaskDetailModal } from '../components/TaskDetailModal'
 import { Footer } from '../components/Footer'
 import { filterTasks, sortByDeadline, dueLabel } from '../lib/taskUtils'
 import { getLifeAreaName } from '../lib/lifeAreaUtils'
 import { emptyStateClass, fabButtonClass, inputClass, pageHeaderClass } from '../lib/uiClasses'
 import type { TaskFilters } from '../lib/taskUtils'
-import type { FileRecord, LifeArea, Task, TaskInput, TaskStatus, Priority } from '../types'
+import type { FileRecord, LifeArea, Link, Note, Task, TaskInput, TaskStatus, Priority } from '../types'
 
 interface TasksPageProps {
   tasks: Task[]
@@ -19,6 +20,8 @@ interface TasksPageProps {
   onLinkFile: (fileId: string, taskId: string) => void
   onUnlinkFile: (fileId: string, taskId: string) => void
   lifeAreas: LifeArea[]
+  notes: Note[]
+  links: Link[]
 }
 
 const statusFilterOptions: Array<TaskStatus | 'All'> = ['All', 'To Do', 'Doing', 'Done']
@@ -34,12 +37,17 @@ export function TasksPage({
   onLinkFile,
   onUnlinkFile,
   lifeAreas,
+  notes,
+  links,
 }: TasksPageProps) {
   const [filters, setFilters] = useState<TaskFilters>({ status: 'All', priority: 'All', lifeAreaId: 'All', search: '' })
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
   const [formOpen, setFormOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [detailTaskId, setDetailTaskId] = useState<string | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
+
+  const detailTask = tasks.find((t) => t.id === detailTaskId) ?? null
 
   const visibleTasks = useMemo(() => {
     return sortByDeadline(filterTasks(tasks.filter((t) => !t.inInbox), filters), sortDir)
@@ -159,6 +167,7 @@ export function TasksPage({
               showDescription
               fileCount={files.filter((f) => f.linkedTaskIds.includes(task.id)).length}
               onStatusChange={(status) => setStatus(task.id, status)}
+              onOpenDetail={() => setDetailTaskId(task.id)}
               onEdit={() => openEdit(task)}
               onDelete={() => handleDelete(task)}
             />
@@ -184,6 +193,19 @@ export function TasksPage({
         files={files}
         onLinkFile={(fileId) => editingTask && onLinkFile(fileId, editingTask.id)}
         onUnlinkFile={(fileId) => editingTask && onUnlinkFile(fileId, editingTask.id)}
+      />
+
+      <TaskDetailModal
+        open={detailTaskId !== null}
+        task={detailTask}
+        lifeAreas={lifeAreas}
+        files={files}
+        notes={notes}
+        links={links}
+        onClose={() => setDetailTaskId(null)}
+        onUpdateTask={updateTask}
+        onLinkFile={onLinkFile}
+        onUnlinkFile={onUnlinkFile}
       />
     </div>
   )

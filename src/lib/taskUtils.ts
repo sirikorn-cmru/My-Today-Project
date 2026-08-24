@@ -26,6 +26,22 @@ export function dueLabel(task: Task, reference: Date = new Date()): string {
   return `อีก ${diff} วัน`
 }
 
+// Sprint 10: ตัวเลือก custom reminder lead time (นาที) ให้ผู้ใช้เลือกแทนค่า default ของ Sprint 5
+export const reminderLeadTimeOptions: Array<{ value: number; label: string }> = [
+  { value: 15, label: 'ก่อน 15 นาที' },
+  { value: 30, label: 'ก่อน 30 นาที' },
+  { value: 60, label: 'ก่อน 1 ชั่วโมง' },
+  { value: 180, label: 'ก่อน 3 ชั่วโมง' },
+  { value: 1440, label: 'ก่อน 1 วัน' },
+  { value: 2880, label: 'ก่อน 2 วัน' },
+]
+
+export function formatLeadTime(minutes: number): string {
+  if (minutes % 1440 === 0) return `ก่อน ${minutes / 1440} วัน`
+  if (minutes % 60 === 0) return `ก่อน ${minutes / 60} ชั่วโมง`
+  return `ก่อน ${minutes} นาที`
+}
+
 export function sortByDeadline(tasks: Task[], direction: 'asc' | 'desc' = 'asc'): Task[] {
   const sorted = [...tasks].sort((a, b) => {
     const aKey = `${a.dueDate}T${a.dueTime}`

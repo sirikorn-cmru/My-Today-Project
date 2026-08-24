@@ -21,6 +21,9 @@ export function createSeedTasks(): Task[] {
       status: 'To Do',
       inInbox: false,
       createdAt: now,
+      linkedNoteIds: [],
+      linkedLinkIds: [],
+      reminderLeadTime: null,
     },
     {
       id: 'seed-2',
@@ -33,6 +36,9 @@ export function createSeedTasks(): Task[] {
       status: 'Doing',
       inInbox: false,
       createdAt: now,
+      linkedNoteIds: [],
+      linkedLinkIds: [],
+      reminderLeadTime: null,
     },
     {
       id: 'seed-3',
@@ -45,6 +51,9 @@ export function createSeedTasks(): Task[] {
       status: 'Done',
       inInbox: false,
       createdAt: now,
+      linkedNoteIds: [],
+      linkedLinkIds: [],
+      reminderLeadTime: null,
     },
     {
       id: 'seed-4',
@@ -57,6 +66,9 @@ export function createSeedTasks(): Task[] {
       status: 'To Do',
       inInbox: false,
       createdAt: now,
+      linkedNoteIds: [],
+      linkedLinkIds: [],
+      reminderLeadTime: null,
     },
     {
       id: 'seed-5',
@@ -69,6 +81,9 @@ export function createSeedTasks(): Task[] {
       status: 'To Do',
       inInbox: false,
       createdAt: now,
+      linkedNoteIds: [],
+      linkedLinkIds: [],
+      reminderLeadTime: null,
     },
     {
       id: 'seed-6',
@@ -81,6 +96,9 @@ export function createSeedTasks(): Task[] {
       status: 'To Do',
       inInbox: false,
       createdAt: now,
+      linkedNoteIds: [],
+      linkedLinkIds: [],
+      reminderLeadTime: null,
     },
     {
       id: 'seed-7',
@@ -93,6 +111,9 @@ export function createSeedTasks(): Task[] {
       status: 'To Do',
       inInbox: false,
       createdAt: now,
+      linkedNoteIds: [],
+      linkedLinkIds: [],
+      reminderLeadTime: null,
     },
   ]
 }

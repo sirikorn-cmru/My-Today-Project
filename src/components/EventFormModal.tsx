@@ -26,6 +26,9 @@ function emptyForm(defaultDate?: string): CalendarEventInput {
     description: '',
     lifeAreaId: '',
     inInbox: false,
+    linkedNoteIds: [],
+    linkedLinkIds: [],
+    reminderLeadTime: null,
   }
 }
 
@@ -54,6 +57,11 @@ export function EventFormModal({
             description: initialEvent.description,
             lifeAreaId: initialEvent.lifeAreaId,
             inInbox: initialEvent.inInbox,
+            // ฟิลด์ Sprint 10 (Note/Link/Reminder) แก้ผ่าน Event Detail เท่านั้น — ฟอร์มนี้แค่ผ่านค่าเดิม
+            // ต่อไปเฉยๆ ไม่ให้หายตอนแก้ไขฟิลด์อื่นในฟอร์มนี้
+            linkedNoteIds: initialEvent.linkedNoteIds,
+            linkedLinkIds: initialEvent.linkedLinkIds,
+            reminderLeadTime: initialEvent.reminderLeadTime,
           }
         : emptyForm(defaultDate),
     )

@@ -12,6 +12,12 @@ function toErrorMessage(err: unknown): string {
   return 'เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ'
 }
 
+// Sprint 10 เพิ่ม linkedEventIds เป็นฟิลด์ใหม่บน FileRecord — record เดิมที่เคยเก็บไว้ก่อน Sprint
+// นี้ใน IndexedDB จะไม่มีฟิลด์นี้เลย (undefined) จึงต้อง normalize ตอนอ่านเพื่อกัน .includes() พัง
+function normalizeFile(file: FileRecord): FileRecord {
+  return { ...file, linkedEventIds: file.linkedEventIds ?? [] }
+}
+
 export function useFiles() {
   const [files, setFiles] = useState<FileRecord[]>([])
   const [loaded, setLoaded] = useState(false)
@@ -20,7 +26,7 @@ export function useFiles() {
   useEffect(() => {
     seedIfEmpty(createSeedFiles)
       .then((records) => {
-        setFiles(records)
+        setFiles(records.map(normalizeFile))
         setLoaded(true)
       })
       .catch((err) => {
@@ -76,6 +82,30 @@ export function useFiles() {
     }
   }
 
+  async function linkFileToEvent(fileId: string, eventId: string) {
+    const file = files.find((f) => f.id === fileId)
+    if (!file || file.linkedEventIds.includes(eventId)) return
+    const updated: FileRecord = { ...file, linkedEventIds: [...file.linkedEventIds, eventId] }
+    try {
+      await putFile(updated)
+      setFiles((prev) => prev.map((f) => (f.id === fileId ? updated : f)))
+    } catch (err) {
+      setError(`เชื่อมไฟล์กับกิจกรรมไม่สำเร็จ: ${toErrorMessage(err)}`)
+    }
+  }
+
+  async function unlinkFileFromEvent(fileId: string, eventId: string) {
+    const file = files.find((f) => f.id === fileId)
+    if (!file) return
+    const updated: FileRecord = { ...file, linkedEventIds: file.linkedEventIds.filter((id) => id !== eventId) }
+    try {
+      await putFile(updated)
+      setFiles((prev) => prev.map((f) => (f.id === fileId ? updated : f)))
+    } catch (err) {
+      setError(`ยกเลิกเชื่อมไฟล์ไม่สำเร็จ: ${toErrorMessage(err)}`)
+    }
+  }
+
   async function updateFileLifeArea(fileId: string, lifeAreaId: string) {
     const file = files.find((f) => f.id === fileId)
     if (!file) return
@@ -90,7 +120,7 @@ export function useFiles() {
 
   async function updateFile(
     fileId: string,
-    patch: Partial<Pick<FileRecord, 'name' | 'category' | 'lifeAreaId' | 'linkedTaskIds' | 'inInbox'>>,
+    patch: Partial<Pick<FileRecord, 'name' | 'category' | 'lifeAreaId' | 'linkedTaskIds' | 'linkedEventIds' | 'inInbox'>>,
   ) {
     const file = files.find((f) => f.id === fileId)
     if (!file) return
@@ -116,6 +146,8 @@ export function useFiles() {
     deleteFile,
     linkFileToTask,
     unlinkFileFromTask,
+    linkFileToEvent,
+    unlinkFileFromEvent,
     updateFileLifeArea,
     updateFile,
   }

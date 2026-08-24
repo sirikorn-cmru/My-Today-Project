@@ -6,11 +6,12 @@ interface DayAgendaProps {
   date: string
   items: DayItem[]
   showDateHeader?: boolean
+  onViewEventDetail?: (id: string) => void
   onEditEvent?: (id: string) => void
   onDeleteEvent?: (id: string) => void
 }
 
-export function DayAgenda({ date, items, showDateHeader, onEditEvent, onDeleteEvent }: DayAgendaProps) {
+export function DayAgenda({ date, items, showDateHeader, onViewEventDetail, onEditEvent, onDeleteEvent }: DayAgendaProps) {
   return (
     <div>
       {showDateHeader && <h3 className="text-sm font-semibold text-slate-700">{formatDayHeader(date)}</h3>}
@@ -30,8 +31,13 @@ export function DayAgenda({ date, items, showDateHeader, onEditEvent, onDeleteEv
                 Task
               </span>
             ) : (
-              (onEditEvent || onDeleteEvent) && (
+              (onViewEventDetail || onEditEvent || onDeleteEvent) && (
                 <div className="flex shrink-0 gap-2">
+                  {onViewEventDetail && (
+                    <button type="button" onClick={() => onViewEventDetail(item.id)} className={linkButtonClass}>
+                      รายละเอียด
+                    </button>
+                  )}
                   {onEditEvent && (
                     <button type="button" onClick={() => onEditEvent(item.id)} className={linkButtonClass}>
                       แก้ไข

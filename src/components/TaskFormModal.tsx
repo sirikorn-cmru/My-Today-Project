@@ -27,6 +27,9 @@ const emptyForm: TaskInput = {
   priority: 'Medium',
   status: 'To Do',
   inInbox: false,
+  linkedNoteIds: [],
+  linkedLinkIds: [],
+  reminderLeadTime: null,
 }
 
 export function TaskFormModal({
@@ -55,6 +58,11 @@ export function TaskFormModal({
             priority: initialTask.priority,
             status: initialTask.status,
             inInbox: initialTask.inInbox,
+            // ฟิลด์ Sprint 10 (Note/Link/Reminder) แก้ผ่าน Task Detail เท่านั้น — ฟอร์มนี้แค่ผ่านค่าเดิม
+            // ต่อไปเฉยๆ ไม่ให้หายตอนแก้ไขฟิลด์อื่นในฟอร์มนี้
+            linkedNoteIds: initialTask.linkedNoteIds,
+            linkedLinkIds: initialTask.linkedLinkIds,
+            reminderLeadTime: initialTask.reminderLeadTime,
           }
         : emptyForm,
     )

@@ -13,7 +13,7 @@ interface FileFormModalProps {
   initialFile?: FileRecord | null
   onUpdate?: (
     id: string,
-    patch: Partial<Pick<FileRecord, 'name' | 'category' | 'lifeAreaId' | 'linkedTaskIds' | 'inInbox'>>,
+    patch: Partial<Pick<FileRecord, 'name' | 'category' | 'lifeAreaId' | 'linkedTaskIds' | 'linkedEventIds' | 'inInbox'>>,
   ) => void
   // Quick Capture mode (Sprint 8): ตั้ง inInbox=true ตอนสร้างใหม่ผ่านปุ่มกลาง — ยังต้องเลือกไฟล์เสมอ
   // (ไฟล์ที่ไม่มีเนื้อหาไม่มีความหมาย) แต่ชื่อ/หมวดหมู่/Life Area ไปกรอกทีหลังได้ที่ My Inbox
@@ -96,6 +96,7 @@ export function FileFormModal({
       category: category.trim() || 'ทั่วไป',
       lifeAreaId,
       linkedTaskIds,
+      linkedEventIds: [],
       mimeType: file.type || 'application/octet-stream',
       size: file.size,
       blob: file,

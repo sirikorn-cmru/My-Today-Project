@@ -5,9 +5,21 @@ import { createSeedEvents } from '../data/seedEvents'
 
 const STORAGE_KEY = 'my-today:events'
 
+// Sprint 10 เพิ่ม linkedNoteIds/linkedLinkIds/reminderLeadTime เป็นฟิลด์ใหม่บน Event — record เดิม
+// ที่เคยเก็บไว้ก่อน Sprint นี้จะไม่มีสามฟิลด์นี้เลย (undefined) จึงต้อง normalize ตอนอ่านเพื่อกัน
+// .includes()/.map() บนค่า undefined พัง ไม่ต้อง bump storage key เพราะเป็นฟิลด์เพิ่มล้วนๆ
+function normalizeEvent(event: CalendarEvent): CalendarEvent {
+  return {
+    ...event,
+    linkedNoteIds: event.linkedNoteIds ?? [],
+    linkedLinkIds: event.linkedLinkIds ?? [],
+    reminderLeadTime: event.reminderLeadTime ?? null,
+  }
+}
+
 function loadInitialEvents(): CalendarEvent[] {
   const stored = readJSON<CalendarEvent[] | null>(STORAGE_KEY, null)
-  if (stored) return stored
+  if (stored) return stored.map(normalizeEvent)
   const seeded = createSeedEvents()
   writeJSON(STORAGE_KEY, seeded)
   return seeded

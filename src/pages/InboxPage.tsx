@@ -43,7 +43,7 @@ interface InboxPageProps {
   deleteEvent: (id: string) => void
   updateFile: (
     id: string,
-    patch: Partial<Pick<FileRecord, 'name' | 'category' | 'lifeAreaId' | 'linkedTaskIds' | 'inInbox'>>,
+    patch: Partial<Pick<FileRecord, 'name' | 'category' | 'lifeAreaId' | 'linkedTaskIds' | 'linkedEventIds' | 'inInbox'>>,
   ) => void
   deleteFile: (id: string) => void
   addNote: (input: NoteInput) => void

@@ -12,6 +12,12 @@ export interface Task {
   status: TaskStatus
   inInbox: boolean
   createdAt: string
+  // Sprint 10: เชื่อมกับ Note/Link เก็บที่ฝั่ง Task โดยตรง (ต่างจาก Task<->File ของ Sprint 4
+  // ที่เก็บที่ฝั่ง File ผ่าน linkedTaskIds — เป็นการตัดสินใจออกแบบใหม่ ไม่ใช่การขยายจากเดิม)
+  linkedNoteIds: string[]
+  linkedLinkIds: string[]
+  // นาทีก่อนกำหนดที่จะแจ้งเตือน — null = ใช้ threshold default ของ Sprint 5, ตั้งค่าแล้ว override เฉพาะ Task นี้
+  reminderLeadTime: number | null
 }
 
 export type TaskInput = Omit<Task, 'id' | 'createdAt'>
@@ -28,6 +34,10 @@ export interface CalendarEvent {
   lifeAreaId: string
   inInbox: boolean
   createdAt: string
+  // Sprint 10 Business Rule 4: Event เชื่อมกับ Note/Link ได้ด้วยกลไกเดียวกับ Task (เก็บที่ฝั่ง Event เอง)
+  linkedNoteIds: string[]
+  linkedLinkIds: string[]
+  reminderLeadTime: number | null
 }
 
 export type CalendarEventInput = Omit<CalendarEvent, 'id' | 'createdAt'>
@@ -49,6 +59,9 @@ export interface FileRecord {
   category: string
   lifeAreaId: string
   linkedTaskIds: string[]
+  // Sprint 10 Business Rule 4: Event เชื่อมกับ File ได้ด้วยกลไกเดียวกับ Task<->File ของ Sprint 4
+  // (many-to-many ที่ File เป็นฝ่ายถือรายการ ไม่ใช่ field บน Event)
+  linkedEventIds: string[]
   mimeType: string
   size: number
   inInbox: boolean

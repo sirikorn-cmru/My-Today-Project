@@ -8,9 +8,21 @@ import { createSeedTasks } from '../data/seedTasks'
 // own guidance — there was no real user data to preserve yet.
 const STORAGE_KEY = 'my-today:tasks:v2'
 
+// Sprint 10 เพิ่ม linkedNoteIds/linkedLinkIds/reminderLeadTime เป็นฟิลด์ใหม่บน Task — record เดิม
+// ที่เคยเก็บไว้ก่อน Sprint นี้จะไม่มีสามฟิลด์นี้เลย (undefined) จึงต้อง normalize ตอนอ่านเพื่อกัน
+// .includes()/.map() บนค่า undefined พัง ไม่ต้อง bump storage key เพราะเป็นฟิลด์เพิ่มล้วนๆ
+function normalizeTask(task: Task): Task {
+  return {
+    ...task,
+    linkedNoteIds: task.linkedNoteIds ?? [],
+    linkedLinkIds: task.linkedLinkIds ?? [],
+    reminderLeadTime: task.reminderLeadTime ?? null,
+  }
+}
+
 function loadInitialTasks(): Task[] {
   const stored = readJSON<Task[] | null>(STORAGE_KEY, null)
-  if (stored) return stored
+  if (stored) return stored.map(normalizeTask)
   const seeded = createSeedTasks()
   writeJSON(STORAGE_KEY, seeded)
   return seeded

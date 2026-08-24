@@ -11,6 +11,7 @@ interface TaskCardProps {
   onStatusChange?: (status: TaskStatus) => void
   onEdit?: () => void
   onDelete?: () => void
+  onOpenDetail?: () => void
 }
 
 const statusOptions: TaskStatus[] = ['To Do', 'Doing', 'Done']
@@ -24,6 +25,7 @@ export function TaskCard({
   onStatusChange,
   onEdit,
   onDelete,
+  onOpenDetail,
 }: TaskCardProps) {
   return (
     <li className={`${cardClass} p-3 transition-shadow hover:shadow-md`}>
@@ -64,8 +66,13 @@ export function TaskCard({
         </div>
       </div>
 
-      {(onEdit || onDelete) && (
+      {(onOpenDetail || onEdit || onDelete) && (
         <div className="mt-2 flex justify-end gap-3 border-t border-slate-100 pt-2">
+          {onOpenDetail && (
+            <button type="button" onClick={onOpenDetail} className={linkButtonClass}>
+              รายละเอียด
+            </button>
+          )}
           {onEdit && (
             <button type="button" onClick={onEdit} className={linkButtonClass}>
               แก้ไข

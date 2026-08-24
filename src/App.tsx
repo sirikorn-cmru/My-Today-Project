@@ -33,6 +33,8 @@ function App() {
     deleteFile,
     linkFileToTask,
     unlinkFileFromTask,
+    linkFileToEvent,
+    unlinkFileFromEvent,
     updateFileLifeArea,
     updateFile,
   } = useFiles()
@@ -97,6 +99,8 @@ function App() {
               onLinkFile={linkFileToTask}
               onUnlinkFile={unlinkFileFromTask}
               lifeAreas={lifeAreas}
+              notes={notes}
+              links={links}
             />
           }
         />
@@ -110,6 +114,11 @@ function App() {
               addEvent={addEvent}
               updateEvent={updateEvent}
               deleteEvent={deleteEvent}
+              files={files}
+              notes={notes}
+              links={links}
+              onLinkFile={linkFileToEvent}
+              onUnlinkFile={unlinkFileFromEvent}
             />
           }
         />

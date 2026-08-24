@@ -22,6 +22,9 @@ export function createSeedEvents(): CalendarEvent[] {
       lifeAreaId: 'la-study',
       inInbox: false,
       createdAt: now,
+      linkedNoteIds: [],
+      linkedLinkIds: [],
+      reminderLeadTime: null,
     },
     {
       id: 'seed-e2',
@@ -35,6 +38,9 @@ export function createSeedEvents(): CalendarEvent[] {
       lifeAreaId: 'la-work',
       inInbox: false,
       createdAt: now,
+      linkedNoteIds: [],
+      linkedLinkIds: [],
+      reminderLeadTime: null,
     },
     {
       id: 'seed-e3',
@@ -48,6 +54,9 @@ export function createSeedEvents(): CalendarEvent[] {
       lifeAreaId: 'la-study',
       inInbox: false,
       createdAt: now,
+      linkedNoteIds: [],
+      linkedLinkIds: [],
+      reminderLeadTime: null,
     },
     {
       id: 'seed-e4',
@@ -61,6 +70,9 @@ export function createSeedEvents(): CalendarEvent[] {
       lifeAreaId: 'la-health',
       inInbox: false,
       createdAt: now,
+      linkedNoteIds: [],
+      linkedLinkIds: [],
+      reminderLeadTime: null,
     },
     {
       id: 'seed-e5',
@@ -74,6 +86,9 @@ export function createSeedEvents(): CalendarEvent[] {
       lifeAreaId: 'la-study',
       inInbox: false,
       createdAt: now,
+      linkedNoteIds: [],
+      linkedLinkIds: [],
+      reminderLeadTime: null,
     },
   ]
 }
