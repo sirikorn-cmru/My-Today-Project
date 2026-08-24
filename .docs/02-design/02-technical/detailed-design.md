@@ -12,7 +12,7 @@
 
 ## 1. Sequence Diagrams — Persona Journeys
 
-ทั้งสองไดอะแกรมด้านล่างเดินตามลำดับขั้นตอนที่มีอยู่แล้วใน [[../01-prototypes/user-journey-student|user-journey-student.md]] และ [[../01-prototypes/user-journey-general-person|user-journey-general-person.md]] ทุกประการ ไม่สร้าง narrative ใหม่ — วาด message เฉพาะขั้นตอนที่มีสถานะ "เสร็จแล้ว" ในเอกสารนั้นๆ (ตรวจสอบล่าสุด 20260823) ส่วนขั้นตอนที่เป็น "แผนในอนาคต" ถูกข้ามไปตามกฎของเอกสารนี้ และระบุไว้เป็นหมายเหตุใต้ไดอะแกรมแทน
+ทั้งสองไดอะแกรมด้านล่างเดินตามลำดับขั้นตอนที่มีอยู่แล้วใน [[../01-prototypes/user-journey-student|user-journey-student.md]] และ [[../01-prototypes/user-journey-general-person|user-journey-general-person.md]] ทุกประการ ไม่สร้าง narrative ใหม่ — วาด message เฉพาะขั้นตอนที่มีสถานะ "เสร็จแล้ว" ในเอกสารนั้นๆ (ตรวจสอบล่าสุด 20260824 — Sprint 9 ยืนยันเสร็จแล้วในรอบ backlog-sync-check วันเดียวกัน) ส่วนขั้นตอนที่เป็น "แผนในอนาคต" ถูกข้ามไปตามกฎของเอกสารนี้ และระบุไว้เป็นหมายเหตุใต้ไดอะแกรมแทน
 
 ### 1.1 นักศึกษา (Task "ส่งรายงาน HCI", Life Area "Study")
 
@@ -63,6 +63,13 @@ sequenceDiagram
     StructPersist-->>Domain: Task/Event ที่เกี่ยวข้อง
     Domain-->>Presentation: รายการรวม Event+Deadline เรียงตามเวลา
 
+    User->>Presentation: เปิดหน้า Timeline ดู Now/Next/Later ของวันนี้ (7)
+    Presentation->>Domain: Get Timeline(date=วันนี้)
+    Domain->>StructPersist: อ่าน Task/Event ทั้งหมด + Life Area ทั้งหมด
+    StructPersist-->>Domain: Task/Event/Life Area สด
+    Domain->>Domain: จัดกลุ่ม Now/Next/Later ตามเวลาปัจจุบัน แล้วเรียงลำดับภายในแต่ละกลุ่มด้วย Smart Priority Sort
+    Domain-->>Presentation: กลุ่ม Now/Next/Later พร้อมชื่อ Life Area ต่อรายการ
+
     User->>Presentation: เปิด My Today ตอนเช้า (8)
     Presentation->>Domain: Get Today Dashboard Summary()
     Domain->>StructPersist: อ่าน Task/Event ทั้งหมด
@@ -74,6 +81,12 @@ sequenceDiagram
     Domain->>StructPersist: บันทึกสถานะ Done
     StructPersist-->>Domain: Task record ที่อัปเดตแล้ว
     Domain-->>Presentation: ยืนยันบันทึกสำเร็จ
+
+    User->>Presentation: ดูความคืบหน้าวันนี้บน Dashboard (11)
+    Presentation->>Domain: Get Life Progress(date=วันนี้)
+    Domain->>StructPersist: อ่าน Task ทั้งหมด + Life Area ทั้งหมด
+    StructPersist-->>Domain: Task/Life Area สด
+    Domain-->>Presentation: จำนวน Task ที่ Done เทียบทั้งหมดของวันนี้ (รวม + แยกตาม Life Area)
 ```
 
 **mapping กลับ journey-doc (user-journey-student.md):**
@@ -84,10 +97,12 @@ sequenceDiagram
 4. ขั้นตอนที่ 4 (FR-04) — กำหนด Deadline ของ Task
 5. ขั้นตอนที่ 5 (FR-09) — แนบไฟล์รายงาน (Related Files)
 6. ขั้นตอนที่ 6 (FR-07) — เห็น Deadline ใน Calendar โดยอัตโนมัติ
-7. ขั้นตอนที่ 8 (FR-05, FR-12) — เปิด My Today ตอนเช้า เห็นงานบน Today Dashboard
-8. ขั้นตอนที่ 10 (FR-03, FR-11) — ทำงานเสร็จ กด Done
+7. ขั้นตอนที่ 7 (FR-16) — เห็น Deadline ใน Timeline Now/Next/Later — เสร็จแล้ว
+8. ขั้นตอนที่ 8 (FR-05, FR-12) — เปิด My Today ตอนเช้า เห็นงานบน Today Dashboard
+9. ขั้นตอนที่ 10 (FR-03, FR-11) — ทำงานเสร็จ กด Done
+10. ขั้นตอนที่ 11 (FR-17) — Life Progress อัปเดต — เสร็จแล้ว
 
-ขั้นตอนที่ **7** (Timeline Now/Next/Later, FR-16, Sprint 9), **9** (Reminder lead time ที่ตั้งเอง, FR-19, Sprint 10) และ **11** (Life Progress, FR-17, Sprint 9) ยังไม่รวมในไดอะแกรมนี้ เพราะ Sprint ที่เกี่ยวข้องยังไม่ build (สถานะ "แผนในอนาคต" ตาม journey doc และ backlog.md ณ 20260823)
+ขั้นตอนที่ **9** (Reminder lead time ที่ตั้งเอง, FR-19, Sprint 10) ยังไม่รวมในไดอะแกรมนี้ เพราะ Sprint ที่เกี่ยวข้องยังไม่ build (สถานะ "แผนในอนาคต" ตาม journey doc และ backlog.md ณ 20260824)
 
 ### 1.2 บุคคลทั่วไป (Task "จ่ายค่าไฟ", Life Area "Finance")
 
@@ -126,6 +141,13 @@ sequenceDiagram
     StructPersist-->>Domain: File record ที่สร้างแล้ว
     Domain-->>Presentation: ยืนยันแนบไฟล์สำเร็จ
 
+    User->>Presentation: เปิดหน้า Timeline ดู Now/Next/Later ของวันนี้ (5)
+    Presentation->>Domain: Get Timeline(date=วันนี้)
+    Domain->>StructPersist: อ่าน Task/Event ทั้งหมด + Life Area ทั้งหมด
+    StructPersist-->>Domain: Task/Event/Life Area สด
+    Domain->>Domain: จัดกลุ่ม Now/Next/Later ตามเวลาปัจจุบัน แล้วเรียงลำดับภายในแต่ละกลุ่มด้วย Smart Priority Sort
+    Domain-->>Presentation: กลุ่ม Now/Next/Later พร้อมชื่อ Life Area ต่อรายการ
+
     User->>Presentation: เปิดหน้า Notifications / Dashboard (6)
     Presentation->>Domain: ขอข้อมูล Task/Event สดเพื่อประเมินความเร่งด่วน
     Domain->>StructPersist: อ่าน Task/Event ทั้งหมด
@@ -139,6 +161,12 @@ sequenceDiagram
     Domain->>StructPersist: บันทึกสถานะ Done
     StructPersist-->>Domain: Task record ที่อัปเดตแล้ว
     Domain-->>Presentation: ยืนยันบันทึกสำเร็จ
+
+    User->>Presentation: ดูความคืบหน้าวันนี้บน Dashboard (8)
+    Presentation->>Domain: Get Life Progress(date=วันนี้)
+    Domain->>StructPersist: อ่าน Task ทั้งหมด + Life Area ทั้งหมด
+    StructPersist-->>Domain: Task/Life Area สด
+    Domain-->>Presentation: จำนวน Task ที่ Done เทียบทั้งหมดของวันนี้ (รวม + แยกตาม Life Area)
 ```
 
 **mapping กลับ journey-doc (user-journey-general-person.md):**
@@ -147,10 +175,12 @@ sequenceDiagram
 2. ขั้นตอนที่ 2 (FR-14) — เข้า My Inbox
 3. ขั้นตอนที่ 3 (FR-14) — จัดเข้า Life Area "Finance" จาก Inbox + กำหนด Deadline
 4. ขั้นตอนที่ 4 (FR-09) — แนบไฟล์ใบแจ้งหนี้ค่าไฟ (Related Files)
-5. ขั้นตอนที่ 6 (FR-10) — ได้รับการเตือนเมื่อใกล้ถึงกำหนด (Due Soon/Overdue)
-6. ขั้นตอนที่ 7 (FR-03, FR-11) — จ่ายเงินเสร็จ กด Done
+5. ขั้นตอนที่ 5 (FR-16) — เห็น Deadline ใน Timeline Now/Next/Later — เสร็จแล้ว
+6. ขั้นตอนที่ 6 (FR-10) — ได้รับการเตือนเมื่อใกล้ถึงกำหนด (Due Soon/Overdue)
+7. ขั้นตอนที่ 7 (FR-03, FR-11) — จ่ายเงินเสร็จ กด Done
+8. ขั้นตอนที่ 8 (FR-17) — Life Progress อัปเดต — เสร็จแล้ว
 
-ขั้นตอนที่ **5** (Timeline Now/Next/Later, FR-16, Sprint 9) และ **8** (Life Progress, FR-17, Sprint 9) ยังไม่รวมในไดอะแกรมนี้ เพราะ Sprint ที่เกี่ยวข้องยังไม่ build (สถานะ "แผนในอนาคต" ตาม journey doc และ backlog.md ณ 20260823)
+ไม่มีขั้นตอนใดใน journey นี้ที่ยังเป็น "แผนในอนาคต" อีกต่อไป (Journey นี้ไม่มีขั้นตอนที่อ้างอิง Sprint 10 ตั้งแต่ต้น ต่างจาก journey นักศึกษาที่ยังมีขั้นตอนที่ 9)
 
 ## 2. Sequence Diagrams — Cross-cutting Operations
 
@@ -262,13 +292,12 @@ sequenceDiagram
 - **Delete Life Area (2.1):** ถ้าขั้นตอนเคลียร์การอ้างอิงของ entity ใด entity หนึ่งล้มเหลวระหว่างทาง ระบบต้องไม่ดำเนินการลบ Life Area record ต่อ (phase 2 เกิดขึ้นได้ก็ต่อเมื่อ phase 1 เคลียร์ครบทุก entity สำเร็จเท่านั้น) เพื่อป้องกัน orphaned reference ที่ยังชี้ไปยัง Life Area ที่ถูกลบไปแล้ว
 - **Build Notifications (1.2 ขั้นตอนที่ 6):** เป็นการคำนวณสดทุกครั้ง ไม่มีสถานะกลางที่ค้างพังได้ — ถ้าไม่มี Task/Event ที่เข้าเงื่อนไข Overdue/DueToday/DueSoon ผลลัพธ์คือรายการว่างเปล่า ไม่ใช่ error
 - **Get Day Items / Get Today Dashboard Summary (1.1 ขั้นตอนที่ 6, 8):** เป็น read-only query ล้วนๆ ไม่มีผลข้างเคียงต่อข้อมูล ถ้าไม่มี Task/Event ของวันนั้นก็แสดงรายการว่างตามจริง ไม่ถือเป็นสถานะ error
+- **Get Timeline (Now/Next/Later) + Smart Priority Sort / Get Life Progress (1.1 ขั้นตอนที่ 7, 11 / 1.2 ขั้นตอนที่ 5, 8):** เช่นเดียวกับ Build Notifications เป็นการคำนวณสดจาก Task/Event ทุกครั้งที่เรียก ไม่มีสถานะกลางที่ค้างพังได้และไม่มีผลข้างเคียงต่อข้อมูลเดิม — ถ้าวันนี้ไม่มี Task/Event ที่เข้าเงื่อนไข (Timeline) หรือไม่มี Task ที่ครบกำหนดวันนี้เลย (Life Progress) ผลลัพธ์คือกลุ่มว่างเปล่า/สัดส่วน 0 จาก 0 ไม่ใช่ error
 
 ## 4. Known Gaps / Not-yet-built Flows
 
-รายการนี้สอดคล้องกับ known gaps ใน [[architecture|architecture.md]] หัวข้อ 6 และ [[api-spec|api-spec.md]] หัวข้อ 4 — ยังไม่มี sequence diagram ให้เนื่องจาก Sprint ที่เกี่ยวข้องยังไม่ build ตาม backlog.md ณ 20260823 (Sprint 9-10 ยังไม่มี commit ใดๆ):
+รายการนี้สอดคล้องกับ known gaps ใน [[architecture|architecture.md]] หัวข้อ 6 และ [[api-spec|api-spec.md]] หัวข้อ 4 — ยังไม่มี sequence diagram ให้เนื่องจาก Sprint ที่เกี่ยวข้องยังไม่ build ตาม backlog.md ณ 20260824 (Sprint 9 build เสร็จแล้ว — ดูไดอะแกรมจริงในหัวข้อ 1 ด้านบน — เหลือเฉพาะ Sprint 10 ที่ยังไม่มี commit ใดๆ):
 
-- **Timeline (Now/Next/Later) + Smart Priority (Sprint 9, FR-16):** เมื่อ build แล้ว flow ที่คาดว่าจะเกิดคือ Presentation Layer ขอ "Get Timeline" จาก Domain Logic Layer ซึ่งอ่าน Task+Event ของวันนี้จาก Structured Local Persistence ทั้งหมด (ข้าม Life Area) แล้วจัดกลุ่มตามเวลาปัจจุบันเป็น Now/Next/Later พร้อมเรียงลำดับตามกฎ Overdue → Due Today → Upcoming → High Priority → Normal ก่อนส่งกลับ Presentation Layer — ไม่มี container ใหม่ที่ต้องเพิ่ม
-- **Life Progress aggregation (Sprint 9, FR-17):** flow ที่คาดว่าจะเกิดคือ Domain Logic Layer อ่าน Task ทั้งหมดจาก Structured Local Persistence แล้วนับจำนวน Status=Done เทียบกับ Task ที่ครบกำหนดวันนี้ ทั้งแบบรวมและแยกตาม Life Area ส่งกลับเป็นตัวเลขสถานะ (ไม่ใช้คำว่า "Score")
 - **Task/Event ↔ Note/Link linking (Sprint 10, FR-18):** flow ที่คาดว่าจะเกิดคือ "Link Note to Task"/"Link Link to Task" (และคู่ Event) ให้ Domain Logic Layer อัปเดต reference-array บน Task/Event เอง คู่ขนานกับ "Link File to Task" ที่มีอยู่แล้ว แต่กลับทิศทางการถือ FK (Task/Event เป็นฝ่ายถือ แทนที่จะเป็น Note/Link)
 - **Custom Reminder Lead Time (Sprint 10, FR-19):** flow ที่คาดว่าจะเกิดคือ Presentation Layer ส่ง "Set Custom Reminder Lead Time" ให้ Domain Logic Layer บันทึกค่าเฉพาะรายการ แล้ว "Build Notifications" (Reminder/Notification Derivation) ต้องอ่านค่านี้เพิ่มจากค่า default กลางของระบบก่อนคำนวณระดับความเร่งด่วน
 - **Task/Event Detail แบบ What/When/Information รวมหน้าเดียว (Sprint 10):** flow ที่คาดว่าจะเกิดคือ query รวมที่ดึง Task/Event เดียวกันกับ File/Note/Link/reminder ที่เชื่อมไว้ทั้งหมดในคำขอเดียว แทนที่จะให้ Presentation Layer เรียกหลาย operation แยกกันแล้วประกอบเองเหมือนปัจจุบัน
@@ -289,13 +318,17 @@ Sprint 11 (Demo/Polish/Freeze) ไม่เพิ่ม flow ใหม่ระ�
 - **กำหนด Deadline (ขั้นตอนที่ 4):** Presentation = `TaskFormModal`; Domain = `useTasks`'s `updateTask` (`dueDate`/`dueTime`)
 - **แนบไฟล์ (ขั้นตอนที่ 5):** Presentation = `FileFormModal.tsx` (ส่วน "Related Files"/attach-existing-file picker); Domain = `useFiles`'s create function + `updateFile` (ตั้ง `linkedTaskIds`); Binary/Blob Persistence = `src/lib/fileDb.ts`'s `putFile` เขียนลง IndexedDB object store `files` (metadata + `Blob` รวม record เดียว) — `useFiles` ยังเป็น hook เดียวที่ expose flag `loaded` ให้ page เช็คก่อน render เพราะ IndexedDB อ่าน/เขียนแบบ asynchronous
 - **เปิด Calendar (ขั้นตอนที่ 6):** Presentation = `src/pages/CalendarPage.tsx` + `DayAgenda`; Domain = `getDayItems` ใน `src/lib/calendarUtils.ts`
+- **เปิด Timeline Now/Next/Later (ขั้นตอนที่ 7, Sprint 9):** Presentation = `src/pages/TimelinePage.tsx` (route `/timeline`, เรนเดอร์ผ่าน `src/components/TimelineSection.tsx` สามชุด — Now/Next/Later); Domain = `getTimelineEntries` ใน `src/lib/timelineUtils.ts` เป็น pure function ที่คำนวณใหม่ทุกครั้งที่ component render (ไม่มี hook/state แยกเป็นเจ้าของ ไม่มี record persist ใหม่ใดๆ) เรียก `smartPriorityTier` ภายในตัวเองเพื่อจัดลำดับรายการในแต่ละกลุ่มตามกฎ 5-tier ของ Sprint 9 (Overdue → Due Today → Upcoming → High Priority → Normal) — ฟังก์ชันเดียวกันนี้ยังถูกเรียกซ้ำผ่าน `sortTasksBySmartPriority` ที่ `DashboardPage.tsx` ใช้เรียง `TodayTasks` ด้วย จึงเป็น derivation ชุดเดียวที่ใช้ร่วมกันสองที่ ไม่ใช่ตรรกะแยกกันสองชุด — เพราะเป็น pure function ที่รับ props สดของ `tasks`/`events` ล้วนๆ (ไม่มี `useEffect`/state ภายใน) การอัปเดต Task/Event ที่หน้าอื่น (เช่นกด Done ที่ขั้นตอนที่ 10) จะสะท้อนใน Timeline ทันทีที่ re-render รอบถัดไปโดยไม่ต้อง refetch เพิ่ม
 - **เปิด My Today ตอนเช้า (ขั้นตอนที่ 8):** Presentation = `src/pages/DashboardPage.tsx` (`SummaryCards`, `TodayTasks`, `TodaySchedule`, `Upcoming`); Domain = pure function ใน `src/lib/taskUtils.ts`/`src/lib/calendarUtils.ts` ที่คำนวณสรุปจาก `tasks`/`events` props สด
 - **กด Done (ขั้นตอนที่ 10):** Presentation = `TaskCard.tsx` (ปุ่ม/checkbox Done ใช้ร่วมกันทั้งใน `TodayTasks` และ `TasksPage`); Domain = `useTasks`'s `updateTask` (ตั้ง `status="Done"`)
+- **Life Progress อัปเดต (ขั้นตอนที่ 11, Sprint 9):** Presentation = `src/components/LifeProgress.tsx` (เรนเดอร์อยู่บน `DashboardPage.tsx` เอง ไม่ใช่หน้าแยก); Domain = `getLifeProgress` ใน `src/lib/timelineUtils.ts` เป็น pure function เช่นกัน ไม่มี state/record ใหม่ที่ persist — คำนวณจาก `tasks` props สดของ `App.tsx` ทุกครั้งที่ `DashboardPage` render (หมายเหตุ: เพราะ `App.tsx`/`useTasks` เป็น React state เดียวที่ทุก route ใช้ร่วมกัน การกด Done ที่ `TaskCard` (ขั้นตอนที่ 10) จะ trigger re-render ของ `DashboardPage` รอบถัดไปให้ `getLifeProgress` เห็นค่า `status="Done"` ใหม่ทันที — ไม่มี batching ที่ทำให้ค่าที่เพิ่งเขียนหายไปจากการอ่านครั้งถัดไปในหน้าเดียวกัน เพราะทั้งสองฝั่งอยู่ใน render tree เดียวกันของ React)
 
 ### 1.2 บุคคลทั่วไป (persona journey)
 
 - ขั้นตอนที่ 1-4, 7 implement ด้วยฟังก์ชัน/component ชุดเดียวกันกับ 1.1 ข้างต้นทุกประการ (ไม่มี code path แยกตาม persona ตามที่ [[architecture|architecture.md]] หัวข้อ 4 ยืนยันไว้แล้ว)
+- **เห็น Deadline ใน Timeline Now/Next/Later (ขั้นตอนที่ 5, Sprint 9):** implement ด้วยฟังก์ชัน/component ชุดเดียวกันกับ 1.1 ขั้นตอนที่ 7 ข้างต้นทุกประการ — `src/pages/TimelinePage.tsx` + `getTimelineEntries`/`smartPriorityTier` ใน `src/lib/timelineUtils.ts` ไม่มี code path แยกตาม persona
 - **เปิดหน้า Notifications/Dashboard ประเมินความเร่งด่วน (ขั้นตอนที่ 6):** Presentation = `NotificationBell.tsx`/`NotificationList.tsx`/`src/pages/DashboardPage.tsx`; Domain = `src/hooks/useNotifications.ts` (เรียกทุก render, ไม่เก็บ record แยก); Reminder/Notification Derivation = `buildNotifications` ใน `src/lib/notificationUtils.ts` (pure TypeScript function คำนวณ Overdue/DueToday/DueSoon สดจาก `tasks`/`events`) — สถานะ "อ่านแล้ว/แจ้งเตือนแล้ว" เท่านั้นที่ persist ผ่าน `src/lib/storage.ts` (key `my-today:notifications-read`, `my-today:notifications-notified`)
+- **Life Progress อัปเดต (ขั้นตอนที่ 8, Sprint 9):** implement ด้วยฟังก์ชัน/component ชุดเดียวกันกับ 1.1 ขั้นตอนที่ 11 ข้างต้นทุกประการ — `src/components/LifeProgress.tsx` + `getLifeProgress` ใน `src/lib/timelineUtils.ts` ไม่มี code path แยกตาม persona
 
 ### 2.1 Delete Life Area
 
@@ -319,3 +352,4 @@ Presentation = `src/pages/InboxPage.tsx`; Domain = logic รวม (aggregate) `
 - 20260823 (อัปเดตภายหลัง) — เพิ่มหัวข้อ 5 "หมายเหตุการ implement ปัจจุบัน" ใหม่ทั้งหมด (เดิมเอกสารนี้ไม่มีกลไก implementation-footnote เลย ต่างจาก [[architecture|architecture.md]]/[[api-spec|api-spec.md]]/[[database-schema|database-schema.md]] ที่มีอยู่แล้ว) โดยอ้างอิง [[tech-stack|tech-stack.md]] ที่เพิ่งถูกสร้างขึ้น ระบุฟังก์ชัน/component/ไฟล์จริงที่ implement แต่ละ participant ของทุกไดอะแกรมในหัวข้อ 1 และ 2 พร้อมเลื่อน Change Log เดิมมาเป็นหัวข้อ 6 — ไม่มีการแก้ไขเนื้อหาของหัวข้อ 1/2/3/4
 - 20260823 (อัปเดตภายหลังอีกครั้ง) — เพิ่มลิงก์ [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]] ในหัวข้อ cross-link ด้านบน และเพิ่มประโยคใน §4 Known Gaps สำหรับ IndexedDB Quota-Warning (NFR-08) ให้สอดคล้องกับ known gap ใหม่ที่เพิ่งเพิ่มใน [[api-spec|api-spec.md]] หัวข้อ 4 — ไม่มีการแก้ไขหัวข้อ 1/2/3/5
 - 20260823 (แก้ inconsistency เรื่อง Sprint 11 scope) — แก้ citation ของ bullet "IndexedDB Quota-Warning" ใน §4 จาก "(NFR-08)" เป็น "(Sprint 11, NFR-08, ...)" ให้ตรงกับ [[api-spec|api-spec.md]]/[[database-schema|database-schema.md]] และแก้ประโยคปิดท้าย §4 ที่เคยระบุผิดว่า "Sprint 11 ไม่เพิ่ม flow ใหม่ จึงไม่มีรายการเพิ่มในหัวข้อนี้" (ไม่ตรงกับ spec Sprint 11 ที่ถูกแก้ไขในคอมมิต `d6874c3` ให้รับ scope ของ IndexedDB Quota-Warning ไว้แล้ว) เป็นประโยคที่ยืนยันว่า Sprint 11 เป็นเจ้าของ operation ที่ยังไม่ build นี้จริง — ไม่มีการแก้ไขหัวข้อ 1/2/3/5 หรือ bullet อื่นใน §4
+- 20260824 (Sprint 9 เสร็จแล้ว) — เพิ่ม message จริงสำหรับขั้นตอนที่ 7 (Timeline Now/Next/Later) และ 11 (Life Progress) ในไดอะแกรม persona นักศึกษา (§1.1) และขั้นตอนที่ 5/8 ในไดอะแกรม persona บุคคลทั่วไป (§1.2) แทนที่โน้ต "ยังไม่รวมในไดอะแกรมนี้" เดิม พร้อมอัปเดต mapping list ทั้งสองให้ระบุ FR-16/FR-17 และสถานะ "เสร็จแล้ว"; คงเหลือเฉพาะขั้นตอนที่ 9 ของ persona นักศึกษา (Custom Reminder Lead Time, Sprint 10) เป็นขั้นตอนเดียวที่ยังข้ามไดอะแกรม — เพิ่มโน้ตใหม่ใน §3 สำหรับ Get Timeline/Smart Priority Sort/Get Life Progress (read-only derivation ล้วนๆ ไม่มีสถานะพังค้างได้ เหมือน Build Notifications) — ลบ known-gap bullet 2 รายการของ Sprint 9 ออกจาก §4 (ย้ายไปมี diagram จริงใน §1 แล้ว) และแก้ประโยคเปิด §4 ให้เหลือเฉพาะ Sprint 10 ที่ยังไม่ build สอดคล้องกับการแก้ไขแบบเดียวกันใน [[architecture|architecture.md]] หัวข้อ 6/7 เมื่อ 20260824 — เพิ่มหมายเหตุการ implement ใหม่ใน §5 สำหรับทั้งสองไดอะแกรม persona อ้างอิงฟังก์ชันจริง (`getTimelineEntries`, `smartPriorityTier`, `sortTasksBySmartPriority`, `getLifeProgress` ใน `src/lib/timelineUtils.ts`, เรนเดอร์โดย `src/pages/TimelinePage.tsx`/`src/components/TimelineSection.tsx`/`src/components/LifeProgress.tsx`) เป็น pure function ที่คำนวณใหม่ทุก render ไม่มี state/record persist แยก — ไม่มีการแก้ไขไดอะแกรม/mapping ของหัวข้อ 2 (cross-cutting operations) ใดๆ

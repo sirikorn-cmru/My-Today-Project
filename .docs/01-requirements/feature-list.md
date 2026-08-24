@@ -4,7 +4,7 @@
 
 เอกสารนี้เป็น **Feature List ระดับ Sprint** ที่แปลงมาจาก [[backlog|backlog.md]] ผสานกับเนื้อหาจริงของแต่ละ spec doc ใน [[01-spec/index|01-spec]] granularity ของเอกสารนี้คือ **1 feature = 1 Sprint** (ไม่ใช่ 1 feature = 1 ปุ่ม/1 หน้าจอ) และจัดลำดับความสำคัญด้วย **MoSCoW** (Must/Should/Could/Won't) ตามที่ผู้ใช้ยืนยันแล้ว
 
-MoSCoW ที่ระบุในเอกสารนี้คือมุมมอง **ย้อนหลัง** (Sprint 1-8 ทำเสร็จไปแล้วตาม backlog.md ณ วันที่ 20260823) ผสมกับมุมมอง **ที่เหลือ** (Sprint 9-11 ยังไม่เริ่ม) ใช้สำหรับสื่อสารว่าอะไรคือแก่นที่ขาดไม่ได้ของผลิตภัณฑ์ เทียบกับอะไรที่เป็นส่วนเสริมคุณค่าแต่ตัดออกได้หากเวลาจำกัด
+MoSCoW ที่ระบุในเอกสารนี้คือมุมมอง **ย้อนหลัง** (Sprint 1-9 ทำเสร็จไปแล้วตาม backlog.md ณ วันที่ 20260824) ผสมกับมุมมอง **ที่เหลือ** (Sprint 10-11 ยังไม่เริ่ม) ใช้สำหรับสื่อสารว่าอะไรคือแก่นที่ขาดไม่ได้ของผลิตภัณฑ์ เทียบกับอะไรที่เป็นส่วนเสริมคุณค่าแต่ตัดออกได้หากเวลาจำกัด
 
 ## สรุปตาราง
 
@@ -18,7 +18,7 @@ MoSCoW ที่ระบุในเอกสารนี้คือมุม�
 | 6 | Integration, UX & Final Testing (ปิดจบ Version 1/Core) | Must | เสร็จแล้ว | (ไม่มี FR ใหม่ — เป็นการปรับปรุง/ทดสอบ FR-01 ถึง FR-12 เดิม) | [[01-spec/20260806-006-my-today-sprint6-integration-ux-final-testing\|Sprint 6]] |
 | 7 | Life Area / Workspace & Personal Profile | Must | เสร็จแล้ว | FR-01, FR-02 | [[01-spec/20260806-007-my-today-sprint7-category-profile\|Sprint 7]] |
 | 8 | Universal Inbox + Quick Capture | Should | เสร็จแล้ว | FR-13, FR-14, FR-15 | [[01-spec/20260806-009-my-today-sprint8-universal-inbox-quick-capture\|Sprint 8]] |
-| 9 | Now/Next/Later Timeline + Smart Priority + Life Progress | Should | ยังไม่เริ่ม | FR-16, FR-17 | [[01-spec/20260806-010-my-today-sprint9-timeline-priority-progress\|Sprint 9]] |
+| 9 | Now/Next/Later Timeline + Smart Priority + Life Progress | Should | เสร็จแล้ว | FR-16, FR-17 | [[01-spec/20260806-010-my-today-sprint9-timeline-priority-progress\|Sprint 9]] |
 | 10 | Task-Event-File-Note-Link Linking (What/When/Information) | Must | ยังไม่เริ่ม | FR-18, FR-19 | [[01-spec/20260806-011-my-today-sprint10-task-event-file-linking\|Sprint 10]] |
 | 11 | Competition Demo + UX Polish, then Freeze (รวม NFR Accessibility/Browser Compatibility/Storage Quota-Warning ทั้งระบบ) | Must | ยังไม่เริ่ม | (ไม่มี FR ใหม่ — เป็นการปรับปรุง/ทดสอบ/เตรียม demo ของ FR-13 ถึง FR-19 เดิม) | [[01-spec/20260806-012-my-today-sprint11-competition-demo-freeze\|Sprint 11]] |
 
@@ -92,7 +92,7 @@ MoSCoW ที่ระบุในเอกสารนี้คือมุม�
 
 - **MoSCoW:** Should — เป็น differentiator สำคัญของ narrative "One Life, One Workspace" แต่ Dashboard/Upcoming ของ Sprint 1 ครอบคลุมความต้องการพื้นฐาน ("เห็นว่าวันนี้ต้องทำอะไร") อยู่แล้วในระดับหนึ่งแม้ไม่มี Sprint นี้
 - **คำอธิบาย:** ตอบคำถาม "ตอนนี้ต้องทำอะไรก่อน" ด้วยมุมมอง Timeline แบบ Now/Next/Later (รวม Task deadline + Event จากทุก Life Area) แทนการมอง Calendar เต็มเดือน จัดลำดับอัตโนมัติตาม Smart Priority ที่เป็นกฎตายตัว (Overdue → Due Today → Upcoming → High Priority → Normal ไม่ใช้ AI) และแสดง Life Progress (จำนวนงานเสร็จวันนี้ รวมและแยกตาม Life Area) แบบไม่ตัดสิน ห้ามใช้คำว่า "Score"
-- **สถานะ (backlog.md):** ยังไม่เริ่ม
+- **สถานะ (backlog.md):** เสร็จแล้ว
 - **FR ที่เกี่ยวข้อง:** FR-16 (Timeline Now/Next/Later + Smart Priority), FR-17 (Life Progress)
 - **Spec:** [[01-spec/20260806-010-my-today-sprint9-timeline-priority-progress|Sprint 9]]
 
@@ -115,3 +115,4 @@ MoSCoW ที่ระบุในเอกสารนี้คือมุม�
 ## Change Log
 
 - 20260823: อัปเดตแบบ targeted เฉพาะ Sprint 11 (ตารางสรุป + subsection รายละเอียด) สะท้อนสเปกที่แก้ไข (commit `d6874c3`) ผนวก 3 หัวข้อย่อย NFR จาก NFR Master List (Accessibility Baseline NFR-04, Browser Compatibility Matrix NFR-06 — ขยายเป็นทั้งระบบ Sprint 1-10, IndexedDB Quota-Warning NFR-08 — ฟีเจอร์ใหม่ที่ได้รับยกเว้น) เข้า scope — ไม่เปลี่ยน MoSCoW/เหตุผลเดิม (ยังคง Must), ไม่แตะ Sprint อื่น, FR-ID column, หรือ user-journey-*.md
+- 20260824: อัปเดตแบบ targeted เฉพาะ Sprint 9 (ตารางสรุป + subsection รายละเอียด) สะท้อนว่า Sprint 9 (Timeline Now/Next/Later + Smart Priority + Life Progress) build เสร็จแล้วและยืนยันใน backlog.md แล้ว — เปลี่ยนสถานะจาก "ยังไม่เริ่ม" เป็น "เสร็จแล้ว" เท่านั้น ไม่เปลี่ยน MoSCoW (ยังคง Should ตามเหตุผลเดิม — ความสมบูรณ์ไม่กระทบการจัดลำดับความสำคัญ), ไม่แตะ Sprint อื่น หรือ FR-ID column
