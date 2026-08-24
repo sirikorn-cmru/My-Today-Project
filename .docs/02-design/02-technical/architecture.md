@@ -79,8 +79,8 @@ Application/Domain Logic Layer ยังเป็นเจ้าของ**แ�
 ```mermaid
 flowchart LR
     LifeArea["Life Area<br/>(แนวคิดกลาง — จัดกลุ่มบริบทชีวิต เช่น Study/Work/Finance)"]
-    Task["Task<br/>(สิ่งที่ต้องทำ มี Deadline/Priority/สถานะ)"]
-    Event["Event / Schedule<br/>(นัดหมาย/กิจกรรมที่มีช่วงเวลา)"]
+    Task["Task<br/>(สิ่งที่ต้องทำ มี Deadline/Priority/สถานะ, Reminder lead time override ได้)"]
+    Event["Event / Schedule<br/>(นัดหมาย/กิจกรรมที่มีช่วงเวลา, Reminder lead time override ได้)"]
     FileC["File<br/>(เอกสาร/ไฟล์แนบ)"]
     Notif["Notification<br/>(ไม่ใช่ entity ที่เก็บถาวร — derive สดจาก Task/Event)"]
     Profile["Personal Profile<br/>(ข้อมูลผู้ใช้ — standalone, ไม่เชื่อมกับ entity อื่น)"]
@@ -91,6 +91,11 @@ flowchart LR
     Event -.->|"อ้างอิง Life Area ได้ (ไม่บังคับ)"| LifeArea
     FileC -.->|"อ้างอิง Life Area ได้ (ไม่บังคับ)"| LifeArea
     FileC -->|"เชื่อมกับ Task ได้หลายรายการ (จากฝั่ง File)"| Task
+    FileC -->|"เชื่อมกับ Event ได้หลายรายการ (จากฝั่ง File, กลไกเดียวกับ File↔Task)"| Event
+    Task -->|"เชื่อมกับ Note ได้หลายรายการ (จากฝั่ง Task)"| Note
+    Task -->|"เชื่อมกับ Link ได้หลายรายการ (จากฝั่ง Task)"| Link
+    Event -->|"เชื่อมกับ Note ได้หลายรายการ (จากฝั่ง Event)"| Note
+    Event -->|"เชื่อมกับ Link ได้หลายรายการ (จากฝั่ง Event)"| Link
     Task -.-o|"คำนวณสด ไม่ได้ถูกอ้างถึงจริง"| Notif
     Event -.-o|"คำนวณสด ไม่ได้ถูกอ้างถึงจริง"| Notif
     Note -.->|"อ้างอิง Life Area ได้ (ไม่บังคับ)"| LifeArea
@@ -103,7 +108,9 @@ flowchart LR
 
 - **Life Area** เป็นแนวคิดเดี่ยว (standalone) ที่ไม่ขึ้นกับ entity อื่น — ลบ Life Area ได้โดยไม่ลบ Task/Event/File ที่เคยอ้างถึงมัน (แค่เคลียร์การอ้างอิงทิ้ง เพราะเป็นความสัมพันธ์แบบ many-to-one ที่ไม่บังคับ)
 - **Task / Event / File / Note / Link** แต่ละอย่างอ้างอิง Life Area ได้อย่างมากหนึ่งอัน (optional many-to-one) — **Note และ Link** ถูกสร้างขึ้นจริงแล้ว (Sprint 8) และเข้าสู่โมเดลความสัมพันธ์เดียวกันกับ Task/Event/File ตั้งแต่ต้น ไม่ได้มีรูปแบบความสัมพันธ์แยกต่างหาก
-- **File ↔ Task** เป็นความสัมพันธ์ many-to-many ที่ File เป็นฝ่ายถือรายการ Task ที่เชื่อมด้วย — Task เองไม่ได้เก็บรายการไฟล์ของตัวเอง "ไฟล์ที่เกี่ยวข้องกับ Task นี้" เป็นสิ่งที่คำนวณจากฝั่ง File เสมอ ไม่ใช่ field ที่เก็บไว้บน Task
+- **File ↔ Task** และ **File ↔ Event** เป็นความสัมพันธ์ many-to-many แบบเดียวกันทั้งคู่ ที่ File เป็นฝ่ายถือรายการ Task/Event ที่เชื่อมด้วย — Task/Event เองไม่ได้เก็บรายการไฟล์ของตัวเอง "ไฟล์ที่เกี่ยวข้องกับ Task/Event นี้" เป็นสิ่งที่คำนวณจากฝั่ง File เสมอ ไม่ใช่ field ที่เก็บไว้บน Task/Event — File↔Event เป็นความสัมพันธ์ที่เพิ่มเข้ามาใหม่ (Sprint 10) โดยขยายกลไกเดิมของ File↔Task (Sprint 4) ให้ครอบคลุม Event ด้วย ไม่ใช่รูปแบบใหม่
+- **Task ↔ Note**, **Task ↔ Link**, **Event ↔ Note**, **Event ↔ Link** เป็นความสัมพันธ์ many-to-many ที่เพิ่มเข้ามาใหม่ (Sprint 10) แต่ถือทิศทางตรงข้ามกับ File↔Task/File↔Event — ความสัมพันธ์นี้ถูกเก็บไว้ที่ฝั่ง **Task/Event เอง** (Task/Event เป็นฝ่ายถือรายการ Note/Link ที่เชื่อมด้วย) ไม่ใช่ฝั่ง Note/Link เหมือนที่ File ถือความสัมพันธ์กับ Task/Event — นี่เป็นความไม่สมมาตรที่ตั้งใจออกแบบไว้ ไม่ใช่ความไม่สอดคล้องกัน: File↔Task/Event เป็นรูปแบบ "เอกสารประกอบขนาดใหญ่ผูกกับหลายรายการ" ส่วน Task/Event↔Note/Link เป็นรูปแบบ "รายการหนึ่งพกข้อมูลเสริมชิ้นเล็กติดตัวไปด้วย"
+- **Reminder lead time แบบกำหนดเอง** — Task และ Event รองรับการตั้งค่าระยะเวลาแจ้งเตือนล่วงหน้าของตัวเองแบบ optional ได้ (เพิ่มเข้ามาใหม่ Sprint 10) ซึ่งเมื่อกำหนดไว้ Reminder/Notification Derivation (ดูหัวข้อ 2) จะใช้ค่านี้แทนค่า default ของระบบสำหรับรายการนั้นโดยเฉพาะ — ไม่ใช่ entity หรือความสัมพันธ์ใหม่ เป็นเพียง field เพิ่มเติมบน Task/Event ที่มีผลต่อตรรกะ derive ที่มีอยู่แล้ว
 - **Notification** ไม่ใช่ entity ที่ถูกเก็บถาวร — เป็นผลลัพธ์ที่ derive จากข้อมูล Task/Event สดทุกครั้งที่ต้องแสดง (จำแนกเป็น Overdue/Due Today/Due Soon) มีเพียงสถานะ "อ่านแล้วหรือยัง" เท่านั้นที่ถูกเก็บถาวรแยกต่างหาก
 - **Personal Profile** เป็นแนวคิดเดี่ยวลักษณะ singleton (มีชุดเดียวต่อผู้ใช้) ไม่มีความสัมพันธ์กับ entity อื่นใดเลย
 - **สถานะการจัดระเบียบ (organization state)** — Task/Event/File/Note/Link ทุกตัวสามารถอยู่ในสถานะ "รอการจัดระเบียบ" ได้ตอนเพิ่มแบบรวดเร็ว (ฟิลด์ที่ปกติต้องมีค่า เช่น การอ้างอิง Life Area ถูกเลื่อนให้ยังไม่ต้องระบุ) จนกว่าผู้ใช้จะทำการ "จัดระเบียบ" ให้ครบภายหลัง แนวคิดนี้ใช้ร่วมกันข้าม entity ทั้งห้าแบบเดียวกัน ไม่ใช่กลไกเฉพาะของ entity ใด entity หนึ่ง
@@ -125,7 +132,7 @@ flowchart LR
 | 6 | เห็น Deadline ปรากฏใน Calendar อัตโนมัติ | Structured Persistence → Domain Logic (รวมมุมมอง Task+Event) → Presentation | อ่าน | FR-07 | เสร็จแล้ว |
 | 7 | เห็น Deadline ใน Timeline Now/Next/Later | Structured Persistence → Domain Logic → Presentation | อ่าน | FR-16 | เสร็จแล้ว |
 | 8 | เปิดแอปตอนเช้า เห็นงานบน Today Dashboard | Structured Persistence → Domain Logic → Presentation | อ่าน | FR-05, FR-12 | เสร็จแล้ว |
-| 9 | ระบบเตือนตาม Reminder lead time ที่ตั้งเอง | Structured Persistence → Domain Logic → Reminder/Notification Derivation → Presentation | อ่าน | FR-19 | แผนในอนาคต |
+| 9 | ระบบเตือนตาม Reminder lead time ที่ตั้งเอง | Structured Persistence → Domain Logic → Reminder/Notification Derivation → Presentation | อ่าน | FR-19 | เสร็จแล้ว |
 | 10 | ทำงานเสร็จ กด Done | Presentation → Domain Logic → Structured Persistence | เขียน | FR-03, FR-11 | เสร็จแล้ว |
 | 11 | Life Progress อัปเดต | Structured Persistence → Domain Logic (aggregate ตาม Life Area) → Presentation | อ่าน | FR-17 | เสร็จแล้ว |
 
@@ -155,9 +162,8 @@ flowchart LR
 
 ## 6. Known Gaps / Not-yet-built Extensions
 
-รายการนี้คือ container/flow ที่ narrative ของ Sprint 10-11 (Competition Track ที่เหลือ) บอกเป็นนัยว่าจะต้องมี แต่ **ยังไม่ถูกสร้างจริง** ตามสถานะล่าสุดใน backlog.md (ตรวจสอบล่าสุด 20260824 — Sprint 8 และ Sprint 9 มี commit เข้าแล้วและยืนยันเสร็จแล้ว เหลือเฉพาะ Sprint 10-11 ที่ยังไม่มี commit ใดๆ):
+รายการนี้คือ container/flow ที่ narrative ของ Sprint 11 (Sprint สุดท้ายของ Competition Track ที่เหลือ) บอกเป็นนัยว่าจะต้องมี แต่ **ยังไม่ถูกสร้างจริง** ตามสถานะล่าสุดใน backlog.md (ตรวจสอบล่าสุด 20260824 — Sprint 1-10 ทั้งหมด รวมถึง Sprint 10 ที่เพิ่งยืนยันเสร็จ มี commit เข้าแล้วและยืนยันเสร็จแล้ว เหลือเฉพาะ Sprint 11 ที่ยังไม่มี commit ใดๆ):
 
-- **What/When/Information unified linking + custom reminder lead time** (Sprint 10, FR-18/FR-19) — Domain Logic Layer ปัจจุบันยังไม่รองรับ Task/Event เชื่อมกับ Note/Link (มีแค่ File↔Task) และ Reminder/Notification Derivation ยังใช้ค่า default เดียวกันทั้งระบบ ยังไม่มีการ override เป็นรายรายการ
 - **Accessibility Baseline** (Sprint 11, [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]]) — ยังไม่มีการรับประกัน semantic HTML/keyboard-focus/contrast อย่างเป็นระบบใน Presentation/Interaction Layer ปัจจุบัน เป็น requirement ใหม่ที่ยังไม่ถูก build/ตรวจสอบ
 - **IndexedDB Quota-Warning** (Sprint 11, [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]]) — Binary/Blob Local Persistence ปัจจุบันยังไม่มีกลไกเตือนผู้ใช้เมื่อใกล้เต็ม quota ของที่เก็บไฟล์แนบ เป็น requirement ใหม่ที่ยังไม่ถูก build
 
@@ -171,3 +177,4 @@ Sprint 11 (Demo/Polish/Freeze) ไม่เพิ่ม container ใหม่ �
 - 20260823 — เพิ่ม cross-link ไปยัง [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]] ฉบับใหม่ในหัวข้อเชื่อมโยงกลับ, เพิ่มบรรทัดชี้ในหัวข้อ 5 ว่าชุด NFR แบบเต็มอยู่ที่เอกสารนี้, และเพิ่ม known gap ใหม่ 2 รายการในหัวข้อ 6 (Accessibility Baseline กระทบ Presentation/Interaction Layer, IndexedDB Quota-Warning กระทบ Binary/Blob Local Persistence) — ไม่รวม Browser Compatibility Matrix เพราะเป็นขอบเขตการทดสอบ ไม่ใช่ gap เชิงสถาปัตยกรรม/container — ไม่มีการเปลี่ยนเนื้อหาหัวข้อ 1/2/3/4
 - 20260823 — แก้ inconsistency ในหัวข้อ 6: เพิ่มป้ายอ้างอิง "(Sprint 11)" ให้ bullet Accessibility Baseline และ IndexedDB Quota-Warning (Sprint 11 อ้างสิทธิ์ทั้งสองรายการนี้ไว้ในสเปกของตัวเองตามการแก้ไข commit `d6874c3`) และแก้บรรทัดปิดท้ายที่เคยระบุผิดว่า Sprint 11 ไม่กระทบ container ใดๆ ให้ถูกต้องว่า Sprint 11 ไม่เพิ่ม container ใหม่ แต่เพิ่มพฤติกรรมใหม่ให้ 2 container เดิม (Presentation/Interaction Layer, Binary/Blob Local Persistence) — ไม่มีการเปลี่ยนเนื้อหาหัวข้อ 1-5 หรือ bullet Sprint 9/10
 - 20260824 — อัปเดตสะท้อน Sprint 9 (Now/Next/Later Timeline + Smart Priority + Life Progress) เสร็จแล้ว: ขยายคำอธิบาย Application/Domain Logic Layer ในหัวข้อ 2 ให้ระบุว่าชั้นนี้ derive มุมมองจัดลำดับความสำคัญ (Now/Next/Later) และ completion-progress aggregate ด้วย โดยไม่ดึงออกเป็น container ใหม่ (ไม่มี read-state ใหม่ที่ต้อง persist ต่างจาก Notification); เพิ่มประโยคในหัวข้อ 3 อธิบายว่าฟิลด์เดิมของ Task/Event เป็นฐานของมุมมอง derived นี้โดยไม่มี entity/ความสัมพันธ์ใหม่เกิดขึ้น; ปรับสถานะแถว FR-16 (Timeline) และ FR-17 (Life Progress) ในทั้งสอง persona journey table ของหัวข้อ 4 จาก "แผนในอนาคต" เป็น "เสร็จแล้ว"; ตัด known gap bullet ของ Sprint 9 ทั้งสองรายการออกจากหัวข้อ 6 และแก้ประโยคเปิดหัวข้อให้เหลือเฉพาะ Sprint 10-11 ที่ยังไม่ build — ไม่มีการเปลี่ยนเนื้อหาหัวข้อ 1, diagram/หมายเหตุ implement ของหัวข้อ 2, หรือหัวข้อ 5
+- 20260824 — อัปเดตสะท้อน Sprint 10 (Task-Event-File Linking — What/When/Information) เสร็จแล้ว: เพิ่มความสัมพันธ์ใหม่ใน Core Domain Concepts (หัวข้อ 3) — Task↔Note, Task↔Link, Event↔Note, Event↔Link (เก็บฝั่ง Task/Event ตั้งใจสวนทางกับทิศทางของ File↔Task เดิม) และ File↔Event (เก็บฝั่ง File แบบเดียวกับ File↔Task) พร้อมประโยคอธิบาย Reminder lead time แบบกำหนดเองต่อรายการที่เชื่อมกับ Reminder/Notification Derivation ในหัวข้อ 2; ปรับสถานะแถว FR-19 (ขั้นตอนที่ 9 ของ journey นักศึกษา) ในหัวข้อ 4 จาก "แผนในอนาคต" เป็น "เสร็จแล้ว" (journey บุคคลทั่วไปไม่มีแถวนี้อยู่แล้ว ไม่ต้องแก้); ตัด known gap bullet ของ Sprint 10 ออกจากหัวข้อ 6 เหลือเฉพาะ 2 รายการที่ผูกกับ Sprint 11 (Accessibility Baseline, IndexedDB Quota-Warning) และแก้ประโยคเปิดหัวข้อให้ระบุว่าเหลือเฉพาะ Sprint 11 ที่ยังไม่ build — ไม่มี container ใหม่เกิดขึ้น (ตามที่ตกลงไว้ล่วงหน้า) จึงไม่มีการเปลี่ยนเนื้อหาหัวข้อ 1, diagram/หมายเหตุ implement ของหัวข้อ 2, หรือหัวข้อ 5

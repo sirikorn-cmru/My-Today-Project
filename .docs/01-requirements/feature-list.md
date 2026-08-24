@@ -19,7 +19,7 @@ MoSCoW ที่ระบุในเอกสารนี้คือมุม�
 | 7 | Life Area / Workspace & Personal Profile | Must | เสร็จแล้ว | FR-01, FR-02 | [[01-spec/20260806-007-my-today-sprint7-category-profile\|Sprint 7]] |
 | 8 | Universal Inbox + Quick Capture | Should | เสร็จแล้ว | FR-13, FR-14, FR-15 | [[01-spec/20260806-009-my-today-sprint8-universal-inbox-quick-capture\|Sprint 8]] |
 | 9 | Now/Next/Later Timeline + Smart Priority + Life Progress | Should | เสร็จแล้ว | FR-16, FR-17 | [[01-spec/20260806-010-my-today-sprint9-timeline-priority-progress\|Sprint 9]] |
-| 10 | Task-Event-File-Note-Link Linking (What/When/Information) | Must | ยังไม่เริ่ม | FR-18, FR-19 | [[01-spec/20260806-011-my-today-sprint10-task-event-file-linking\|Sprint 10]] |
+| 10 | Task-Event-File-Note-Link Linking (What/When/Information) | Must | เสร็จแล้ว | FR-18, FR-19 | [[01-spec/20260806-011-my-today-sprint10-task-event-file-linking\|Sprint 10]] |
 | 11 | Competition Demo + UX Polish, then Freeze (รวม NFR Accessibility/Browser Compatibility/Storage Quota-Warning ทั้งระบบ) | Must | ยังไม่เริ่ม | (ไม่มี FR ใหม่ — เป็นการปรับปรุง/ทดสอบ/เตรียม demo ของ FR-13 ถึง FR-19 เดิม) | [[01-spec/20260806-012-my-today-sprint11-competition-demo-freeze\|Sprint 11]] |
 
 ## รายละเอียดแต่ละ Sprint
@@ -100,7 +100,7 @@ MoSCoW ที่ระบุในเอกสารนี้คือมุม�
 
 - **MoSCoW:** Must — spec เรียกตัวเองตรงๆ ว่าเป็น "Differentiator สำคัญที่สุด" ของ My Today เทียบกับ To-do App ทั่วไป เป็นแก่นของ positioning narrative ตอน demo
 - **คำอธิบาย:** ต่อยอดจากการเชื่อม Task-File พื้นฐานของ Sprint 4 และ entity Note/Link ใหม่จาก Sprint 8 ให้ Task/Event หนึ่งรายการเชื่อมครบ 3 มิติในหน้าเดียว: What (รายละเอียดงาน+Life Area), When (Deadline/เวลา/Reminder), Information (ไฟล์+บันทึก+ลิงก์ที่เกี่ยวข้อง) เพิ่ม field `linkedNoteIds`/`linkedLinkIds` และ `reminderLeadTime` แบบ custom ต่อ Task/Event ที่ override ค่า default ของ Sprint 5 ได้
-- **สถานะ (backlog.md):** ยังไม่เริ่ม
+- **สถานะ (backlog.md):** เสร็จแล้ว
 - **FR ที่เกี่ยวข้อง:** FR-18 (เชื่อม Task/Event กับ Note/Link — What/When/Information ในหน้าเดียว), FR-19 (Reminder lead time เฉพาะ Task/Event)
 - **Spec:** [[01-spec/20260806-011-my-today-sprint10-task-event-file-linking|Sprint 10]]
 
@@ -116,3 +116,4 @@ MoSCoW ที่ระบุในเอกสารนี้คือมุม�
 
 - 20260823: อัปเดตแบบ targeted เฉพาะ Sprint 11 (ตารางสรุป + subsection รายละเอียด) สะท้อนสเปกที่แก้ไข (commit `d6874c3`) ผนวก 3 หัวข้อย่อย NFR จาก NFR Master List (Accessibility Baseline NFR-04, Browser Compatibility Matrix NFR-06 — ขยายเป็นทั้งระบบ Sprint 1-10, IndexedDB Quota-Warning NFR-08 — ฟีเจอร์ใหม่ที่ได้รับยกเว้น) เข้า scope — ไม่เปลี่ยน MoSCoW/เหตุผลเดิม (ยังคง Must), ไม่แตะ Sprint อื่น, FR-ID column, หรือ user-journey-*.md
 - 20260824: อัปเดตแบบ targeted เฉพาะ Sprint 9 (ตารางสรุป + subsection รายละเอียด) สะท้อนว่า Sprint 9 (Timeline Now/Next/Later + Smart Priority + Life Progress) build เสร็จแล้วและยืนยันใน backlog.md แล้ว — เปลี่ยนสถานะจาก "ยังไม่เริ่ม" เป็น "เสร็จแล้ว" เท่านั้น ไม่เปลี่ยน MoSCoW (ยังคง Should ตามเหตุผลเดิม — ความสมบูรณ์ไม่กระทบการจัดลำดับความสำคัญ), ไม่แตะ Sprint อื่น หรือ FR-ID column
+- 20260824: อัปเดตแบบ targeted เฉพาะ Sprint 10 (ตารางสรุป + subsection รายละเอียด) สะท้อนว่า Sprint 10 (Task-Event-File-Note-Link Linking / What-When-Information) build เสร็จแล้วและยืนยันใน backlog.md แล้ว — เปลี่ยนสถานะจาก "ยังไม่เริ่ม" เป็น "เสร็จแล้ว" เท่านั้น ไม่เปลี่ยน MoSCoW (ยังคง Must ตามเหตุผลเดิม), ไม่แตะ Sprint อื่น หรือ FR-ID column

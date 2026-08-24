@@ -18,6 +18,11 @@ erDiagram
     LIFE_AREA ||--o{ NOTE : "อ้างอิงได้ (optional)"
     LIFE_AREA ||--o{ LINK : "อ้างอิงได้ (optional)"
     TASK }o--o{ FILE : "เชื่อมโยงกันได้หลายต่อหลาย (FILE เป็นฝ่ายถือรายการ)"
+    EVENT }o--o{ FILE : "เชื่อมโยงกันได้หลายต่อหลาย (FILE เป็นฝ่ายถือรายการ)"
+    TASK }o--o{ NOTE : "เชื่อมโยงกันได้หลายต่อหลาย — Task เป็นฝ่ายถือรายการ"
+    TASK }o--o{ LINK : "เชื่อมโยงกันได้หลายต่อหลาย — Task เป็นฝ่ายถือรายการ"
+    EVENT }o--o{ NOTE : "เชื่อมโยงกันได้หลายต่อหลาย — Event เป็นฝ่ายถือรายการ"
+    EVENT }o--o{ LINK : "เชื่อมโยงกันได้หลายต่อหลาย — Event เป็นฝ่ายถือรายการ"
 
     LIFE_AREA {
         Text id PK
@@ -35,6 +40,9 @@ erDiagram
         Enum status
         Boolean inInbox
         DateTime createdAt
+        Text linkedNoteIds "Reference-array to NOTE"
+        Text linkedLinkIds "Reference-array to LINK"
+        Number reminderLeadTime
     }
     EVENT {
         Text id PK
@@ -48,6 +56,9 @@ erDiagram
         Text lifeAreaId FK
         Boolean inInbox
         DateTime createdAt
+        Text linkedNoteIds "Reference-array to NOTE"
+        Text linkedLinkIds "Reference-array to LINK"
+        Number reminderLeadTime
     }
     FILE {
         Text id PK
@@ -55,6 +66,7 @@ erDiagram
         Text category
         Text lifeAreaId FK
         Text linkedTaskIds "Reference-array to TASK"
+        Text linkedEventIds "Reference-array to EVENT"
         Text mimeType
         Number size
         Boolean inInbox
@@ -124,11 +136,15 @@ erDiagram
 | status | Enum(To Do, Doing, Done) | ใช่ | สถานะความคืบหน้า |
 | inInbox | Boolean | ใช่ | ฟิลด์ organization-state ร่วม — ดูหัวข้อ 3 |
 | createdAt | DateTime | ใช่ | วันเวลาที่สร้าง |
+| linkedNoteIds | Reference-array(→ Note) | ไม่ (ปล่อยว่าง = ไม่เชื่อมกับ Note ใด) | รายการ Note ที่ Task นี้เชื่อมไว้ — **many-to-many จากฝั่ง Task** (Sprint 10) |
+| linkedLinkIds | Reference-array(→ Link) | ไม่ (ปล่อยว่าง = ไม่เชื่อมกับ Link ใด) | รายการ Link ที่ Task นี้เชื่อมไว้ — **many-to-many จากฝั่ง Task** (Sprint 10) |
+| reminderLeadTime | Number (นาทีล่วงหน้า) | ไม่ (ค่าว่าง/null = ใช้ default ของระบบ) | ระยะเวลาแจ้งเตือนล่วงหน้าเฉพาะ Task นี้ (Sprint 10) — เมื่อไม่ตั้งค่า (`null`) ระบบใช้ threshold default กลางจาก Reminder/Notification Derivation container (สองระดับ: early-warning + imminent ตาม Sprint 5); เมื่อตั้งค่าไว้ จะ override เฉพาะ Task นี้ด้วย threshold เดียว (ดู [[api-spec|api-spec]] หัวข้อ 1.2 "Set Custom Reminder Lead Time") |
 
 **กฎทางธุรกิจที่กระทบ schema:**
 - ตอนสร้างผ่าน Quick Capture (Sprint 8), มีแค่ `title` เท่านั้นที่บังคับ — `dueDate`/`dueTime`/`lifeAreaId`/`priority` ปล่อยว่าง/ใช้ค่าเริ่มต้นได้จนกว่าผู้ใช้จะ "จัดระเบียบ" จาก Inbox ภายหลัง
 - การลบ Life Area ที่ Task อ้างอิงอยู่ ไม่ลบ Task — แค่เคลียร์ `lifeAreaId` ให้ว่าง (ดู 2.1)
 - ความสัมพันธ์กับ File เป็นแบบ many-to-many แต่ **Task ไม่ถือรายการ File ของตัวเอง** — "ไฟล์ที่เกี่ยวข้องกับ Task นี้" คำนวณจากฝั่ง File เสมอ (ดู 2.4)
+- ความสัมพันธ์กับ Note และ Link เป็น many-to-many เช่นกัน แต่ **ทิศทางตรงข้ามกับ File↔Task** — Task เป็นฝ่ายถือรายการ (`linkedNoteIds`/`linkedLinkIds`) โดยตรง ไม่ใช่ Note/Link ที่ถือรายการ Task (Sprint 10 การตัดสินใจออกแบบใหม่ ไม่ใช่การขยายกลไก File↔Task เดิม — ดูหมายเหตุความไม่สอดคล้องของ spec Sprint 10 ท้ายหัวข้อ 4)
 
 ### 2.3 Event
 
@@ -145,8 +161,13 @@ erDiagram
 | lifeAreaId | Reference(→ Life Area) | ไม่ (optional many-to-one) | Life Area ที่กิจกรรมนี้อยู่ |
 | inInbox | Boolean | ใช่ | ฟิลด์ organization-state ร่วม — ดูหัวข้อ 3 |
 | createdAt | DateTime | ใช่ | วันเวลาที่สร้าง |
+| linkedNoteIds | Reference-array(→ Note) | ไม่ (ปล่อยว่าง = ไม่เชื่อมกับ Note ใด) | รายการ Note ที่ Event นี้เชื่อมไว้ — **many-to-many จากฝั่ง Event** (Sprint 10, กลไกเดียวกับ Task↔Note) |
+| linkedLinkIds | Reference-array(→ Link) | ไม่ (ปล่อยว่าง = ไม่เชื่อมกับ Link ใด) | รายการ Link ที่ Event นี้เชื่อมไว้ — **many-to-many จากฝั่ง Event** (Sprint 10, กลไกเดียวกับ Task↔Link) |
+| reminderLeadTime | Number (นาทีล่วงหน้า) | ไม่ (ค่าว่าง/null = ใช้ default ของระบบ) | ระยะเวลาแจ้งเตือนล่วงหน้าเฉพาะ Event นี้ (Sprint 10) — เมื่อไม่ตั้งค่า (`null`) ระบบใช้ threshold default กลางจาก Reminder/Notification Derivation container (สองระดับ ตาม Sprint 5); เมื่อตั้งค่าไว้ จะ override เฉพาะ Event นี้ด้วย threshold เดียว (ดู [[api-spec|api-spec]] หัวข้อ 1.3 "Set Custom Reminder Lead Time") |
 
-**กฎทางธุรกิจที่กระทบ schema:** Event **ไม่ duplicate ข้อมูล Task ที่มี Deadline** — Task ที่มี Deadline ปรากฏใน Calendar โดยการรวมมุมมอง (merge view) ที่ query ทั้งสอง entity แล้วเรียงตามเวลา ไม่ใช่การสร้าง Event record แทน Task นั้น (ดู [[api-spec|api-spec]] หัวข้อ 3 "Get Day Items")
+**กฎทางธุรกิจที่กระทบ schema:**
+- ความสัมพันธ์กับ Note และ Link เป็น many-to-many ที่ **Event เป็นฝ่ายถือรายการ** โดยตรง (`linkedNoteIds`/`linkedLinkIds`) — ทิศทางตรงข้ามกับ File↔Event ที่ File เป็นฝ่ายถือรายการแทน (Sprint 10 การตัดสินใจออกแบบใหม่ เหมือน Task↔Note/Task↔Link — ดูหมายเหตุความไม่สอดคล้องของ spec Sprint 10 ท้ายหัวข้อ 4)
+- Event **ไม่ duplicate ข้อมูล Task ที่มี Deadline** — Task ที่มี Deadline ปรากฏใน Calendar โดยการรวมมุมมอง (merge view) ที่ query ทั้งสอง entity แล้วเรียงตามเวลา ไม่ใช่การสร้าง Event record แทน Task นั้น (ดู [[api-spec|api-spec]] หัวข้อ 3 "Get Day Items")
 
 ### 2.4 File
 
@@ -157,6 +178,7 @@ erDiagram
 | category | Text | ไม่ | หมวดหมู่ไฟล์ (ข้อความอิสระ) |
 | lifeAreaId | Reference(→ Life Area) | ไม่ (optional many-to-one) | Life Area ที่ไฟล์นี้อยู่ |
 | linkedTaskIds | Reference-array(→ Task) | ไม่ (ปล่อยว่าง = ไม่เชื่อมกับ Task ใด) | รายการ Task ที่ไฟล์นี้เกี่ยวข้องด้วย — **many-to-many จากฝั่ง File** |
+| linkedEventIds | Reference-array(→ Event) | ไม่ (ปล่อยว่าง = ไม่เชื่อมกับ Event ใด) | รายการ Event ที่ไฟล์นี้เกี่ยวข้องด้วย — **many-to-many จากฝั่ง File** (Sprint 10, กลไกเดียวกับ `linkedTaskIds`) |
 | mimeType | Text | ใช่ | ประเภทเนื้อหาไฟล์ ใช้ตัดสินวิธี preview |
 | size | Number | ใช่ | ขนาดไฟล์ (หน่วย byte) |
 | inInbox | Boolean | ใช่ | ฟิลด์ organization-state ร่วม — ดูหัวข้อ 3 |
@@ -164,7 +186,7 @@ erDiagram
 | content | Binary | ใช่ | เนื้อหาไฟล์จริง (binary payload) |
 
 **กฎทางธุรกิจที่กระทบ schema:**
-- ความสัมพันธ์ File↔Task เป็น many-to-many แต่ **เก็บทิศทางเดียวที่ File** (`linkedTaskIds`) — Task ไม่มีฟิลด์เก็บรายการไฟล์ของตัวเอง "Related Files ของ Task นี้" จึงเป็นค่าที่ query ได้เสมอด้วยการกรอง File ทั้งหมดที่ `linkedTaskIds` มี id ของ Task นั้นอยู่ ไม่ใช่ field ที่เก็บไว้บน Task โดยตรง
+- ความสัมพันธ์ File↔Task และ File↔Event เป็น many-to-many แบบเดียวกันทั้งคู่ แต่ **เก็บทิศทางเดียวที่ File** (`linkedTaskIds`/`linkedEventIds`) — Task/Event ไม่มีฟิลด์เก็บรายการไฟล์ของตัวเอง "Related Files ของ Task/Event นี้" จึงเป็นค่าที่ query ได้เสมอด้วยการกรอง File ทั้งหมดที่ `linkedTaskIds`/`linkedEventIds` มี id ของ Task/Event นั้นอยู่ ไม่ใช่ field ที่เก็บไว้บน Task/Event โดยตรง (File↔Event เป็นการขยายกลไกเดิมของ File↔Task ในทิศทางเดียวกัน — Sprint 10, ตรงข้ามกับ Task↔Note/Task↔Link/Event↔Note/Event↔Link ที่เป็นทิศทางใหม่)
 - การลบ Life Area ที่ File อ้างอิงอยู่ ไม่ลบ File — แค่เคลียร์ `lifeAreaId` ให้ว่าง (เหมือน Task/Event)
 
 ### 2.5 Note
@@ -225,11 +247,8 @@ erDiagram
 
 ## 4. Known Gaps / ส่วนขยายที่ยังไม่ถูกสร้าง
 
-รายการนี้คือฟิลด์/entity ที่ narrative ของ Sprint ที่ยังไม่เริ่ม (ตาม backlog.md ณ วันที่ 20260823 — Sprint 9-10 ยังไม่มี commit ใดๆ) บอกเป็นนัยว่าจะต้องมี แต่ **ยังไม่มีอยู่ใน schema ปัจจุบัน**:
+รายการนี้คือฟิลด์/entity ที่ narrative ของ Sprint ที่ยังไม่เริ่ม (ตาม backlog.md ณ วันที่ 20260824 — Sprint 1-10 ทั้งหมด verified เสร็จแล้ว เหลือเฉพาะ Sprint 11 ที่ยังไม่มี commit ใดๆ) บอกเป็นนัยว่าจะต้องมี แต่ **ยังไม่มีอยู่ใน schema ปัจจุบัน**:
 
-- **Task.linkedNoteIds / Task.linkedLinkIds — Reference-array(→ Note) / Reference-array(→ Link), optional** (Sprint 10, FR-18): ขยายความสัมพันธ์ Task ให้เชื่อมกับ Note และ Link ได้โดยตรง นอกเหนือจาก File ที่เชื่อมได้อยู่แล้ว (ผ่าน `File.linkedTaskIds`) เพื่อรวม What/When/Information ในหน้าเดียว
-- **Event.linkedNoteIds / Event.linkedLinkIds — Reference-array(→ Note) / Reference-array(→ Link), optional** (Sprint 10, Business Rule ข้อ 4): Event เชื่อมกับ Note/Link/File ได้เช่นเดียวกับ Task ด้วยกลไกเดียวกัน
-- **Task.reminderLeadTime / Event.reminderLeadTime — Number (นาทีหรือชั่วโมงล่วงหน้า), optional** (Sprint 10, FR-19): ค่า override ระยะเวลาแจ้งเตือนล่วงหน้าเฉพาะรายการ แทนค่า default เดียวกันทั้งระบบที่ Reminder/Notification Derivation ใช้อยู่ปัจจุบัน (Sprint 5)
 - **IndexedDB Quota-Warning** (Sprint 11, NFR-08, [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]]) — ไม่ต้องการฟิลด์ schema ใหม่บน entity `File` เลยเช่นกัน เพราะเป็นการ query ความจุที่เหลือของกลไกจัดเก็บเอง (storage mechanism's own capacity) ไม่ใช่ข้อมูลที่เก็บต่อ record ("พื้นที่ที่เหลือ" ไม่ใช่ attribute ของ File แต่ละไฟล์ แต่เป็นคุณสมบัติของที่เก็บทั้งก้อน) ดู operation ที่เกี่ยวข้อง "Get Storage Usage Estimate / Warn Near Quota" ใน [[api-spec|api-spec]] หัวข้อ 4 — ยังไม่ถูกสร้างจริง
 
 **ข้อควรระวังเรื่องความสอดคล้องของ spec (แก้ไขแล้ว):** เดิมเอกสาร Sprint 10 (`20260806-011-my-today-sprint10-task-event-file-linking.md`) เคยระบุว่า Task "เพิ่ม field ความสัมพันธ์ใหม่: `linkedNoteIds` และ `linkedLinkIds` (เพิ่มจาก `linkedFileIds` **ที่มีอยู่แล้วจาก Sprint 4**)" — ถ้อยคำนี้สื่อผิดว่า Task ปัจจุบันมีฟิลด์ `linkedFileIds` อยู่แล้ว ทั้งที่ `src/types.ts` และ architecture.md ยืนยันตรงกันว่าความสัมพันธ์ File↔Task ถือทิศทางเดียวที่ **File** (`FileRecord.linkedTaskIds`) ไม่ใช่ที่ Task ประเด็นนี้ได้รับการแก้ไขแล้วผ่าน commit `83a38ee` ("Correct Sprint 10 spec's incorrect Task.linkedFileIds claim") ซึ่งเพิ่มหัวข้อ `## เพิ่มเติม (20260823): แก้ไขข้อความคลาดเคลื่อนเรื่อง Task↔File relationship (linkedFileIds)` ต่อท้าย spec Sprint 10 ยืนยันความสัมพันธ์ที่ถูกต้อง (File→Task ผ่าน `linkedTaskIds`) และชี้แจงว่า `linkedNoteIds`/`linkedLinkIds` ของ Sprint 10 เป็นการตัดสินใจออกแบบใหม่บน Task เอง ไม่ใช่การขยายฟิลด์ที่มีอยู่เดิม การแก้ไขนี้ยืนยันว่า schema ที่บันทึกไว้ในเอกสารนี้ (Task ได้ `linkedNoteIds`/`linkedLinkIds` เป็นฟิลด์ใหม่บน Task เอง, ส่วน File↔Task ยังคงเดิมผ่าน `linkedTaskIds`) ถูกต้องมาตั้งแต่แรก **ไม่ต้องแก้ไข schema ใดๆ เพิ่มเติม** — ที่ผิดคือถ้อยคำของ spec Sprint 10 เท่านั้น ไม่ใช่การออกแบบที่ตั้งใจไว้ คงหมายเหตุนี้ไว้เป็นบันทึกประวัติความไม่สอดคล้องและการแก้ไข แทนการลบทิ้ง
@@ -242,6 +261,7 @@ erDiagram
 - 20260823 (อัปเดตอีกครั้ง — NFR master list) — เพิ่ม cross-link ไปยัง [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]] ในหัวข้อเชื่อมโยงกลับ และเพิ่ม known gap ใหม่ในหัวข้อ 4: IndexedDB Quota-Warning (NFR-08) — ไม่ต้องการฟิลด์ schema ใหม่บน `File` ไม่มีการแก้ไข ER diagram/รายละเอียดตาราง/ฟิลด์ข้ามระบบอื่นใด
 - 20260823 (แก้ citation ให้สอดคล้องกับ architecture.md) — เพิ่ม "Sprint 11" เข้าไปใน citation ของ known gap "IndexedDB Quota-Warning" ในหัวข้อ 4 (จาก "(NFR-08, ...)" เป็น "(Sprint 11, NFR-08, ...)") ให้ตรงกับ commit `9ee5476` ที่แก้ architecture.md ไม่มีการแก้ไข ER diagram/รายละเอียดตาราง/ฟิลด์ข้ามระบบ/เนื้อหา known gap อื่นใด
 - 20260824 (Sprint 9 เสร็จแล้ว) — ลบ bullet "Timeline (Now/Next/Later) และ Life Progress (Sprint 9, FR-16/FR-17)" ออกจากหัวข้อ 4 Known Gaps เนื่องจาก Sprint 9 verified และ "เสร็จแล้ว" ใน backlog.md แล้ว ไม่ใช่ gap อีกต่อไป — ไม่มีการแก้ไข ER diagram/รายละเอียดตาราง/ฟิลด์ข้ามระบบใดๆ เพราะ Sprint 9 ไม่เพิ่มฟิลด์หรือ entity ใหม่เลย (เป็น derived/computed logic ล้วนๆ บน field ที่มีอยู่แล้ว ดู [[api-spec|api-spec]] หัวข้อ 3 สำหรับ operation ที่ย้ายไปจาก Known Gaps)
+- 20260824 (Sprint 10 เสร็จแล้ว) — เพิ่มความสัมพันธ์ใหม่ในหัวข้อ 1 ER Diagram: `TASK }o--o{ NOTE`, `TASK }o--o{ LINK`, `EVENT }o--o{ NOTE`, `EVENT }o--o{ LINK` (เก็บฝั่ง Task/Event) และ `EVENT }o--o{ FILE` (เก็บฝั่ง File เหมือน Task↔File เดิม); เพิ่มฟิลด์ `linkedNoteIds`/`linkedLinkIds`/`reminderLeadTime` ในตาราง TASK และ EVENT ของ ER diagram และในหัวข้อ 2.2/2.3 พร้อมกฎทางธุรกิจใหม่ (ทิศทางการถือรายการของ Task/Event↔Note/Link สวนทางกับ File↔Task/Event โดยเจตนา); เพิ่มฟิลด์ `linkedEventIds` ในตาราง FILE ของ ER diagram และหัวข้อ 2.4; ลบ bullet Sprint 10 ทั้งสามรายการออกจากหัวข้อ 4 Known Gaps (เหลือเฉพาะ IndexedDB Quota-Warning ที่ผูกกับ Sprint 11) — สอดคล้องกับ architecture.md หัวข้อ 3 ที่อัปเดตแล้วเมื่อ 20260824 ไม่พบ conflict ใดๆ
 
 ---
 

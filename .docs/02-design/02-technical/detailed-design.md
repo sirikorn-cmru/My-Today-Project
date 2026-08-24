@@ -12,7 +12,7 @@
 
 ## 1. Sequence Diagrams — Persona Journeys
 
-ทั้งสองไดอะแกรมด้านล่างเดินตามลำดับขั้นตอนที่มีอยู่แล้วใน [[../01-prototypes/user-journey-student|user-journey-student.md]] และ [[../01-prototypes/user-journey-general-person|user-journey-general-person.md]] ทุกประการ ไม่สร้าง narrative ใหม่ — วาด message เฉพาะขั้นตอนที่มีสถานะ "เสร็จแล้ว" ในเอกสารนั้นๆ (ตรวจสอบล่าสุด 20260824 — Sprint 9 ยืนยันเสร็จแล้วในรอบ backlog-sync-check วันเดียวกัน) ส่วนขั้นตอนที่เป็น "แผนในอนาคต" ถูกข้ามไปตามกฎของเอกสารนี้ และระบุไว้เป็นหมายเหตุใต้ไดอะแกรมแทน
+ทั้งสองไดอะแกรมด้านล่างเดินตามลำดับขั้นตอนที่มีอยู่แล้วใน [[../01-prototypes/user-journey-student|user-journey-student.md]] และ [[../01-prototypes/user-journey-general-person|user-journey-general-person.md]] ทุกประการ ไม่สร้าง narrative ใหม่ — วาด message เฉพาะขั้นตอนที่มีสถานะ "เสร็จแล้ว" ในเอกสารนั้นๆ (ตรวจสอบล่าสุด 20260824 — Sprint 9 และ Sprint 10 ยืนยันเสร็จแล้วในรอบ backlog-sync-check วันเดียวกัน ทำให้ทั้งสอง journey ไม่มีขั้นตอนใดเหลือเป็น "แผนในอนาคต" อีกต่อไป) ส่วนขั้นตอนที่เป็น "แผนในอนาคต" ถูกข้ามไปตามกฎของเอกสารนี้ และระบุไว้เป็นหมายเหตุใต้ไดอะแกรมแทน
 
 ### 1.1 นักศึกษา (Task "ส่งรายงาน HCI", Life Area "Study")
 
@@ -76,6 +76,19 @@ sequenceDiagram
     StructPersist-->>Domain: Task/Event สด
     Domain-->>Presentation: สรุปวันนี้ (จำนวนงาน/รายการวันนี้)
 
+    User->>Presentation: เปิด Task Detail ตั้ง Reminder lead time ของตัวเอง (9)
+    Presentation->>Domain: Set Custom Reminder Lead Time(taskId, reminderLeadTime)
+    Domain->>StructPersist: บันทึก reminderLeadTime บน Task record
+    StructPersist-->>Domain: Task record ที่อัปเดตแล้ว
+    Domain-->>Presentation: ยืนยันบันทึกสำเร็จ
+    Presentation->>Domain: ขอข้อมูล Task/Event สดเพื่อประเมินความเร่งด่วน
+    Domain->>StructPersist: อ่าน Task ทั้งหมด (รวม reminderLeadTime ที่เพิ่งตั้ง)
+    StructPersist-->>Domain: Task/Event สด
+    Domain->>Reminder: Build Notifications(tasks, events, readIds)
+    Reminder->>Reminder: ถ้า Task มี reminderLeadTime ใช้ค่านี้แทน threshold default ของระบบ (ยุบเหลือ tier เดียว)
+    Reminder-->>Domain: รายการแจ้งเตือนตาม Reminder ที่ตั้งไว้เอง
+    Domain-->>Presentation: รายการแจ้งเตือนที่จำแนกระดับความเร่งด่วนแล้ว
+
     User->>Presentation: กด Done เมื่อทำงานเสร็จ (10)
     Presentation->>Domain: Set Task Status(id, status=Done)
     Domain->>StructPersist: บันทึกสถานะ Done
@@ -99,10 +112,11 @@ sequenceDiagram
 6. ขั้นตอนที่ 6 (FR-07) — เห็น Deadline ใน Calendar โดยอัตโนมัติ
 7. ขั้นตอนที่ 7 (FR-16) — เห็น Deadline ใน Timeline Now/Next/Later — เสร็จแล้ว
 8. ขั้นตอนที่ 8 (FR-05, FR-12) — เปิด My Today ตอนเช้า เห็นงานบน Today Dashboard
-9. ขั้นตอนที่ 10 (FR-03, FR-11) — ทำงานเสร็จ กด Done
-10. ขั้นตอนที่ 11 (FR-17) — Life Progress อัปเดต — เสร็จแล้ว
+9. ขั้นตอนที่ 9 (FR-19, Sprint 10) — ระบบเตือนตาม Reminder lead time ที่ตั้งไว้เอง — เสร็จแล้ว
+10. ขั้นตอนที่ 10 (FR-03, FR-11) — ทำงานเสร็จ กด Done
+11. ขั้นตอนที่ 11 (FR-17) — Life Progress อัปเดต — เสร็จแล้ว
 
-ขั้นตอนที่ **9** (Reminder lead time ที่ตั้งเอง, FR-19, Sprint 10) ยังไม่รวมในไดอะแกรมนี้ เพราะ Sprint ที่เกี่ยวข้องยังไม่ build (สถานะ "แผนในอนาคต" ตาม journey doc และ backlog.md ณ 20260824)
+ไม่มีขั้นตอนใดใน journey นี้ที่ยังเป็น "แผนในอนาคต" อีกต่อไป (ขั้นตอนที่ 9, Custom Reminder Lead Time, ยืนยันเสร็จแล้วตาม Sprint 10 ใน backlog.md ณ 20260824 — เดิมเป็นขั้นตอนเดียวที่ยังข้ามไดอะแกรมนี้)
 
 ### 1.2 บุคคลทั่วไป (Task "จ่ายค่าไฟ", Life Area "Finance")
 
@@ -184,7 +198,7 @@ sequenceDiagram
 
 ## 2. Sequence Diagrams — Cross-cutting Operations
 
-ทั้งสี่ operation ต่อไปนี้อยู่ใน [[api-spec|api-spec.md]] หัวข้อ 2 และ build เสร็จแล้วทั้งหมดตาม backlog.md ณ 20260823 (Delete Life Area ตั้งแต่ Sprint 7, อีกสามอย่างตั้งแต่ Sprint 8) จึงวาดไดอะแกรมเต็มให้ครบทุกอัน
+สี่ operation แรก (2.1-2.4) อยู่ใน [[api-spec|api-spec.md]] หัวข้อ 2 และ build เสร็จแล้วทั้งหมดตาม backlog.md ณ 20260823 (Delete Life Area ตั้งแต่ Sprint 7, อีกสามอย่างตั้งแต่ Sprint 8) จึงวาดไดอะแกรมเต็มให้ครบทุกอัน — เพิ่มเติม 20260824: Get Task Detail/Get Event Detail (2.5) จาก Sprint 10 ที่เพิ่ง build เสร็จ ก็มีลักษณะ cross-cutting เช่นกัน จึงวาดไดอะแกรมให้ในหัวข้อนี้ด้วยแม้จะถูกจัดอยู่ใน [[api-spec|api-spec.md]] หัวข้อ 3 (Derived/Read-only Operations) ไม่ใช่หัวข้อ 2 ก็ตาม
 
 ### 2.1 Delete Life Area (cascade-safe, two-phase)
 
@@ -285,6 +299,34 @@ sequenceDiagram
 
 อ้างอิง: [[api-spec|api-spec.md]] หัวข้อ 2 แถว "List Inbox Items" — เป็น query ข้าม entity ทั้งห้า ไม่ใช่ operation เฉพาะของ entity ใดเดียว ใช้กับหน้า "My Inbox" (FR-14)
 
+### 2.5 Get Task Detail / Get Event Detail (What/When/Information รวมหน้าเดียว)
+
+แม้จะอยู่ใน [[api-spec|api-spec.md]] หัวข้อ 3 (Derived/Read-only Operations) ไม่ใช่หัวข้อ 2 แต่ operation คู่นี้มีลักษณะ cross-cutting เช่นเดียวกับ "List Inbox Items" ข้างต้น (ประกอบผลลัพธ์ข้าม Task/Event + File + Note + Link + Life Area ในคำขอเดียว) จึงวาดไดอะแกรมไว้ในหัวข้อนี้ด้วย — เป็น read-only ล้วนๆ ไม่มีการเขียนข้อมูลใดๆ (ยกตัวอย่างฐานเป็น Task; Get Event Detail ใช้กลไกเดียวกันทุกประการเพียงสลับ entity ฐานเป็น Event)
+
+```mermaid
+sequenceDiagram
+    actor User as ผู้ใช้
+    participant Presentation as Presentation / Interaction Layer
+    participant Domain as Application / Domain Logic Layer
+    participant StructPersist as Structured Local Persistence
+
+    User->>Presentation: เปิดรายละเอียด Task รายการหนึ่ง
+    Presentation->>Domain: Get Task Detail(taskId)
+    Domain->>StructPersist: อ่าน Task record ตาม taskId
+    StructPersist-->>Domain: Task record (What: title/description/Life Area, When: dueDate/dueTime/reminderLeadTime)
+    Domain->>StructPersist: อ่าน File ทั้งหมดที่ linkedTaskIds มี taskId นี้
+    StructPersist-->>Domain: รายการ File ที่เกี่ยวข้อง
+    Domain->>StructPersist: อ่าน Note ทั้งหมดที่ linkedNoteIds ของ Task มี
+    StructPersist-->>Domain: รายการ Note ที่เกี่ยวข้อง
+    Domain->>StructPersist: อ่าน Link ทั้งหมดที่ linkedLinkIds ของ Task มี
+    StructPersist-->>Domain: รายการ Link ที่เกี่ยวข้อง
+    Domain->>StructPersist: อ่านชื่อ Life Area ตาม lifeAreaId ของ Task
+    StructPersist-->>Domain: ชื่อ Life Area (หรือค่าว่างถ้าไม่พบ)
+    Domain-->>Presentation: มุมมองรวม What/When/Information ของ Task นี้
+```
+
+อ้างอิง: [[api-spec|api-spec.md]] หัวข้อ 3 แถว "Get Task Detail (What/When/Information unified view)" / "Get Event Detail (What/When/Information unified view)" (Sprint 10, Business Rule ข้อ 3) — ไม่ใช่ CRUD ต่อ record ที่เก็บถาวรตรงๆ เป็นการประกอบ (compose) ผลลัพธ์จาก Task/Event record หนึ่งตัว บวกกับ query ข้าม entity อีกสามครั้งให้เป็นมุมมองเดียว ไม่มี field ใหม่ใดถูกเก็บถาวรเพิ่มจาก operation นี้
+
 ## 3. Error / Edge-case Notes
 
 - **Quick Capture / Organize from Inbox (2.2, 2.3):** ถ้าการเขียนลง Structured Local Persistence ล้มเหลว Application/Domain Logic Layer แจ้ง error กลับ Presentation Layer โดยไม่เปลี่ยนสถานะ `inInbox` ของ record เดิม (record ยังค้างอยู่ใน Inbox เหมือนก่อนพยายามบันทึก ไม่ถูกปล่อยอยู่ในสถานะครึ่งๆ กลางๆ)
@@ -293,14 +335,12 @@ sequenceDiagram
 - **Build Notifications (1.2 ขั้นตอนที่ 6):** เป็นการคำนวณสดทุกครั้ง ไม่มีสถานะกลางที่ค้างพังได้ — ถ้าไม่มี Task/Event ที่เข้าเงื่อนไข Overdue/DueToday/DueSoon ผลลัพธ์คือรายการว่างเปล่า ไม่ใช่ error
 - **Get Day Items / Get Today Dashboard Summary (1.1 ขั้นตอนที่ 6, 8):** เป็น read-only query ล้วนๆ ไม่มีผลข้างเคียงต่อข้อมูล ถ้าไม่มี Task/Event ของวันนั้นก็แสดงรายการว่างตามจริง ไม่ถือเป็นสถานะ error
 - **Get Timeline (Now/Next/Later) + Smart Priority Sort / Get Life Progress (1.1 ขั้นตอนที่ 7, 11 / 1.2 ขั้นตอนที่ 5, 8):** เช่นเดียวกับ Build Notifications เป็นการคำนวณสดจาก Task/Event ทุกครั้งที่เรียก ไม่มีสถานะกลางที่ค้างพังได้และไม่มีผลข้างเคียงต่อข้อมูลเดิม — ถ้าวันนี้ไม่มี Task/Event ที่เข้าเงื่อนไข (Timeline) หรือไม่มี Task ที่ครบกำหนดวันนี้เลย (Life Progress) ผลลัพธ์คือกลุ่มว่างเปล่า/สัดส่วน 0 จาก 0 ไม่ใช่ error
+- **Link/Unlink Note/Link ↔ Task/Event, Set Custom Reminder Lead Time (1.1 ขั้นตอนที่ 9, 2.5):** ทั้งสามอย่างนี้เป็นการอัปเดตฟิลด์ธรรมดาบน Task/Event record เดิม (`linkedNoteIds`/`linkedLinkIds`/`reminderLeadTime`) ไม่มี relationship record แยกต่างหากถูกเก็บไว้ที่ Structured Local Persistence เหมือนกรณี File (ซึ่งอยู่คนละ container คือ Binary/Blob Local Persistence + metadata คู่กัน) จึงไม่มีกรณี partial-failure ใหม่เกินไปจากที่ระบุไว้แล้วทั่วไป — ถ้าการเขียนลง Structured Local Persistence ล้มเหลว Application/Domain Logic Layer แจ้ง error กลับ Presentation Layer โดย Task/Event record เดิมไม่เปลี่ยนแปลง (เหมือนกรณี Quick Capture/Organize from Inbox ด้านบน)
+- **Get Task Detail / Get Event Detail (2.5):** เป็น read-only query ล้วนๆ เช่นเดียวกับ Get Day Items/Get Today Dashboard Summary ไม่มีผลข้างเคียงต่อข้อมูล — ถ้า Task/Event นั้นไม่มี File/Note/Link ที่เชื่อมไว้เลย หรือไม่มี Life Area ที่อ้างอิง (ถูกลบไปแล้ว) ผลลัพธ์คือรายการว่าง/ชื่อ Life Area ว่างตามจริง ไม่ใช่ error
 
 ## 4. Known Gaps / Not-yet-built Flows
 
-รายการนี้สอดคล้องกับ known gaps ใน [[architecture|architecture.md]] หัวข้อ 6 และ [[api-spec|api-spec.md]] หัวข้อ 4 — ยังไม่มี sequence diagram ให้เนื่องจาก Sprint ที่เกี่ยวข้องยังไม่ build ตาม backlog.md ณ 20260824 (Sprint 9 build เสร็จแล้ว — ดูไดอะแกรมจริงในหัวข้อ 1 ด้านบน — เหลือเฉพาะ Sprint 10 ที่ยังไม่มี commit ใดๆ):
-
-- **Task/Event ↔ Note/Link linking (Sprint 10, FR-18):** flow ที่คาดว่าจะเกิดคือ "Link Note to Task"/"Link Link to Task" (และคู่ Event) ให้ Domain Logic Layer อัปเดต reference-array บน Task/Event เอง คู่ขนานกับ "Link File to Task" ที่มีอยู่แล้ว แต่กลับทิศทางการถือ FK (Task/Event เป็นฝ่ายถือ แทนที่จะเป็น Note/Link)
-- **Custom Reminder Lead Time (Sprint 10, FR-19):** flow ที่คาดว่าจะเกิดคือ Presentation Layer ส่ง "Set Custom Reminder Lead Time" ให้ Domain Logic Layer บันทึกค่าเฉพาะรายการ แล้ว "Build Notifications" (Reminder/Notification Derivation) ต้องอ่านค่านี้เพิ่มจากค่า default กลางของระบบก่อนคำนวณระดับความเร่งด่วน
-- **Task/Event Detail แบบ What/When/Information รวมหน้าเดียว (Sprint 10):** flow ที่คาดว่าจะเกิดคือ query รวมที่ดึง Task/Event เดียวกันกับ File/Note/Link/reminder ที่เชื่อมไว้ทั้งหมดในคำขอเดียว แทนที่จะให้ Presentation Layer เรียกหลาย operation แยกกันแล้วประกอบเองเหมือนปัจจุบัน
+รายการนี้สอดคล้องกับ known gaps ใน [[architecture|architecture.md]] หัวข้อ 6 และ [[api-spec|api-spec.md]] หัวข้อ 4 — ยังไม่มี sequence diagram ให้เนื่องจาก Sprint ที่เกี่ยวข้องยังไม่ build ตาม backlog.md ณ 20260824 (Sprint 1-10 build เสร็จแล้วทั้งหมด รวมถึง Sprint 10 ที่เพิ่งยืนยันเสร็จ — ดูไดอะแกรมจริงในหัวข้อ 1/2 ด้านบน — เหลือเฉพาะ Sprint 11 ที่ยังไม่มี commit ใดๆ):
 
 - **IndexedDB Quota-Warning (Sprint 11, NFR-08, [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]]):** ตามข้อกำหนดใหม่ในเอกสารดังกล่าว ระบบควรเตือนผู้ใช้เมื่อพื้นที่เก็บไฟล์แนบใกล้เต็ม quota ของ Binary/Blob Local Persistence — operation ที่รองรับ ("Get Storage Usage Estimate / Warn Near Quota") ยังไม่ build จึงยังไม่มี sequence diagram ให้ในเอกสารนี้
 
@@ -320,6 +360,7 @@ Sprint 11 (Demo/Polish/Freeze) ไม่เพิ่ม flow ใหม่ระ�
 - **เปิด Calendar (ขั้นตอนที่ 6):** Presentation = `src/pages/CalendarPage.tsx` + `DayAgenda`; Domain = `getDayItems` ใน `src/lib/calendarUtils.ts`
 - **เปิด Timeline Now/Next/Later (ขั้นตอนที่ 7, Sprint 9):** Presentation = `src/pages/TimelinePage.tsx` (route `/timeline`, เรนเดอร์ผ่าน `src/components/TimelineSection.tsx` สามชุด — Now/Next/Later); Domain = `getTimelineEntries` ใน `src/lib/timelineUtils.ts` เป็น pure function ที่คำนวณใหม่ทุกครั้งที่ component render (ไม่มี hook/state แยกเป็นเจ้าของ ไม่มี record persist ใหม่ใดๆ) เรียก `smartPriorityTier` ภายในตัวเองเพื่อจัดลำดับรายการในแต่ละกลุ่มตามกฎ 5-tier ของ Sprint 9 (Overdue → Due Today → Upcoming → High Priority → Normal) — ฟังก์ชันเดียวกันนี้ยังถูกเรียกซ้ำผ่าน `sortTasksBySmartPriority` ที่ `DashboardPage.tsx` ใช้เรียง `TodayTasks` ด้วย จึงเป็น derivation ชุดเดียวที่ใช้ร่วมกันสองที่ ไม่ใช่ตรรกะแยกกันสองชุด — เพราะเป็น pure function ที่รับ props สดของ `tasks`/`events` ล้วนๆ (ไม่มี `useEffect`/state ภายใน) การอัปเดต Task/Event ที่หน้าอื่น (เช่นกด Done ที่ขั้นตอนที่ 10) จะสะท้อนใน Timeline ทันทีที่ re-render รอบถัดไปโดยไม่ต้อง refetch เพิ่ม
 - **เปิด My Today ตอนเช้า (ขั้นตอนที่ 8):** Presentation = `src/pages/DashboardPage.tsx` (`SummaryCards`, `TodayTasks`, `TodaySchedule`, `Upcoming`); Domain = pure function ใน `src/lib/taskUtils.ts`/`src/lib/calendarUtils.ts` ที่คำนวณสรุปจาก `tasks`/`events` props สด
+- **ระบบเตือนตาม Reminder lead time ที่ตั้งไว้เอง (ขั้นตอนที่ 9, Sprint 10):** Presentation = `src/components/TaskDetailModal.tsx` (ส่วน "When" — `<select>` ตัวเลือก lead time จาก `reminderLeadTimeOptions` ใน `src/lib/taskUtils.ts`, แสดงค่าที่ตั้งไว้ด้วย `formatLeadTime`); Domain = เรียก `onUpdateTask` ที่ `App.tsx` ส่งลงมาเป็น `useTasks`'s `updateTask` ทั่วไป (ตั้งฟิลด์ `reminderLeadTime`) — **ไม่มี hook method เฉพาะแยกต่างหาก** สำหรับ "Set Custom Reminder Lead Time" แม้ [[api-spec|api-spec.md]] จะจัดเป็น operation แยกเพื่อให้อ่านง่ายก็ตาม; Reminder/Notification Derivation = `taskLevel`/`eventLevel` ใน `src/lib/notificationUtils.ts` เช็ค `task.reminderLeadTime != null` ก่อน แล้วยุบเหลือ tier เดียว (`DueSoon`, threshold = `reminderLeadTime / 60` ชั่วโมง) แทนสอง tier default เดิมของ Sprint 5 (`DueToday`/`DueSoon`) — เป็น pure function เช่นเดียวกับ `getTimelineEntries`/`getLifeProgress` จึงเห็นค่าที่เพิ่งเขียนทันทีที่ `useNotifications` re-render รอบถัดไป ไม่มี batching ที่ทำให้ค่าหายไปจากการอ่านครั้งถัดไปในหน้าเดียวกัน
 - **กด Done (ขั้นตอนที่ 10):** Presentation = `TaskCard.tsx` (ปุ่ม/checkbox Done ใช้ร่วมกันทั้งใน `TodayTasks` และ `TasksPage`); Domain = `useTasks`'s `updateTask` (ตั้ง `status="Done"`)
 - **Life Progress อัปเดต (ขั้นตอนที่ 11, Sprint 9):** Presentation = `src/components/LifeProgress.tsx` (เรนเดอร์อยู่บน `DashboardPage.tsx` เอง ไม่ใช่หน้าแยก); Domain = `getLifeProgress` ใน `src/lib/timelineUtils.ts` เป็น pure function เช่นกัน ไม่มี state/record ใหม่ที่ persist — คำนวณจาก `tasks` props สดของ `App.tsx` ทุกครั้งที่ `DashboardPage` render (หมายเหตุ: เพราะ `App.tsx`/`useTasks` เป็น React state เดียวที่ทุก route ใช้ร่วมกัน การกด Done ที่ `TaskCard` (ขั้นตอนที่ 10) จะ trigger re-render ของ `DashboardPage` รอบถัดไปให้ `getLifeProgress` เห็นค่า `status="Done"` ใหม่ทันที — ไม่มี batching ที่ทำให้ค่าที่เพิ่งเขียนหายไปจากการอ่านครั้งถัดไปในหน้าเดียวกัน เพราะทั้งสองฝั่งอยู่ใน render tree เดียวกันของ React)
 
@@ -342,6 +383,10 @@ Presentation ของทั้งสอง operation implement อยู่ใ�
 
 Presentation = `src/pages/InboxPage.tsx`; Domain = logic รวม (aggregate) `tasks`/`events`/`files`/`notes`/`links` props ที่ `inInbox === true` ภายใน `InboxPage.tsx` เอง — ไม่มี hook หรือฟังก์ชันรวมศูนย์แยกต่างหากสำหรับ operation นี้ในปัจจุบัน (เป็น derived computation ระดับ page component)
 
+### 2.5 Get Task Detail / Get Event Detail (Sprint 10)
+
+Presentation = `src/components/TaskDetailModal.tsx` / `src/components/EventDetailModal.tsx` — ทั้งคู่รับ props `files`/`notes`/`links`/`lifeAreas` เต็มชุดจาก `App.tsx` มาแล้ว `filter`/`includes` เอาเองภายใน component เพื่อประกอบมุมมอง What/When/Information (`linkedFiles = files.filter(f => f.linkedTaskIds.includes(task.id))` และเทียบเคียงกันสำหรับ `linkedNotes`/`linkedLinks` ผ่าน `task.linkedNoteIds`/`task.linkedLinkIds`) แทนที่จะมี query function กลางแยกต่างหากใน `src/lib/`; Domain = ไม่มีฟังก์ชัน "Get Task Detail" แยกเป็นเอกเทศ — เป็นการอ่าน `tasks`/`files`/`notes`/`links`/`lifeAreas` props สดที่ `App.tsx` ส่งลงมาโดยตรงแล้วประกอบที่ Presentation Layer เอง; การเพิ่ม/ลบ `linkedNoteIds`/`linkedLinkIds` (ปุ่ม "+ แนบบันทึกที่มีอยู่.../ลบออก" ในโมดัลเดียวกัน) เรียกผ่าน `onUpdateTask`/`onUpdateEvent` เดียวกับที่ `TaskFormModal`/`EventFormModal` ใช้ทั่วไป (ยืนยันแล้วจากซอร์สโค้ด `src/components/TaskDetailModal.tsx`/`EventDetailModal.tsx`) ไม่ใช่ dedicated hook method แยก
+
 ### เหตุผลที่ทุก message ในไดอะแกรมเป็น local call
 
 อ้างอิงตรงจาก [[tech-stack|tech-stack.md]] หัวข้อ 1 "Fixed Constraints" ("client-only, ไม่มี backend") และหัวข้อ 3 (Hosting = Vercel free tier, static SPA เท่านั้น) — ทุกลูกศรระหว่าง participant ในไดอะแกรมข้างต้น implement เป็น TypeScript function call ภายใน process เดียวกัน (synchronous สำหรับ entity ที่ backed ด้วย LocalStorage, asynchronous ผ่าน Promise เฉพาะ entity File ที่ backed ด้วย IndexedDB) ไม่มีขั้นตอนใดข้าม network ออกจากเครื่องผู้ใช้เลย ทั้งหมด build ด้วย **Vite `^5.3.1`** และ deploy เป็น static SPA เดียวบน **Vercel free tier**
@@ -353,3 +398,4 @@ Presentation = `src/pages/InboxPage.tsx`; Domain = logic รวม (aggregate) `
 - 20260823 (อัปเดตภายหลังอีกครั้ง) — เพิ่มลิงก์ [[../../01-requirements/01-spec/20260823-013-my-today-non-functional-requirements-master|NFR master list]] ในหัวข้อ cross-link ด้านบน และเพิ่มประโยคใน §4 Known Gaps สำหรับ IndexedDB Quota-Warning (NFR-08) ให้สอดคล้องกับ known gap ใหม่ที่เพิ่งเพิ่มใน [[api-spec|api-spec.md]] หัวข้อ 4 — ไม่มีการแก้ไขหัวข้อ 1/2/3/5
 - 20260823 (แก้ inconsistency เรื่อง Sprint 11 scope) — แก้ citation ของ bullet "IndexedDB Quota-Warning" ใน §4 จาก "(NFR-08)" เป็น "(Sprint 11, NFR-08, ...)" ให้ตรงกับ [[api-spec|api-spec.md]]/[[database-schema|database-schema.md]] และแก้ประโยคปิดท้าย §4 ที่เคยระบุผิดว่า "Sprint 11 ไม่เพิ่ม flow ใหม่ จึงไม่มีรายการเพิ่มในหัวข้อนี้" (ไม่ตรงกับ spec Sprint 11 ที่ถูกแก้ไขในคอมมิต `d6874c3` ให้รับ scope ของ IndexedDB Quota-Warning ไว้แล้ว) เป็นประโยคที่ยืนยันว่า Sprint 11 เป็นเจ้าของ operation ที่ยังไม่ build นี้จริง — ไม่มีการแก้ไขหัวข้อ 1/2/3/5 หรือ bullet อื่นใน §4
 - 20260824 (Sprint 9 เสร็จแล้ว) — เพิ่ม message จริงสำหรับขั้นตอนที่ 7 (Timeline Now/Next/Later) และ 11 (Life Progress) ในไดอะแกรม persona นักศึกษา (§1.1) และขั้นตอนที่ 5/8 ในไดอะแกรม persona บุคคลทั่วไป (§1.2) แทนที่โน้ต "ยังไม่รวมในไดอะแกรมนี้" เดิม พร้อมอัปเดต mapping list ทั้งสองให้ระบุ FR-16/FR-17 และสถานะ "เสร็จแล้ว"; คงเหลือเฉพาะขั้นตอนที่ 9 ของ persona นักศึกษา (Custom Reminder Lead Time, Sprint 10) เป็นขั้นตอนเดียวที่ยังข้ามไดอะแกรม — เพิ่มโน้ตใหม่ใน §3 สำหรับ Get Timeline/Smart Priority Sort/Get Life Progress (read-only derivation ล้วนๆ ไม่มีสถานะพังค้างได้ เหมือน Build Notifications) — ลบ known-gap bullet 2 รายการของ Sprint 9 ออกจาก §4 (ย้ายไปมี diagram จริงใน §1 แล้ว) และแก้ประโยคเปิด §4 ให้เหลือเฉพาะ Sprint 10 ที่ยังไม่ build สอดคล้องกับการแก้ไขแบบเดียวกันใน [[architecture|architecture.md]] หัวข้อ 6/7 เมื่อ 20260824 — เพิ่มหมายเหตุการ implement ใหม่ใน §5 สำหรับทั้งสองไดอะแกรม persona อ้างอิงฟังก์ชันจริง (`getTimelineEntries`, `smartPriorityTier`, `sortTasksBySmartPriority`, `getLifeProgress` ใน `src/lib/timelineUtils.ts`, เรนเดอร์โดย `src/pages/TimelinePage.tsx`/`src/components/TimelineSection.tsx`/`src/components/LifeProgress.tsx`) เป็น pure function ที่คำนวณใหม่ทุก render ไม่มี state/record persist แยก — ไม่มีการแก้ไขไดอะแกรม/mapping ของหัวข้อ 2 (cross-cutting operations) ใดๆ
+- 20260824 (Sprint 10 เสร็จแล้ว) — เพิ่ม message จริงสำหรับขั้นตอนที่ 9 (Reminder lead time ที่ตั้งเอง) ในไดอะแกรม persona นักศึกษา (§1.1): Presentation ส่ง "Set Custom Reminder Lead Time" ให้ Domain บันทึกลง Structured Persistence แล้ว "Build Notifications" ยุบเหลือ tier เดียวเมื่อมีค่านี้ แทนที่โน้ต "ยังไม่รวมในไดอะแกรมนี้" เดิม พร้อมอัปเดต mapping list ให้ระบุ FR-19 และสถานะ "เสร็จแล้ว" — journey บุคคลทั่วไป (§1.2) ตรวจสอบแล้วไม่มีขั้นตอนที่อ้างอิง Sprint 10 จึงไม่มีการแก้ไข; เพิ่ม §2.5 ใหม่ (Get Task Detail / Get Event Detail, What/When/Information รวมหน้าเดียว) เป็น sequence diagram ที่ 5 ของหัวข้อ 2 เนื่องจากมีลักษณะ cross-cutting เช่นเดียวกับ List Inbox Items แม้จะถูกจัดอยู่ใน [[api-spec|api-spec.md]] หัวข้อ 3 (Derived/Read-only) ก็ตาม — เพิ่มโน้ตใหม่ใน §3 สำหรับ Link/Unlink Note/Link ↔ Task/Event + Set Custom Reminder Lead Time (เป็นแค่ field update ธรรมดา ไม่มี relationship record แยกเหมือน File จึงไม่มี partial-failure ใหม่) และสำหรับ Get Task/Event Detail (read-only ล้วนๆ) — ลบ known-gap bullet ทั้งสามรายการของ Sprint 10 ออกจาก §4 (ย้ายไปมี diagram จริงใน §1/§2 แล้ว) และแก้ประโยคเปิด §4 ให้เหลือเฉพาะ Sprint 11 ที่ยังไม่ build คงบรรทัด NFR-08 (IndexedDB Quota-Warning) ไว้ไม่แตะต้อง สอดคล้องกับการแก้ไขแบบเดียวกันใน [[architecture|architecture.md]] หัวข้อ 6/7 และ [[api-spec|api-spec.md]] หัวข้อ 3/4 เมื่อ 20260824 — เพิ่มหมายเหตุการ implement ใหม่ใน §5 อ้างอิงฟังก์ชัน/component จริงที่ตรวจสอบจากซอร์สโค้ดโดยตรง (`src/components/TaskDetailModal.tsx`/`EventDetailModal.tsx` สำหรับ Get Task/Event Detail, `taskLevel`/`eventLevel` ใน `src/lib/notificationUtils.ts` สำหรับ custom reminder lead time override, ยืนยันว่า Link/Unlink Note/Link ใช้ `onUpdateTask`/`onUpdateEvent` ทั่วไป ไม่ใช่ dedicated hook method แยก) — ไม่พบ conflict กับ [[architecture|architecture.md]]/[[api-spec|api-spec.md]]/[[database-schema|database-schema.md]] ที่อัปเดตแล้วเมื่อ 20260824
