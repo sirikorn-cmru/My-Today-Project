@@ -11,13 +11,26 @@ interface FilesPageProps {
   loaded: boolean
   error: string | null
   clearError: () => void
+  quotaWarning: string | null
+  clearQuotaWarning: () => void
   tasks: Task[]
   lifeAreas: LifeArea[]
   addFile: (input: FileRecordInput) => void
   deleteFile: (id: string) => void
 }
 
-export function FilesPage({ files, loaded, error, clearError, tasks, lifeAreas, addFile, deleteFile }: FilesPageProps) {
+export function FilesPage({
+  files,
+  loaded,
+  error,
+  clearError,
+  quotaWarning,
+  clearQuotaWarning,
+  tasks,
+  lifeAreas,
+  addFile,
+  deleteFile,
+}: FilesPageProps) {
   const [search, setSearch] = useState('')
   const [lifeAreaFilter, setLifeAreaFilter] = useState('All')
   const [formOpen, setFormOpen] = useState(false)
@@ -33,7 +46,7 @@ export function FilesPage({ files, loaded, error, clearError, tasks, lifeAreas, 
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <main className="min-h-screen bg-slate-50 pb-24">
       <header className={pageHeaderClass}>
         <h1 className="text-xl font-semibold">ไฟล์</h1>
         <p className="mt-1 text-sm text-blue-100">{files.filter((f) => !f.inInbox).length} ไฟล์ทั้งหมด</p>
@@ -49,6 +62,22 @@ export function FilesPage({ files, loaded, error, clearError, tasks, lifeAreas, 
             type="button"
             onClick={clearError}
             className="shrink-0 rounded font-medium transition-colors hover:text-rose-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+          >
+            ปิด
+          </button>
+        </div>
+      )}
+
+      {quotaWarning && (
+        <div
+          role="alert"
+          className="mx-4 mt-4 flex items-start justify-between gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 ring-1 ring-amber-200 sm:mx-6"
+        >
+          <span>{quotaWarning}</span>
+          <button
+            type="button"
+            onClick={clearQuotaWarning}
+            className="shrink-0 rounded font-medium transition-colors hover:text-amber-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
           >
             ปิด
           </button>
@@ -122,6 +151,6 @@ export function FilesPage({ files, loaded, error, clearError, tasks, lifeAreas, 
           setFormOpen(false)
         }}
       />
-    </div>
+    </main>
   )
 }

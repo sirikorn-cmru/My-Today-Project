@@ -110,7 +110,7 @@ export function CalendarPage({
   const currentMonth = new Date(`${selectedDate}T00:00:00`).getMonth()
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <main className="min-h-screen bg-slate-50 pb-24">
       <header className={pageHeaderClass}>
         <h1 className="text-xl font-semibold">ปฏิทิน</h1>
       </header>
@@ -262,6 +262,6 @@ export function CalendarPage({
         onLinkFile={onLinkFile}
         onUnlinkFile={onUnlinkFile}
       />
-    </div>
+    </main>
   )
 }

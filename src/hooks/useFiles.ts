@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FileRecord, FileRecordInput } from '../types'
 import { deleteFileRecord, putFile, seedIfEmpty } from '../lib/fileDb'
 import { createSeedFiles } from '../data/seedFiles'
+import { QUOTA_WARNING_THRESHOLD, formatQuotaWarning, getStorageEstimate } from '../lib/storageQuota'
 
 function createId(): string {
   return `file-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -22,12 +23,21 @@ export function useFiles() {
   const [files, setFiles] = useState<FileRecord[]>([])
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [quotaWarning, setQuotaWarning] = useState<string | null>(null)
+
+  async function checkQuota() {
+    const estimate = await getStorageEstimate()
+    if (estimate && estimate.percentUsed >= QUOTA_WARNING_THRESHOLD) {
+      setQuotaWarning(formatQuotaWarning(estimate))
+    }
+  }
 
   useEffect(() => {
     seedIfEmpty(createSeedFiles)
       .then((records) => {
         setFiles(records.map(normalizeFile))
         setLoaded(true)
+        checkQuota()
       })
       .catch((err) => {
         setError(`โหลดไฟล์ไม่สำเร็จ: ${toErrorMessage(err)} (เบราว์เซอร์นี้อาจไม่รองรับ IndexedDB หรืออยู่ในโหมดส่วนตัว)`)
@@ -44,6 +54,7 @@ export function useFiles() {
     try {
       await putFile(record)
       setFiles((prev) => [record, ...prev])
+      checkQuota()
     } catch (err) {
       setError(`เพิ่มไฟล์ไม่สำเร็จ: ${toErrorMessage(err)}`)
     }
@@ -137,11 +148,17 @@ export function useFiles() {
     setError(null)
   }
 
+  function clearQuotaWarning() {
+    setQuotaWarning(null)
+  }
+
   return {
     files,
     loaded,
     error,
     clearError,
+    quotaWarning,
+    clearQuotaWarning,
     addFile,
     deleteFile,
     linkFileToTask,

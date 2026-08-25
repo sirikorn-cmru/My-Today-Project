@@ -2,7 +2,7 @@ import { cardClass, pageHeaderClass } from '../lib/uiClasses'
 
 export function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <main className="min-h-screen bg-slate-50 pb-24">
       <header className={pageHeaderClass}>
         <h1 className="text-xl font-semibold">นโยบายความเป็นส่วนตัว และข้อกำหนดการใช้งาน</h1>
       </header>
@@ -51,6 +51,6 @@ export function PrivacyPage() {
           </p>
         </div>
       </section>
-    </div>
+    </main>
   )
 }

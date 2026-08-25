@@ -189,7 +189,7 @@ export function InboxPage({
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <main className="min-h-screen bg-slate-50 pb-24">
       <header className={pageHeaderClass}>
         <h1 className="text-xl font-semibold">My Inbox</h1>
         <p className="mt-1 text-sm text-blue-100">{inboxRows.length} รายการยังไม่ได้จัด Life Area</p>
@@ -406,6 +406,6 @@ export function InboxPage({
           setLinkModalOpen(false)
         }}
       />
-    </div>
+    </main>
   )
 }

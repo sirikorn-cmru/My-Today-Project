@@ -34,7 +34,7 @@ export function ProfilePage({ profile, updateProfile }: ProfilePageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <main className="min-h-screen bg-slate-50 pb-24">
       <header className={pageHeaderClass}>
         <h1 className="text-xl font-semibold">ข้อมูลส่วนตัว (Personal Profile)</h1>
       </header>
@@ -171,6 +171,6 @@ export function ProfilePage({ profile, updateProfile }: ProfilePageProps) {
         </button>
       </form>
       <Footer />
-    </div>
+    </main>
   )
 }

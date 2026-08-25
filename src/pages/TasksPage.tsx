@@ -91,7 +91,7 @@ export function TasksPage({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <main className="min-h-screen bg-slate-50 pb-24">
       <header className={pageHeaderClass}>
         <h1 className="text-xl font-semibold">งานทั้งหมด</h1>
         <p className="mt-1 text-sm text-blue-100">{tasks.filter((t) => !t.inInbox).length} งานทั้งหมดในระบบ</p>
@@ -207,6 +207,6 @@ export function TasksPage({
         onLinkFile={onLinkFile}
         onUnlinkFile={onUnlinkFile}
       />
-    </div>
+    </main>
   )
 }

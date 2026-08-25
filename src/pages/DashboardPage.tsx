@@ -68,7 +68,7 @@ export function DashboardPage({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <main className="min-h-screen bg-slate-50 pb-24">
       <Header today={new Date()} unreadCount={unreadCount} />
       <SummaryCards total={total} completed={completed} pending={pending} dueSoon={upcomingTasks.length} />
       <LifeProgress progress={lifeProgress} />
@@ -98,6 +98,6 @@ export function DashboardPage({
           setQuickAddOpen(false)
         }}
       />
-    </div>
+    </main>
   )
 }

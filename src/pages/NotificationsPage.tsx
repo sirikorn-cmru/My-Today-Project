@@ -32,7 +32,7 @@ export function NotificationsPage({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <main className="min-h-screen bg-slate-50 pb-24">
       <header className={pageHeaderClass}>
         <h1 className="text-xl font-semibold">การแจ้งเตือน</h1>
         <p className="mt-1 text-sm text-blue-100">{notifications.length} รายการ</p>
@@ -65,6 +65,6 @@ export function NotificationsPage({
         <NotificationList items={notifications} onSelect={handleSelect} emptyLabel="ไม่มีการแจ้งเตือนตอนนี้" />
       </section>
       <Footer />
-    </div>
+    </main>
   )
 }

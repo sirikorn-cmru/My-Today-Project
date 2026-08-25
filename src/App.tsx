@@ -29,6 +29,8 @@ function App() {
     loaded: filesLoaded,
     error: filesError,
     clearError: clearFilesError,
+    quotaWarning: filesQuotaWarning,
+    clearQuotaWarning: clearFilesQuotaWarning,
     addFile,
     deleteFile,
     linkFileToTask,
@@ -131,6 +133,8 @@ function App() {
               loaded={filesLoaded}
               error={filesError}
               clearError={clearFilesError}
+              quotaWarning={filesQuotaWarning}
+              clearQuotaWarning={clearFilesQuotaWarning}
               tasks={tasks}
               lifeAreas={lifeAreas}
               addFile={addFile}

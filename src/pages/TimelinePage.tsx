@@ -15,7 +15,7 @@ export function TimelinePage({ tasks, events, lifeAreas }: TimelinePageProps) {
   const timeline = getTimelineEntries(tasks, events, lifeAreas)
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <main className="min-h-screen bg-slate-50 pb-24">
       <header className={pageHeaderClass}>
         <h1 className="text-xl font-semibold">Timeline วันนี้</h1>
         <p className="mt-1 text-sm text-blue-100">ตอนนี้ต้องทำอะไรก่อน</p>
@@ -32,6 +32,6 @@ export function TimelinePage({ tasks, events, lifeAreas }: TimelinePageProps) {
       </div>
 
       <Footer />
-    </div>
+    </main>
   )
 }

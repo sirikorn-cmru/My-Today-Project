@@ -51,7 +51,7 @@ export function LifeAreasPage({ lifeAreas, addLifeArea, updateLifeArea, deleteLi
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <main className="min-h-screen bg-slate-50 pb-24">
       <header className={pageHeaderClass}>
         <h1 className="text-xl font-semibold">Life Area / Workspace</h1>
         <p className="mt-1 text-sm text-blue-100">จัดกลุ่มงาน กิจกรรม และไฟล์ตามบริบทชีวิตของคุณ</p>
@@ -111,6 +111,6 @@ export function LifeAreasPage({ lifeAreas, addLifeArea, updateLifeArea, deleteLi
         </ul>
       </section>
       <Footer />
-    </div>
+    </main>
   )
 }
