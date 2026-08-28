@@ -22,8 +22,11 @@
   - Cleanup mock/debug code — เสร็จ: grep ทั้ง `src/` หา `console.log/debug/warn`, `TODO`, `FIXME`, `debugger`, `mock`/`Mock` ไม่พบเลยสักจุด ไม่มีอะไรต้องลบ
   - Integration check — เสร็จแบบเบา ๆ: เดินผ่าน Dashboard/Files/Tasks/Calendar/Timeline ในเบราว์เซอร์ ไม่มี console error ไม่มี regression จากการเปลี่ยน `<main>` และฟีเจอร์ Quota-Warning ใหม่
 
+  **สิ่งที่ทำเสร็จแล้วเพิ่มเติม (ตรวจสอบ 20260825 รอบถัดมา):**
+  - Browser Compatibility Matrix (NFR-06) — **ทำเสร็จเฉพาะส่วน code-level compatibility audit**: เพิ่มตารางเป้าหมาย (Chrome/Edge/Firefox 2 เวอร์ชันล่าสุด, Safari ล่าสุด, Mobile Chrome/Mobile Safari ล่าสุด) พร้อมผลตรวจ dependency ที่ผูกกับ browser API ทุกตัวใน [[../03-testing/01-test-plan/20260823-nfr-test-plan|NFR Test Plan]] หัวข้อ NFR-06 — สรุป: `navigator.storage.estimate()`/`Notification` API เขียนเป็น progressive enhancement อยู่แล้ว ปลอดภัย, IndexedDB/LocalStorage รองรับครบในทุก browser เป้าหมาย, จุดเดียวที่ต้องตรวจด้วยตา (ยังไม่ยืนยัน) คือ `Intl.DateTimeFormat` ปฏิทิน พ.ศ. (`th-TH-u-ca-buddhist`) บน Header — ตาม spec อาจ fallback เงียบๆ เป็น ค.ศ. ถ้า browser ไม่รองรับ calendar extension นี้เต็มรูปแบบ
+
   **สิ่งที่ยังไม่ได้ทำ (ยังต้องทำก่อนจะถือว่า Sprint 11 "เสร็จแล้ว"):**
-  - Browser Compatibility Matrix (NFR-06) — ยังไม่ได้ทำ (ยังไม่มีการแก้โค้ด และ environment นี้มีแค่ browser preview ที่เป็น Chromium ตัวเดียว ทดสอบข้าม browser จริง เช่น Firefox/Safari ไม่ได้ในนี้)
+  - Browser Compatibility Matrix (NFR-06) — **การรันทดสอบจริงข้าม browser ยังไม่ได้ทำ** (code audit เสร็จแล้วตามด้านบน แต่ environment นี้มีแค่ browser preview ที่เป็น Chromium ตัวเดียว ทดสอบข้าม browser จริง เช่น Firefox/Safari ไม่ได้ในนี้ — ต้องให้ทีม/ผู้ใช้ที่มีเครื่องจริงเป็นผู้รัน โดยเฉพาะตรวจปฏิทิน พ.ศ. ที่ flagged ไว้ข้างต้น)
   - Competition Demo script (Business Rule ข้อ 3, Positioning Narrative) — ยังไม่ได้เขียน
   - Black Box Testing แบบเป็นทางการครบทุก FR ของ Sprint 7-10 พร้อมเอกสารผลทดสอบใน `.docs/03-testing/02-test-result/` — ยังไม่ได้ทำ มีแค่ smoke-check integration เบา ๆ ไม่ใช่การทดสอบทีละ FR อย่างเป็นระบบ
   - การตรวจสอบ UX/UI มาตรฐานเดียวกับ Sprint 6 แบบครบถ้วน (Empty State/Loading State/Validation/Confirmation ก่อน Delete/Error Message) ทีละหน้าจอ Sprint 7-10 — ยังไม่ได้ re-verify เป็นระบบในรอบนี้ (มีงาน "UI/UX polish ทั้งแอป" รอบก่อนหน้าที่อาจครอบคลุมส่วนใหญ่ไว้แล้ว แต่รอบนี้ไม่ได้ตรวจยืนยันใหม่)
