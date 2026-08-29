@@ -215,6 +215,15 @@ export function InboxPage({
 
       {tab === 'inbox' && (
         <section className="px-4 sm:px-6">
+          {!filesLoaded && (
+            <p className="mb-2 flex items-center gap-2 text-xs text-slate-500">
+              <span
+                aria-hidden
+                className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600"
+              />
+              กำลังโหลดไฟล์...
+            </p>
+          )}
           <ul className="space-y-2">
             {inboxRows.map((row) => (
               <li key={`${row.kind}-${row.id}`} className={`${cardClass} p-3`}>

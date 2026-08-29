@@ -85,7 +85,12 @@ export function LifeAreasPage({ lifeAreas, addLifeArea, updateLifeArea, deleteLi
                     className={`flex-1 ${inputClass}`}
                     autoFocus
                   />
-                  <button type="button" onClick={() => saveEdit(la.id)} className={primaryButtonClass}>
+                  <button
+                    type="button"
+                    onClick={() => saveEdit(la.id)}
+                    disabled={!editingName.trim()}
+                    className={primaryButtonClass}
+                  >
                     บันทึก
                   </button>
                   <button type="button" onClick={() => setEditingId(null)} className={secondaryButtonClass}>
