@@ -1,5 +1,11 @@
 .claude/settings.local.json
 
+# Claude Code scratch worktrees (created by Agent isolation:"worktree" runs, not project source)
+.claude/worktrees/
+
+# Unrelated tool config accidentally left at repo root (not part of this project)
+.freebuff/
+
 # Node / build
 node_modules/
 dist/
