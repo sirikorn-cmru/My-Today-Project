@@ -14,6 +14,8 @@ function normalizeEvent(event: CalendarEvent): CalendarEvent {
     linkedNoteIds: event.linkedNoteIds ?? [],
     linkedLinkIds: event.linkedLinkIds ?? [],
     reminderLeadTime: event.reminderLeadTime ?? null,
+    // Sprint 12: record เดิมก่อน Sprint นี้ไม่มี updatedAt — ใช้ createdAt แทนเป็นค่าเริ่มต้น
+    updatedAt: event.updatedAt ?? event.createdAt,
   }
 }
 
@@ -37,21 +39,30 @@ export function useEvents() {
   }, [events])
 
   function addEvent(input: CalendarEventInput) {
+    const now = new Date().toISOString()
     const event: CalendarEvent = {
       ...input,
       id: createId(),
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     }
     setEvents((prev) => [event, ...prev])
   }
 
   function updateEvent(id: string, input: CalendarEventInput) {
-    setEvents((prev) => prev.map((event) => (event.id === id ? { ...event, ...input } : event)))
+    setEvents((prev) =>
+      prev.map((event) => (event.id === id ? { ...event, ...input, updatedAt: new Date().toISOString() } : event)),
+    )
   }
 
   function deleteEvent(id: string) {
     setEvents((prev) => prev.filter((event) => event.id !== id))
   }
 
-  return { events, addEvent, updateEvent, deleteEvent }
+  // Sprint 12: ใช้ตอน pull+merge จาก Firestore ตอน login เท่านั้น (last-write-wins by updatedAt)
+  function mergeFromRemote(merged: CalendarEvent[]) {
+    setEvents(merged.map(normalizeEvent))
+  }
+
+  return { events, addEvent, updateEvent, deleteEvent, mergeFromRemote }
 }

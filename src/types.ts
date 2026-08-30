@@ -12,6 +12,8 @@ export interface Task {
   status: TaskStatus
   inInbox: boolean
   createdAt: string
+  // Sprint 12: อัปเดตทุกครั้งที่แก้ไข ใช้เป็นตัวตัดสิน last-write-wins ตอน sync กับ Firestore
+  updatedAt: string
   // Sprint 10: เชื่อมกับ Note/Link เก็บที่ฝั่ง Task โดยตรง (ต่างจาก Task<->File ของ Sprint 4
   // ที่เก็บที่ฝั่ง File ผ่าน linkedTaskIds — เป็นการตัดสินใจออกแบบใหม่ ไม่ใช่การขยายจากเดิม)
   linkedNoteIds: string[]
@@ -20,7 +22,7 @@ export interface Task {
   reminderLeadTime: number | null
 }
 
-export type TaskInput = Omit<Task, 'id' | 'createdAt'>
+export type TaskInput = Omit<Task, 'id' | 'createdAt' | 'updatedAt'>
 
 export interface CalendarEvent {
   id: string
@@ -34,13 +36,14 @@ export interface CalendarEvent {
   lifeAreaId: string
   inInbox: boolean
   createdAt: string
+  updatedAt: string
   // Sprint 10 Business Rule 4: Event เชื่อมกับ Note/Link ได้ด้วยกลไกเดียวกับ Task (เก็บที่ฝั่ง Event เอง)
   linkedNoteIds: string[]
   linkedLinkIds: string[]
   reminderLeadTime: number | null
 }
 
-export type CalendarEventInput = Omit<CalendarEvent, 'id' | 'createdAt'>
+export type CalendarEventInput = Omit<CalendarEvent, 'id' | 'createdAt' | 'updatedAt'>
 
 export type CalendarViewMode = 'today' | 'week' | 'month'
 
@@ -88,9 +91,10 @@ export interface LifeArea {
   id: string
   name: string
   createdAt: string
+  updatedAt: string
 }
 
-export type LifeAreaInput = Omit<LifeArea, 'id' | 'createdAt'>
+export type LifeAreaInput = Omit<LifeArea, 'id' | 'createdAt' | 'updatedAt'>
 
 export interface Note {
   id: string
@@ -99,9 +103,10 @@ export interface Note {
   lifeAreaId: string
   inInbox: boolean
   createdAt: string
+  updatedAt: string
 }
 
-export type NoteInput = Omit<Note, 'id' | 'createdAt'>
+export type NoteInput = Omit<Note, 'id' | 'createdAt' | 'updatedAt'>
 
 export interface Link {
   id: string
@@ -110,9 +115,10 @@ export interface Link {
   lifeAreaId: string
   inInbox: boolean
   createdAt: string
+  updatedAt: string
 }
 
-export type LinkInput = Omit<Link, 'id' | 'createdAt'>
+export type LinkInput = Omit<Link, 'id' | 'createdAt' | 'updatedAt'>
 
 export type InboxKind = 'task' | 'event' | 'file' | 'note' | 'link'
 
@@ -126,4 +132,5 @@ export interface Profile {
   major: string
   organization: string
   position: string
+  updatedAt: string
 }

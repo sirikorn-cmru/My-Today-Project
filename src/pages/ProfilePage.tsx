@@ -1,14 +1,55 @@
 import { useEffect, useState } from 'react'
+import type { User } from 'firebase/auth'
 import { Footer } from '../components/Footer'
-import { cardClass, inputClass, pageHeaderClass, primaryButtonClass } from '../lib/uiClasses'
+import {
+  cardClass,
+  dangerLinkButtonClass,
+  inputClass,
+  pageHeaderClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from '../lib/uiClasses'
+import type { SyncStatus } from '../hooks/useCloudSync'
 import type { Profile } from '../types'
 
 interface ProfilePageProps {
   profile: Profile
   updateProfile: (profile: Profile) => void
+  user: User | null
+  authLoading: boolean
+  authError: string | null
+  signInWithGoogle: () => void
+  signOutUser: () => void
+  clearAuthError: () => void
+  syncEnabled: boolean
+  setSyncEnabled: (next: boolean) => void
+  syncStatus: SyncStatus
+  syncError: string | null
+  clearSyncError: () => void
 }
 
-export function ProfilePage({ profile, updateProfile }: ProfilePageProps) {
+const syncStatusLabel: Record<SyncStatus, string> = {
+  idle: 'ยังไม่ได้ sync',
+  syncing: 'กำลัง sync...',
+  success: 'sync สำเร็จ',
+  error: 'sync ผิดพลาด',
+}
+
+export function ProfilePage({
+  profile,
+  updateProfile,
+  user,
+  authLoading,
+  authError,
+  signInWithGoogle,
+  signOutUser,
+  clearAuthError,
+  syncEnabled,
+  setSyncEnabled,
+  syncStatus,
+  syncError,
+  clearSyncError,
+}: ProfilePageProps) {
   const [form, setForm] = useState<Profile>(profile)
   const [saved, setSaved] = useState(false)
 
@@ -170,6 +211,80 @@ export function ProfilePage({ profile, updateProfile }: ProfilePageProps) {
           {saved ? 'บันทึกแล้ว ✓' : 'บันทึกข้อมูล'}
         </button>
       </form>
+
+      {/* Sprint 12 (Version 3): Cloud Sync เป็น optional add-on — ปิดอยู่โดย default
+          แม้ signed in แล้วก็ตาม (Business Rule 2) ผู้ใช้ที่ไม่สนใจฟีเจอร์นี้จะไม่เห็น
+          ความเปลี่ยนแปลงพฤติกรรมใดๆ นอกจากการ์ดนี้ */}
+      <div className="px-4 pb-4 sm:px-6">
+        <div className={cardClass}>
+          <h2 className="text-sm font-semibold text-slate-900">Cloud Sync</h2>
+          <p className="mt-1 text-xs text-slate-500">
+            สำรองข้อมูล/sync ข้ามอุปกรณ์ผ่าน Google Account — ปิดโดยค่าเริ่มต้น เปิดเองได้ ข้อมูลยังอยู่ในเครื่องเหมือนเดิมเสมอ
+          </p>
+
+          {authError && (
+            <div
+              role="alert"
+              className="mt-3 flex items-start justify-between gap-2 rounded-lg bg-rose-50 p-3 text-sm text-rose-700 ring-1 ring-rose-200"
+            >
+              <span>{authError}</span>
+              <button type="button" onClick={clearAuthError} className={dangerLinkButtonClass}>
+                ปิด
+              </button>
+            </div>
+          )}
+
+          {!user ? (
+            <button
+              type="button"
+              onClick={signInWithGoogle}
+              disabled={authLoading}
+              className={`mt-3 w-full ${secondaryButtonClass}`}
+            >
+              {authLoading ? 'กำลังตรวจสอบ...' : 'Sign in ด้วย Google'}
+            </button>
+          ) : (
+            <div className="mt-3 space-y-3">
+              <p className="text-sm text-slate-700">
+                ลงชื่อเข้าใช้แล้ว: <span className="font-medium">{user.displayName ?? user.email}</span>
+              </p>
+
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={syncEnabled}
+                  onChange={(e) => setSyncEnabled(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                />
+                เปิดใช้ Cloud Sync
+              </label>
+
+              {syncEnabled && (
+                <p className="text-xs text-slate-500">
+                  สถานะ: <span className="font-medium text-slate-700">{syncStatusLabel[syncStatus]}</span>
+                </p>
+              )}
+
+              {syncError && (
+                <div
+                  role="alert"
+                  className="flex items-start justify-between gap-2 rounded-lg bg-rose-50 p-3 text-sm text-rose-700 ring-1 ring-rose-200"
+                >
+                  <span>{syncError}</span>
+                  <button type="button" onClick={clearSyncError} className={dangerLinkButtonClass}>
+                    ปิด
+                  </button>
+                </div>
+              )}
+
+              <button type="button" onClick={signOutUser} className={`w-full ${secondaryButtonClass}`}>
+                ออกจากระบบ
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       <Footer />
     </main>
   )

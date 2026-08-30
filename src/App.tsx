@@ -20,10 +20,11 @@ import { useLinks } from './hooks/useLinks'
 import { useNotifications } from './hooks/useNotifications'
 import { useLifeAreas } from './hooks/useLifeAreas'
 import { useProfile } from './hooks/useProfile'
+import { useCloudSync } from './hooks/useCloudSync'
 
 function App() {
-  const { tasks, addTask, updateTask, deleteTask, setStatus } = useTasks()
-  const { events, addEvent, updateEvent, deleteEvent } = useEvents()
+  const { tasks, addTask, updateTask, deleteTask, setStatus, mergeFromRemote: mergeTasksFromRemote } = useTasks()
+  const { events, addEvent, updateEvent, deleteEvent, mergeFromRemote: mergeEventsFromRemote } = useEvents()
   const {
     files,
     loaded: filesLoaded,
@@ -40,15 +41,38 @@ function App() {
     updateFileLifeArea,
     updateFile,
   } = useFiles()
-  const { notes, addNote, updateNote, deleteNote } = useNotes()
-  const { links, addLink, updateLink, deleteLink } = useLinks()
+  const { notes, addNote, updateNote, deleteNote, mergeFromRemote: mergeNotesFromRemote } = useNotes()
+  const { links, addLink, updateLink, deleteLink, mergeFromRemote: mergeLinksFromRemote } = useLinks()
   const { notifications, unreadCount, markRead, markAllRead, permission, requestPermission } = useNotifications(
     tasks,
     events,
   )
-  const { lifeAreas, addLifeArea, updateLifeArea, deleteLifeArea } = useLifeAreas()
-  const { profile, updateProfile } = useProfile()
+  const {
+    lifeAreas,
+    addLifeArea,
+    updateLifeArea,
+    deleteLifeArea,
+    mergeFromRemote: mergeLifeAreasFromRemote,
+  } = useLifeAreas()
+  const { profile, updateProfile, mergeFromRemote: mergeProfileFromRemote } = useProfile()
   const [quickCaptureOpen, setQuickCaptureOpen] = useState(false)
+
+  // Sprint 12 (Version 3): sync เป็น opt-in ทั้งหมด — ไม่เปิดใช้ ผู้ใช้จะไม่เห็นความ
+  // เปลี่ยนแปลงพฤติกรรมใดๆ เลย (Business Rule 9, non-regression)
+  const cloudSync = useCloudSync({
+    tasks,
+    events,
+    notes,
+    links,
+    lifeAreas,
+    profile,
+    mergeTasks: mergeTasksFromRemote,
+    mergeEvents: mergeEventsFromRemote,
+    mergeNotes: mergeNotesFromRemote,
+    mergeLinks: mergeLinksFromRemote,
+    mergeLifeAreas: mergeLifeAreasFromRemote,
+    mergeProfile: mergeProfileFromRemote,
+  })
 
   const inboxCount =
     tasks.filter((t) => t.inInbox).length +
@@ -192,7 +216,26 @@ function App() {
             />
           }
         />
-        <Route path="/profile" element={<ProfilePage profile={profile} updateProfile={updateProfile} />} />
+        <Route
+          path="/profile"
+          element={
+            <ProfilePage
+              profile={profile}
+              updateProfile={updateProfile}
+              user={cloudSync.user}
+              authLoading={cloudSync.authLoading}
+              authError={cloudSync.authError}
+              signInWithGoogle={cloudSync.signInWithGoogle}
+              signOutUser={cloudSync.signOutUser}
+              clearAuthError={cloudSync.clearAuthError}
+              syncEnabled={cloudSync.syncEnabled}
+              setSyncEnabled={cloudSync.setSyncEnabled}
+              syncStatus={cloudSync.syncStatus}
+              syncError={cloudSync.syncError}
+              clearSyncError={cloudSync.clearSyncError}
+            />
+          }
+        />
       </Routes>
 
       {/* Sprint 8: ปุ่มกลาง "+ Add to My Today" ต้องกดได้จากทุกหน้า จึงเรนเดอร์ที่ระดับ App

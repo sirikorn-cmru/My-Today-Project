@@ -17,6 +17,8 @@ function normalizeTask(task: Task): Task {
     linkedNoteIds: task.linkedNoteIds ?? [],
     linkedLinkIds: task.linkedLinkIds ?? [],
     reminderLeadTime: task.reminderLeadTime ?? null,
+    // Sprint 12: record เดิมก่อน Sprint นี้ไม่มี updatedAt — ใช้ createdAt แทนเป็นค่าเริ่มต้น
+    updatedAt: task.updatedAt ?? task.createdAt,
   }
 }
 
@@ -40,16 +42,20 @@ export function useTasks() {
   }, [tasks])
 
   function addTask(input: TaskInput) {
+    const now = new Date().toISOString()
     const task: Task = {
       ...input,
       id: createId(),
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      updatedAt: now,
     }
     setTasks((prev) => [task, ...prev])
   }
 
   function updateTask(id: string, input: TaskInput) {
-    setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, ...input } : task)))
+    setTasks((prev) =>
+      prev.map((task) => (task.id === id ? { ...task, ...input, updatedAt: new Date().toISOString() } : task)),
+    )
   }
 
   function deleteTask(id: string) {
@@ -57,8 +63,15 @@ export function useTasks() {
   }
 
   function setStatus(id: string, status: Task['status']) {
-    setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, status } : task)))
+    setTasks((prev) =>
+      prev.map((task) => (task.id === id ? { ...task, status, updatedAt: new Date().toISOString() } : task)),
+    )
   }
 
-  return { tasks, addTask, updateTask, deleteTask, setStatus }
+  // Sprint 12: ใช้ตอน pull+merge จาก Firestore ตอน login เท่านั้น (last-write-wins by updatedAt)
+  function mergeFromRemote(merged: Task[]) {
+    setTasks(merged.map(normalizeTask))
+  }
+
+  return { tasks, addTask, updateTask, deleteTask, setStatus, mergeFromRemote }
 }
