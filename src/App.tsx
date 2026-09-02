@@ -253,6 +253,7 @@ function App() {
         onClose={() => setQuickCaptureOpen(false)}
         lifeAreas={lifeAreas}
         tasks={tasks}
+        user={cloudSync.user}
         addTask={addTask}
         addEvent={addEvent}
         addFile={addFile}

@@ -13,6 +13,10 @@ interface EventFormModalProps {
   // Quick Capture mode (Sprint 8): only "ชื่อกิจกรรม" is required — วันที่และฟิลด์อื่นๆ
   // ถูกเลื่อนไปกรอกทีหลังตอน "จัดเข้า Life Area" จาก Inbox
   quickCapture?: boolean
+  // Sprint 13: ค่าที่ AI สกัดจากรูปภาพมาเติมให้ล่วงหน้า — ผู้ใช้ยังต้องตรวจสอบ/แก้ไข/กด
+  // "บันทึก" เองเสมอ (ไม่ auto-submit) ต่างจาก initialEvent ตรงที่นี่ไม่ใช่การแก้ไข record
+  // ที่มีอยู่แล้ว (isEdit ยังคงเป็น false, หัวข้อฟอร์มยังคงเป็น Quick Capture ปกติ)
+  prefill?: Partial<CalendarEventInput>
 }
 
 function emptyForm(defaultDate?: string): CalendarEventInput {
@@ -40,6 +44,7 @@ export function EventFormModal({
   onClose,
   onSubmit,
   quickCapture,
+  prefill,
 }: EventFormModalProps) {
   const [form, setForm] = useState<CalendarEventInput>(emptyForm(defaultDate))
 
@@ -63,9 +68,9 @@ export function EventFormModal({
             linkedLinkIds: initialEvent.linkedLinkIds,
             reminderLeadTime: initialEvent.reminderLeadTime,
           }
-        : emptyForm(defaultDate),
+        : { ...emptyForm(defaultDate), ...prefill },
     )
-  }, [open, initialEvent, defaultDate])
+  }, [open, initialEvent, defaultDate, prefill])
 
   if (!open) return null
 
