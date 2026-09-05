@@ -19,6 +19,9 @@ interface ProfilePageProps {
   authLoading: boolean
   authError: string | null
   signInWithGoogle: () => void
+  signUpWithEmail: (email: string, password: string) => void
+  signInWithEmail: (email: string, password: string) => void
+  resetPassword: (email: string) => Promise<boolean>
   signOutUser: () => void
   clearAuthError: () => void
   syncEnabled: boolean
@@ -42,6 +45,9 @@ export function ProfilePage({
   authLoading,
   authError,
   signInWithGoogle,
+  signUpWithEmail,
+  signInWithEmail,
+  resetPassword,
   signOutUser,
   clearAuthError,
   syncEnabled,
@@ -52,6 +58,34 @@ export function ProfilePage({
 }: ProfilePageProps) {
   const [form, setForm] = useState<Profile>(profile)
   const [saved, setSaved] = useState(false)
+
+  // Sprint 14: อีเมล/รหัสผ่าน เป็นวิธีล็อกอินที่สอง คู่กับ Google Sign-In (Business Rule 1)
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
+  const [emailInput, setEmailInput] = useState('')
+  const [passwordInput, setPasswordInput] = useState('')
+  const [resetSent, setResetSent] = useState(false)
+
+  const emailFormatValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput)
+  const passwordLengthValid = passwordInput.length >= 6
+  const emailFormCanSubmit = emailFormatValid && passwordLengthValid
+
+  function handleEmailAuthSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setResetSent(false)
+    if (!emailFormCanSubmit) return
+    if (authMode === 'signup') {
+      signUpWithEmail(emailInput, passwordInput)
+    } else {
+      signInWithEmail(emailInput, passwordInput)
+    }
+  }
+
+  async function handleForgotPassword() {
+    setResetSent(false)
+    if (!emailFormatValid) return
+    const ok = await resetPassword(emailInput)
+    if (ok) setResetSent(true)
+  }
 
   useEffect(() => {
     setForm(profile)
@@ -235,14 +269,84 @@ export function ProfilePage({
           )}
 
           {!user ? (
-            <button
-              type="button"
-              onClick={signInWithGoogle}
-              disabled={authLoading}
-              className={`mt-3 w-full ${secondaryButtonClass}`}
-            >
-              {authLoading ? 'กำลังตรวจสอบ...' : 'Sign in ด้วย Google'}
-            </button>
+            <div className="mt-3 space-y-3">
+              <button
+                type="button"
+                onClick={signInWithGoogle}
+                disabled={authLoading}
+                className={`w-full ${secondaryButtonClass}`}
+              >
+                {authLoading ? 'กำลังตรวจสอบ...' : 'Sign in ด้วย Google'}
+              </button>
+
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <div className="h-px flex-1 bg-slate-200" />
+                หรือ
+                <div className="h-px flex-1 bg-slate-200" />
+              </div>
+
+              <div className="flex gap-2 text-sm font-medium">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('signin')
+                    setResetSent(false)
+                  }}
+                  className={authMode === 'signin' ? 'text-blue-600 underline' : 'text-slate-400'}
+                >
+                  เข้าสู่ระบบ
+                </button>
+                <span className="text-slate-300">/</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode('signup')
+                    setResetSent(false)
+                  }}
+                  className={authMode === 'signup' ? 'text-blue-600 underline' : 'text-slate-400'}
+                >
+                  สมัครสมาชิก
+                </button>
+              </div>
+
+              <form onSubmit={handleEmailAuthSubmit} className="space-y-2">
+                <input
+                  type="email"
+                  required
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="อีเมล"
+                  autoComplete="email"
+                  className={inputClass}
+                />
+                <input
+                  type="password"
+                  required
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  placeholder="รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)"
+                  autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'}
+                  className={inputClass}
+                />
+                <button
+                  type="submit"
+                  disabled={authLoading || !emailFormCanSubmit}
+                  className={`w-full ${primaryButtonClass}`}
+                >
+                  {authMode === 'signup' ? 'สมัครสมาชิก' : 'เข้าสู่ระบบด้วยอีเมล'}
+                </button>
+              </form>
+
+              {authMode === 'signin' && (
+                <button type="button" onClick={handleForgotPassword} className="text-xs text-blue-600 underline">
+                  ลืมรหัสผ่าน?
+                </button>
+              )}
+
+              {resetSent && (
+                <p className="text-xs text-emerald-600">ส่งอีเมลรีเซ็ตรหัสผ่านแล้ว กรุณาตรวจสอบกล่องจดหมายของคุณ</p>
+              )}
+            </div>
           ) : (
             <div className="mt-3 space-y-3">
               <p className="text-sm text-slate-700">

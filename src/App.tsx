@@ -226,6 +226,9 @@ function App() {
               authLoading={cloudSync.authLoading}
               authError={cloudSync.authError}
               signInWithGoogle={cloudSync.signInWithGoogle}
+              signUpWithEmail={cloudSync.signUpWithEmail}
+              signInWithEmail={cloudSync.signInWithEmail}
+              resetPassword={cloudSync.resetPassword}
               signOutUser={cloudSync.signOutUser}
               clearAuthError={cloudSync.clearAuthError}
               syncEnabled={cloudSync.syncEnabled}
