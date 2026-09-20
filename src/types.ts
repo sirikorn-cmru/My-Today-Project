@@ -8,6 +8,9 @@ export interface Task {
   lifeAreaId: string
   dueDate: string
   dueTime: string
+  // Sprint 15: pure addition สำหรับ Smart Capture from Image ของ Task (เช่น ห้องเรียน/สถานที่จัดงาน
+  // จากใบปลิว) — ไม่บังคับกรอก, ไม่เกี่ยวกับ CalendarEvent.location ที่มีอยู่แล้วตั้งแต่ Sprint 3
+  location: string
   priority: Priority
   status: TaskStatus
   inInbox: boolean

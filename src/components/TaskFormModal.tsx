@@ -16,6 +16,10 @@ interface TaskFormModalProps {
   // Quick Capture mode (Sprint 8): only "ชื่องาน" is required — วันที่กำหนดส่งและฟิลด์อื่นๆ
   // ถูกเลื่อนไปกรอกทีหลังตอน "จัดเข้า Life Area" จาก Inbox ตาม Business Rule ข้อ 1 ของ Sprint 8
   quickCapture?: boolean
+  // Sprint 15: ค่าที่ AI สกัดจากรูปภาพมาเติมให้ล่วงหน้า — ผู้ใช้ยังต้องตรวจสอบ/แก้ไข/กด
+  // "บันทึก" เองเสมอ (ไม่ auto-submit) ต่างจาก initialTask ตรงที่นี่ไม่ใช่การแก้ไข record
+  // ที่มีอยู่แล้ว (isEdit ยังคงเป็น false, หัวข้อฟอร์มยังคงเป็น Quick Capture ปกติ)
+  prefill?: Partial<TaskInput>
 }
 
 const emptyForm: TaskInput = {
@@ -24,6 +28,7 @@ const emptyForm: TaskInput = {
   lifeAreaId: '',
   dueDate: '',
   dueTime: '',
+  location: '',
   priority: 'Medium',
   status: 'To Do',
   inInbox: false,
@@ -42,6 +47,7 @@ export function TaskFormModal({
   onLinkFile,
   onUnlinkFile,
   quickCapture,
+  prefill,
 }: TaskFormModalProps) {
   const [form, setForm] = useState<TaskInput>(emptyForm)
 
@@ -55,6 +61,7 @@ export function TaskFormModal({
             lifeAreaId: initialTask.lifeAreaId,
             dueDate: initialTask.dueDate,
             dueTime: initialTask.dueTime,
+            location: initialTask.location,
             priority: initialTask.priority,
             status: initialTask.status,
             inInbox: initialTask.inInbox,
@@ -64,9 +71,9 @@ export function TaskFormModal({
             linkedLinkIds: initialTask.linkedLinkIds,
             reminderLeadTime: initialTask.reminderLeadTime,
           }
-        : emptyForm,
+        : { ...emptyForm, ...prefill },
     )
-  }, [open, initialTask])
+  }, [open, initialTask, prefill])
 
   if (!open) return null
 
@@ -165,6 +172,19 @@ export function TaskFormModal({
                 className={`mt-1 ${inputClass}`}
               />
             </div>
+          </div>
+
+          <div>
+            <label htmlFor="task-location" className="text-xs font-medium text-slate-500">
+              สถานที่
+            </label>
+            <input
+              id="task-location"
+              value={form.location}
+              onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
+              placeholder="เช่น ห้อง A301"
+              className={`mt-1 ${inputClass}`}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

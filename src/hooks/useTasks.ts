@@ -19,6 +19,8 @@ function normalizeTask(task: Task): Task {
     reminderLeadTime: task.reminderLeadTime ?? null,
     // Sprint 12: record เดิมก่อน Sprint นี้ไม่มี updatedAt — ใช้ createdAt แทนเป็นค่าเริ่มต้น
     updatedAt: task.updatedAt ?? task.createdAt,
+    // Sprint 15: record เดิมก่อน Sprint นี้ไม่มี location — ค่าเริ่มต้นเป็นค่าว่าง (ไม่บังคับกรอก)
+    location: task.location ?? '',
   }
 }
 

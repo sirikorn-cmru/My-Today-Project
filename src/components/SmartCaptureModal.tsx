@@ -1,16 +1,28 @@
 import { useState } from 'react'
 import type { User } from 'firebase/auth'
-import type { CalendarEventInput } from '../types'
 import { primaryButtonClass, secondaryButtonClass } from '../lib/uiClasses'
 import { ModalShell } from './ModalShell'
+
+// Sprint 15: รูปแบบผลลัพธ์ดิบจาก /api/smart-capture — ไม่ผูกกับ CalendarEventInput/TaskInput
+// โดยตรงอีกต่อไป เพื่อให้ใช้ร่วมกันได้ทั้ง Event (Sprint 13) และ Task (Sprint 15) โดย caller
+// เป็นฝ่าย map field ปลายทางเอง (date/startTime → date/startTime ของ Event หรือ dueDate/dueTime ของ Task)
+export interface SmartCaptureExtractedFields {
+  title?: string
+  date?: string
+  startTime?: string
+  location?: string
+}
 
 interface SmartCaptureModalProps {
   open: boolean
   user: User | null
+  // Sprint 15: ใช้เลือกข้อความหัวข้อ/คำอธิบายให้ตรงกับปลายทาง (Task หรือ Event) — ไม่กระทบ
+  // การเรียก API หรือ prompt ฝั่ง server เลย เป็นแค่ label ฝั่ง UI เท่านั้น
+  kind?: 'task' | 'event'
   onClose: () => void
-  // ส่งค่าที่สกัดได้ (บางส่วนหรือว่างเปล่า) กลับไปให้ผู้ปกครองเปิด EventFormModal ต่อ
-  // เพื่อให้ผู้ใช้ตรวจสอบ/แก้ไขก่อนบันทึกเสมอ — ไม่มีการบันทึก Event จริงจากที่นี่โดยตรง
-  onExtracted: (fields: Partial<CalendarEventInput>) => void
+  // ส่งค่าที่สกัดได้ (บางส่วนหรือว่างเปล่า) กลับไปให้ผู้ปกครอง map เข้าฟอร์มปลายทางเอง
+  // เพื่อให้ผู้ใช้ตรวจสอบ/แก้ไขก่อนบันทึกเสมอ — ไม่มีการบันทึกจริงจากที่นี่โดยตรง
+  onExtracted: (fields: SmartCaptureExtractedFields) => void
   // ผู้ใช้เลือก "กรอกฟอร์มเอง" แทน หรือกด fallback หลัง error
   onManualFallback: () => void
 }
@@ -28,14 +40,18 @@ function fileToBase64(file: File): Promise<string> {
   })
 }
 
-// Sprint 13: Smart Capture จากรูปภาพ — เฉพาะ Quick Capture ประเภท Event เท่านั้น
-// ต้อง sign in ก่อนใช้งาน (Business Rule 3) รูปภาพส่งไปยัง Vercel Serverless Function
-// เป็นตัวกลาง (ไม่เก็บ API key ฝั่ง client) แล้วส่งกลับมาแค่ผลลัพธ์ที่สกัดได้ ไม่ persist รูปที่ไหนเลย
-export function SmartCaptureModal({ open, user, onClose, onExtracted, onManualFallback }: SmartCaptureModalProps) {
+// Sprint 13: Smart Capture จากรูปภาพ — เดิมจำกัดเฉพาะ Quick Capture ประเภท Event เท่านั้น
+// Sprint 15: ขยายให้ใช้กับประเภท Task ได้ด้วย (รีใช้ component/endpoint เดิมทั้งหมด ปรับแค่ label
+// และให้ caller เป็นฝ่าย map ผลลัพธ์เข้าฟอร์มปลายทางเอง) ต้อง sign in ก่อนใช้งานเสมอ (Business Rule 3
+// ของ Sprint 13) รูปภาพส่งไปยัง Vercel Serverless Function เป็นตัวกลาง (ไม่เก็บ API key ฝั่ง client)
+// แล้วส่งกลับมาแค่ผลลัพธ์ที่สกัดได้ ไม่ persist รูปที่ไหนเลย
+export function SmartCaptureModal({ open, user, kind = 'event', onClose, onExtracted, onManualFallback }: SmartCaptureModalProps) {
   const [status, setStatus] = useState<'idle' | 'analyzing' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
 
   if (!open) return null
+
+  const kindLabel = kind === 'task' ? 'งาน' : 'กิจกรรม'
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -55,12 +71,12 @@ export function SmartCaptureModal({ open, user, onClose, onExtracted, onManualFa
         setError(data?.error ?? 'วิเคราะห์รูปภาพไม่สำเร็จ')
         return
       }
-      const prefill: Partial<CalendarEventInput> = {}
-      if (data.title) prefill.title = data.title
-      if (data.date) prefill.date = data.date
-      if (data.startTime) prefill.startTime = data.startTime
-      if (data.location) prefill.location = data.location
-      onExtracted(prefill)
+      const extracted: SmartCaptureExtractedFields = {}
+      if (data.title) extracted.title = data.title
+      if (data.date) extracted.date = data.date
+      if (data.startTime) extracted.startTime = data.startTime
+      if (data.location) extracted.location = data.location
+      onExtracted(extracted)
     } catch {
       setStatus('error')
       setError('เชื่อมต่อไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่')
@@ -70,13 +86,13 @@ export function SmartCaptureModal({ open, user, onClose, onExtracted, onManualFa
   return (
     <ModalShell titleId="smart-capture-title" onClose={onClose}>
       <h3 id="smart-capture-title" className="text-lg font-semibold text-slate-900">
-        สแกนจากรูปภาพ — กิจกรรม
+        สแกนจากรูปภาพ — {kindLabel}
       </h3>
 
       {!user ? (
         <div className="mt-4 space-y-3">
           <p className="text-sm text-slate-600">
-            ฟีเจอร์นี้ต้อง sign in ด้วย Google ก่อนใช้งาน (Quick Capture ประเภทอื่นยังใช้ได้โดยไม่ต้อง sign in ตามปกติ)
+            ฟีเจอร์นี้ต้อง sign in ก่อนใช้งาน (Quick Capture ประเภทอื่นยังใช้ได้โดยไม่ต้อง sign in ตามปกติ)
           </p>
           <button type="button" onClick={onManualFallback} className={`w-full ${secondaryButtonClass}`}>
             กรอกฟอร์มเองแทน

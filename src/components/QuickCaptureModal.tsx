@@ -16,6 +16,7 @@ import { FileFormModal } from './FileFormModal'
 import { NoteFormModal } from './NoteFormModal'
 import { LinkFormModal } from './LinkFormModal'
 import { SmartCaptureModal } from './SmartCaptureModal'
+import type { SmartCaptureExtractedFields } from './SmartCaptureModal'
 import { ModalShell } from './ModalShell'
 import { primaryButtonClass, secondaryButtonClass } from '../lib/uiClasses'
 
@@ -48,7 +49,7 @@ const kindIcon: Record<InboxKind, string> = {
   link: '🔗',
 }
 
-type EventMode = 'choose' | 'manual' | 'scan'
+type CaptureMode = 'choose' | 'manual' | 'scan'
 
 // Sprint 8: ปุ่มกลาง "+ Add to My Today" — เลือกประเภทก่อน แล้วกรอกแค่ข้อมูลขั้นต่ำ
 // (ใช้ฟอร์มเดิมของแต่ละประเภทซ้ำ ในโหมด quickCapture ที่ผ่อนคลายฟิลด์บังคับ) รายการที่ได้
@@ -66,14 +67,19 @@ export function QuickCaptureModal({
   addLink,
 }: QuickCaptureModalProps) {
   const [kind, setKind] = useState<InboxKind | null>(null)
-  // Sprint 13: เฉพาะ kind "event" เท่านั้นที่มีทางเลือกสอง — กรอกเองแบบเดิม vs สแกนจากรูปภาพ
-  const [eventMode, setEventMode] = useState<EventMode>('choose')
+  // Sprint 13: kind "event" มีทางเลือกสอง — กรอกเองแบบเดิม vs สแกนจากรูปภาพ
+  // Sprint 15: ขยายมาให้ kind "task" มีทางเลือกเดียวกันด้วย (อีก 3 ประเภท File/Note/Link ไม่มี)
+  const [eventMode, setEventMode] = useState<CaptureMode>('choose')
   const [eventPrefill, setEventPrefill] = useState<Partial<CalendarEventInput>>({})
+  const [taskMode, setTaskMode] = useState<CaptureMode>('choose')
+  const [taskPrefill, setTaskPrefill] = useState<Partial<TaskInput>>({})
 
   function handleClose() {
     setKind(null)
     setEventMode('choose')
     setEventPrefill({})
+    setTaskMode('choose')
+    setTaskPrefill({})
     onClose()
   }
 
@@ -81,12 +87,26 @@ export function QuickCaptureModal({
     setKind(null)
     setEventMode('choose')
     setEventPrefill({})
+    setTaskMode('choose')
+    setTaskPrefill({})
     onClose()
   }
 
   function selectKind(k: InboxKind) {
     setKind(k)
     if (k === 'event') setEventMode('choose')
+    if (k === 'task') setTaskMode('choose')
+  }
+
+  // Sprint 15 Business Rule 3: mapping ผลลัพธ์ดิบจาก AI เข้าฟิลด์ปลายทางของ Task
+  // (ต่างจาก Event ตรงที่ date/startTime ของ Task ชื่อ dueDate/dueTime)
+  function mapExtractedToTask(fields: SmartCaptureExtractedFields): Partial<TaskInput> {
+    const prefill: Partial<TaskInput> = {}
+    if (fields.title) prefill.title = fields.title
+    if (fields.date) prefill.dueDate = fields.date
+    if (fields.startTime) prefill.dueTime = fields.startTime
+    if (fields.location) prefill.location = fields.location
+    return prefill
   }
 
   if (!open) return null
@@ -135,7 +155,7 @@ export function QuickCaptureModal({
             กรอกฟอร์มเอง
           </button>
           <button type="button" onClick={() => setEventMode('scan')} className={`w-full ${secondaryButtonClass}`}>
-            📷 สแกนจากรูปภาพ (ใหม่)
+            📷 สแกนจากรูปภาพ
           </button>
         </div>
 
@@ -151,6 +171,7 @@ export function QuickCaptureModal({
       <SmartCaptureModal
         open
         user={user}
+        kind="event"
         onClose={handleClose}
         onManualFallback={() => {
           setEventPrefill({})
@@ -164,13 +185,58 @@ export function QuickCaptureModal({
     )
   }
 
+  // Sprint 15: pattern เดียวกับ Event ด้านบนทุกประการ ต่างกันแค่ mapping ผลลัพธ์ (mapExtractedToTask)
+  if (kind === 'task' && taskMode === 'choose') {
+    return (
+      <ModalShell titleId="quick-capture-task-title" onClose={handleClose}>
+        <h3 id="quick-capture-task-title" className="text-lg font-semibold text-slate-900">
+          + Add to My Today — งาน
+        </h3>
+        <p className="mt-1 text-xs text-slate-500">เลือกวิธีเพิ่มงาน</p>
+
+        <div className="mt-4 space-y-2">
+          <button type="button" onClick={() => setTaskMode('manual')} className={`w-full ${primaryButtonClass}`}>
+            กรอกฟอร์มเอง
+          </button>
+          <button type="button" onClick={() => setTaskMode('scan')} className={`w-full ${secondaryButtonClass}`}>
+            📷 สแกนจากรูปภาพ
+          </button>
+        </div>
+
+        <button type="button" onClick={handleClose} className={`mt-4 w-full text-center text-xs text-slate-500 underline`}>
+          ยกเลิก
+        </button>
+      </ModalShell>
+    )
+  }
+
+  if (kind === 'task' && taskMode === 'scan') {
+    return (
+      <SmartCaptureModal
+        open
+        user={user}
+        kind="task"
+        onClose={handleClose}
+        onManualFallback={() => {
+          setTaskPrefill({})
+          setTaskMode('manual')
+        }}
+        onExtracted={(fields) => {
+          setTaskPrefill(mapExtractedToTask(fields))
+          setTaskMode('manual')
+        }}
+      />
+    )
+  }
+
   return (
     <>
-      {kind === 'task' && (
+      {kind === 'task' && taskMode === 'manual' && (
         <TaskFormModal
           open
           quickCapture
           lifeAreas={lifeAreas}
+          prefill={taskPrefill}
           onClose={handleClose}
           onSubmit={(input) => {
             addTask(input)
