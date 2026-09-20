@@ -36,6 +36,7 @@
 - **Sprint 12 — Cloud Sync:** sync ข้อมูลข้ามอุปกรณ์แบบ opt-in ผ่าน Firebase Authentication (Google Sign-In) + Cloud Firestore — **เสร็จสมบูรณ์ ยืนยันจริงแล้ว** ทั้งการ sync ข้ามอุปกรณ์และ Security Rules ผ่าน Firestore Emulator
 - **Sprint 13 — Smart Capture from Image:** ให้ AI (Google Gemini vision) อ่านรูปภาพ (เช่น โปสเตอร์งาน) มาเติมฟอร์มสร้างกิจกรรมให้อัตโนมัติ ผ่าน Vercel Serverless Function ที่เก็บ API key ไว้ฝั่ง server — ต้อง sign in ก่อนใช้ (ฟีเจอร์แรกที่ปิดกั้นด้วยการล็อกอิน) — **โค้ดเสร็จแล้ว รอตั้งค่า `GEMINI_API_KEY` บน Vercel ก่อนยืนยัน Gate ให้ครบ**
 - **Sprint 14 — Email/Password Login:** เพิ่มวิธีล็อกอินด้วยอีเมล/รหัสผ่านเป็นทางเลือกที่สอง คู่กับ Google Sign-In เดิม — **เสร็จสมบูรณ์ ยืนยันจริงแล้ว**
+- **Sprint 15 — Smart Capture from Image สำหรับ Task:** ขยาย Smart Capture ของ Sprint 13 (เดิมใช้ได้เฉพาะกิจกรรม) ให้ใช้กับ Quick Capture ประเภท "งาน (Task)" ได้ด้วย พร้อมเพิ่มฟิลด์ "สถานที่" ให้ Task — รีใช้ AI/Serverless Function เดิมทั้งหมด **โค้ดเสร็จแล้ว รอตั้งค่า `GEMINI_API_KEY` บน Vercel เหมือน Sprint 13 ก่อนยืนยัน Gate ให้ครบ**
 
 ## ขอบเขตที่ไม่ทำ (Out of Scope)
 
@@ -47,6 +48,8 @@
 - **ไม่ใช้คำศัพท์เฉพาะนักศึกษาเป็นฟิลด์บังคับ** เช่น "รายวิชา" — ใช้ "Life Area" แทนเสมอ ฟิลด์การศึกษา (Student ID, Faculty, Major) เป็นฟิลด์ไม่บังคับใน Personal Profile เท่านั้น
 - **ไม่ทำ Multi-Factor Authentication (MFA/2FA)** และ **ไม่ทำการ merge บัญชี** ระหว่าง Google Sign-In กับ Email/Password (Sprint 14) — ถือเป็นข้อจำกัดที่ทราบและยอมรับไว้ตั้งแต่ต้น ไม่ใช่บั๊ก
 - **ไม่ทำ Email Verification** สำหรับผู้ใช้ที่สมัครด้วยอีเมล/รหัสผ่าน (Sprint 14) — สมัครเสร็จใช้งาน Cloud Sync ได้ทันที
+- **ไม่มีระบบ Role/สิทธิ์หลายระดับ** — ไม่มี Admin แยกจาก User เลย มีแค่ 2 สถานะของผู้ใช้คนเดียวกัน (signed in / not signed in) ดูรายละเอียดที่ [ACL.md](ACL.md)
+- **ไม่เก็บไฟล์แนบ (FileRecord) ขึ้น Cloud** — Sprint 12's Cloud Sync ครอบคลุมเฉพาะ Task/CalendarEvent/Note/Link/LifeArea/Profile เท่านั้น ไฟล์ยังคงอยู่ในเครื่องเดียว (ต้องใช้ Firebase Storage ซึ่งยังไม่ทำ)
 
 ## เอกสารอ้างอิง
 
