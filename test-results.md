@@ -5,7 +5,7 @@
 - **สภาพแวดล้อม:** Windows 10 Pro, Node + npm, dev server ผ่าน `npm run dev` ที่ `http://localhost:5173`
 - **Branch/Commit ที่ทดสอบ:** `master` (ณ commit `f6b8769`)
 - **เวลาทั้งหมดเป็นเวลาไทย (UTC+7)**
-- รายละเอียดเชิงลึกรายเคสของ Smoke Test อยู่ที่ [[20260921-full-app-smoke-test-rerun-result]] (`.docs/03-testing/02-test-result/`)
+- รายละเอียดเชิงลึกรายเคสของ Smoke Test อยู่ที่ [20260921-full-app-smoke-test-rerun-result.md](.docs/03-testing/02-test-result/20260921-full-app-smoke-test-rerun-result.md)
 
 ---
 
