@@ -6,7 +6,27 @@ import { readJSON, writeJSON } from '../lib/storage'
 // default, so loading it eagerly would cost every visitor that download for a feature
 // most of them never switch on. Every call site below already sits behind a
 // `!user || !syncEnabled` guard, so the import only ever fires when sync actually runs.
-const loadCloudSync = () => import('../lib/cloudSync')
+//
+// Failure mode this has to handle: the asset files are content-hashed, so a deploy that
+// lands while a tab is open deletes the exact chunk URL that tab was built against. The
+// import then 404s with "Failed to fetch dynamically imported module" the first time the
+// user turns sync on — which is precisely when they least expect a failure. Retrying the
+// same URL cannot help (the file is genuinely gone on the server), and the only real
+// recovery is loading the new index.html, so say that in words the user can act on
+// instead of surfacing the raw module-loader error.
+const STALE_CHUNK_MESSAGE =
+  'โหลดส่วน Cloud Sync ไม่สำเร็จ — เว็บเพิ่งมีการอัปเดตขณะที่หน้านี้เปิดค้างอยู่ กรุณารีเฟรชหน้าเว็บ (Ctrl+Shift+R) แล้วเปิด Cloud Sync อีกครั้ง'
+
+async function loadCloudSync() {
+  try {
+    return await import('../lib/cloudSync')
+  } catch (err) {
+    // A genuinely offline user gets the browser's own network error here, which is
+    // already meaningful; only the stale-chunk case needs translating.
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) throw err
+    throw new Error(STALE_CHUNK_MESSAGE)
+  }
+}
 import { useAuth } from './useAuth'
 
 const SYNC_ENABLED_KEY = 'my-today:sync-enabled'
