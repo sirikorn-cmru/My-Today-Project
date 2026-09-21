@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CalendarEvent, Link, LifeArea, Note, Profile, Task } from '../types'
 import { readJSON, writeJSON } from '../lib/storage'
-import { pullAndMerge, pullProfile, pushDiff, pushProfile } from '../lib/cloudSync'
+// Imported on demand, never at module scope: `cloudSync` pulls in `firebase/firestore`,
+// which is ~450 kB — roughly half the production bundle. Cloud Sync is opt-in and off by
+// default, so loading it eagerly would cost every visitor that download for a feature
+// most of them never switch on. Every call site below already sits behind a
+// `!user || !syncEnabled` guard, so the import only ever fires when sync actually runs.
+const loadCloudSync = () => import('../lib/cloudSync')
 import { useAuth } from './useAuth'
 
 const SYNC_ENABLED_KEY = 'my-today:sync-enabled'
@@ -67,16 +72,18 @@ export function useCloudSync(entities: CloudSyncEntities) {
 
     async function pullOnce() {
       if (!user) return
+      const uid = user.uid
       setSyncStatus('syncing')
       try {
+        const { pullAndMerge, pullProfile } = await loadCloudSync()
         const [mergedTasks, mergedEvents, mergedNotes, mergedLinks, mergedLifeAreas, remoteProfile] =
           await Promise.all([
-            pullAndMerge(user.uid, 'tasks', entities.tasks),
-            pullAndMerge(user.uid, 'events', entities.events),
-            pullAndMerge(user.uid, 'notes', entities.notes),
-            pullAndMerge(user.uid, 'links', entities.links),
-            pullAndMerge(user.uid, 'lifeAreas', entities.lifeAreas),
-            pullProfile<Profile>(user.uid),
+            pullAndMerge(uid, 'tasks', entities.tasks),
+            pullAndMerge(uid, 'events', entities.events),
+            pullAndMerge(uid, 'notes', entities.notes),
+            pullAndMerge(uid, 'links', entities.links),
+            pullAndMerge(uid, 'lifeAreas', entities.lifeAreas),
+            pullProfile<Profile>(uid),
           ])
         if (cancelled) return
         entities.mergeTasks(mergedTasks)
@@ -109,9 +116,11 @@ export function useCloudSync(entities: CloudSyncEntities) {
   ) {
     useEffect(() => {
       if (!user || !syncEnabled) return
+      const uid = user.uid
       const timer = setTimeout(() => {
         setSyncStatus('syncing')
-        pushDiff(user.uid, collectionName, items)
+        loadCloudSync()
+          .then(({ pushDiff }) => pushDiff(uid, collectionName, items))
           .then(() => {
             setSyncStatus('success')
             setSyncError(null)
@@ -134,9 +143,11 @@ export function useCloudSync(entities: CloudSyncEntities) {
 
   useEffect(() => {
     if (!user || !syncEnabled) return
+    const uid = user.uid
     const timer = setTimeout(() => {
       setSyncStatus('syncing')
-      pushProfile(user.uid, entities.profile)
+      loadCloudSync()
+        .then(({ pushProfile }) => pushProfile(uid, entities.profile))
         .then(() => {
           setSyncStatus('success')
           setSyncError(null)

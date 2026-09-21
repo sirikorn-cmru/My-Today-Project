@@ -1,6 +1,5 @@
 import { initializeApp } from 'firebase/app'
 import { GoogleAuthProvider, getAuth } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
 
 // Sprint 12 (Version 3): optional Cloud Sync layer. This config is the standard
 // Firebase client config — it is not a secret (access is controlled by Firestore
@@ -18,5 +17,11 @@ const firebaseConfig = {
 
 export const firebaseApp = initializeApp(firebaseConfig)
 export const auth = getAuth(firebaseApp)
-export const db = getFirestore(firebaseApp)
 export const googleProvider = new GoogleAuthProvider()
+
+// NOTE: the Firestore instance is deliberately NOT created here. `firebase/firestore`
+// is ~450 kB of the production bundle, and this module is imported at app boot (via
+// useAuth), so initialising it here would pull Firestore into the initial download for
+// every visitor — including the majority who never turn Cloud Sync on, since it is
+// opt-in and off by default. It now lives in `cloudSync.ts`, which `useCloudSync`
+// imports on demand. Don't re-add a `db` export here.

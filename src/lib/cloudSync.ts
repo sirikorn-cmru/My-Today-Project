@@ -1,5 +1,11 @@
-import { collection, deleteDoc, doc, getDoc, getDocs, setDoc } from 'firebase/firestore'
-import { db } from './firebase'
+import { collection, deleteDoc, doc, getDoc, getDocs, getFirestore, setDoc } from 'firebase/firestore'
+import { firebaseApp } from './firebase'
+
+// Firestore is initialised here rather than in `firebase.ts` on purpose: this module
+// is only ever reached through a dynamic import from `useCloudSync`, which keeps the
+// whole `firebase/firestore` chunk out of the initial page load. See the note in
+// `firebase.ts`.
+const db = getFirestore(firebaseApp)
 
 // Sprint 12 Business Rule 6: data lives under users/{uid}/{collection}/{id} so
 // Firestore Security Rules can scope access to request.auth.uid alone.
