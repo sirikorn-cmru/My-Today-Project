@@ -114,6 +114,188 @@ export function ProfilePage({
         <h1 className="text-xl font-semibold">ข้อมูลส่วนตัว (Personal Profile)</h1>
       </header>
 
+      {/* Sprint 12 (Version 3): Cloud Sync เป็น optional add-on — ปิดอยู่โดย default
+          แม้ signed in แล้วก็ตาม (Business Rule 2) ผู้ใช้ที่ไม่สนใจฟีเจอร์นี้จะไม่เห็น
+          ความเปลี่ยนแปลงพฤติกรรมใดๆ นอกจากการ์ดนี้ */}
+      <div className="px-4 pt-4 sm:px-6">
+        <div className={cardClass}>
+          <h2 className="text-sm font-semibold text-slate-900">Cloud Sync</h2>
+          <p className="mt-1 text-xs text-slate-500">
+            สำรองข้อมูล/sync ข้ามอุปกรณ์ผ่าน Google Account — ปิดโดยค่าเริ่มต้น เปิดเองได้ ข้อมูลยังอยู่ในเครื่องเหมือนเดิมเสมอ
+          </p>
+
+          {authError && (
+            <div
+              role="alert"
+              className="mt-3 rounded-lg bg-rose-50 p-3 text-sm text-rose-700 ring-1 ring-rose-200"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span>{authError}</span>
+                <button type="button" onClick={clearAuthError} className={dangerLinkButtonClass}>
+                  ปิด
+                </button>
+              </div>
+
+              {/* ทางออกจาก error ที่พบบ่อยที่สุด: กรอกถูกทุกอย่างแต่ผิดโหมด
+                  ("เข้าสู่ระบบ" ทั้งที่ยังไม่เคยสมัคร หรือ "สมัครสมาชิก" ด้วยอีเมลที่มีบัญชีแล้ว)
+                  ข้อความ error จาก Firebase อย่างเดียวไม่ได้บอกว่าต้องทำอะไรต่อ */}
+              {!user && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMode(authMode === 'signin' ? 'signup' : 'signin')
+                    setResetSent(false)
+                    clearAuthError()
+                  }}
+                  className="mt-2 text-xs font-medium text-rose-800 underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                >
+                  {authMode === 'signin'
+                    ? 'ยังไม่เคยสมัคร? กดที่นี่เพื่อสมัครสมาชิกด้วยอีเมลนี้'
+                    : 'มีบัญชีอยู่แล้ว? กดที่นี่เพื่อเข้าสู่ระบบแทน'}
+                </button>
+              )}
+            </div>
+          )}
+
+          {!user ? (
+            <div className="mt-3 space-y-3">
+              <button
+                type="button"
+                onClick={signInWithGoogle}
+                disabled={authLoading}
+                className={`w-full ${secondaryButtonClass}`}
+              >
+                {authLoading ? 'กำลังตรวจสอบ...' : 'Sign in ด้วย Google'}
+              </button>
+
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <div className="h-px flex-1 bg-slate-200" />
+                หรือ
+                <div className="h-px flex-1 bg-slate-200" />
+              </div>
+
+              {/* แท็บเลือกโหมด: เดิมเป็นลิงก์ข้อความสองอันคั่นด้วย "/" ซึ่งอันที่ไม่ได้เลือก
+                  เป็นสีเทาจางจนดูเหมือนปุ่มที่กดไม่ได้ ผู้ใช้จึงไม่รู้ว่าตัวเองอยู่โหมดไหน
+                  แล้วกรอกอีเมลใหม่ทั้งที่ยังอยู่โหมด "เข้าสู่ระบบ" จนได้ error ว่ารหัสผ่านไม่ถูกต้อง
+                  ทั้งที่ความจริงคือยังไม่มีบัญชีนั้น */}
+              <div
+                role="tablist"
+                aria-label="เลือกระหว่างเข้าสู่ระบบและสมัครสมาชิก"
+                className="grid grid-cols-2 gap-1 rounded-lg bg-slate-100 p-1"
+              >
+                {(
+                  [
+                    ['signin', 'เข้าสู่ระบบ'],
+                    ['signup', 'สมัครสมาชิก'],
+                  ] as const
+                ).map(([mode, label]) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    role="tab"
+                    aria-selected={authMode === mode}
+                    onClick={() => {
+                      setAuthMode(mode)
+                      setResetSent(false)
+                      clearAuthError()
+                    }}
+                    className={`rounded-md px-3 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                      authMode === mode
+                        ? 'bg-white text-blue-700 shadow-sm ring-1 ring-slate-200'
+                        : 'text-slate-600 hover:bg-white/60'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-xs text-slate-500">
+                {authMode === 'signup'
+                  ? 'ยังไม่มีบัญชี — กรอกอีเมลและตั้งรหัสผ่านใหม่อย่างน้อย 6 ตัวอักษร'
+                  : 'มีบัญชีอยู่แล้ว — กรอกอีเมลและรหัสผ่านที่เคยตั้งไว้'}
+              </p>
+
+              <form onSubmit={handleEmailAuthSubmit} className="space-y-2">
+                <input
+                  type="email"
+                  required
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="อีเมล"
+                  autoComplete="email"
+                  className={inputClass}
+                />
+                <input
+                  type="password"
+                  required
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  placeholder="รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)"
+                  autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'}
+                  className={inputClass}
+                />
+                <button
+                  type="submit"
+                  disabled={authLoading || !emailFormCanSubmit}
+                  className={`w-full ${primaryButtonClass}`}
+                >
+                  {authMode === 'signup' ? 'สมัครสมาชิก' : 'เข้าสู่ระบบด้วยอีเมล'}
+                </button>
+              </form>
+
+              {authMode === 'signin' && (
+                <button type="button" onClick={handleForgotPassword} className="text-xs text-blue-600 underline">
+                  ลืมรหัสผ่าน?
+                </button>
+              )}
+
+              {resetSent && (
+                <p className="text-xs text-emerald-600">ส่งอีเมลรีเซ็ตรหัสผ่านแล้ว กรุณาตรวจสอบกล่องจดหมายของคุณ</p>
+              )}
+            </div>
+          ) : (
+            <div className="mt-3 space-y-3">
+              <p className="text-sm text-slate-700">
+                ลงชื่อเข้าใช้แล้ว: <span className="font-medium">{user.displayName ?? user.email}</span>
+              </p>
+
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={syncEnabled}
+                  onChange={(e) => setSyncEnabled(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                />
+                เปิดใช้ Cloud Sync
+              </label>
+
+              {syncEnabled && (
+                <p className="text-xs text-slate-500">
+                  สถานะ: <span className="font-medium text-slate-700">{syncStatusLabel[syncStatus]}</span>
+                </p>
+              )}
+
+              {syncError && (
+                <div
+                  role="alert"
+                  className="flex items-start justify-between gap-2 rounded-lg bg-rose-50 p-3 text-sm text-rose-700 ring-1 ring-rose-200"
+                >
+                  <span>{syncError}</span>
+                  <button type="button" onClick={clearSyncError} className={dangerLinkButtonClass}>
+                    ปิด
+                  </button>
+                </div>
+              )}
+
+              <button type="button" onClick={signOutUser} className={`w-full ${secondaryButtonClass}`}>
+                ออกจากระบบ
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-4 px-4 py-4 sm:px-6">
         <div className={cardClass}>
           <div className="flex items-center gap-3">
@@ -245,149 +427,6 @@ export function ProfilePage({
           {saved ? 'บันทึกแล้ว ✓' : 'บันทึกข้อมูล'}
         </button>
       </form>
-
-      {/* Sprint 12 (Version 3): Cloud Sync เป็น optional add-on — ปิดอยู่โดย default
-          แม้ signed in แล้วก็ตาม (Business Rule 2) ผู้ใช้ที่ไม่สนใจฟีเจอร์นี้จะไม่เห็น
-          ความเปลี่ยนแปลงพฤติกรรมใดๆ นอกจากการ์ดนี้ */}
-      <div className="px-4 pb-4 sm:px-6">
-        <div className={cardClass}>
-          <h2 className="text-sm font-semibold text-slate-900">Cloud Sync</h2>
-          <p className="mt-1 text-xs text-slate-500">
-            สำรองข้อมูล/sync ข้ามอุปกรณ์ผ่าน Google Account — ปิดโดยค่าเริ่มต้น เปิดเองได้ ข้อมูลยังอยู่ในเครื่องเหมือนเดิมเสมอ
-          </p>
-
-          {authError && (
-            <div
-              role="alert"
-              className="mt-3 flex items-start justify-between gap-2 rounded-lg bg-rose-50 p-3 text-sm text-rose-700 ring-1 ring-rose-200"
-            >
-              <span>{authError}</span>
-              <button type="button" onClick={clearAuthError} className={dangerLinkButtonClass}>
-                ปิด
-              </button>
-            </div>
-          )}
-
-          {!user ? (
-            <div className="mt-3 space-y-3">
-              <button
-                type="button"
-                onClick={signInWithGoogle}
-                disabled={authLoading}
-                className={`w-full ${secondaryButtonClass}`}
-              >
-                {authLoading ? 'กำลังตรวจสอบ...' : 'Sign in ด้วย Google'}
-              </button>
-
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <div className="h-px flex-1 bg-slate-200" />
-                หรือ
-                <div className="h-px flex-1 bg-slate-200" />
-              </div>
-
-              <div className="flex gap-2 text-sm font-medium">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthMode('signin')
-                    setResetSent(false)
-                  }}
-                  className={authMode === 'signin' ? 'text-blue-600 underline' : 'text-slate-400'}
-                >
-                  เข้าสู่ระบบ
-                </button>
-                <span className="text-slate-300">/</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthMode('signup')
-                    setResetSent(false)
-                  }}
-                  className={authMode === 'signup' ? 'text-blue-600 underline' : 'text-slate-400'}
-                >
-                  สมัครสมาชิก
-                </button>
-              </div>
-
-              <form onSubmit={handleEmailAuthSubmit} className="space-y-2">
-                <input
-                  type="email"
-                  required
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  placeholder="อีเมล"
-                  autoComplete="email"
-                  className={inputClass}
-                />
-                <input
-                  type="password"
-                  required
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value)}
-                  placeholder="รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)"
-                  autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'}
-                  className={inputClass}
-                />
-                <button
-                  type="submit"
-                  disabled={authLoading || !emailFormCanSubmit}
-                  className={`w-full ${primaryButtonClass}`}
-                >
-                  {authMode === 'signup' ? 'สมัครสมาชิก' : 'เข้าสู่ระบบด้วยอีเมล'}
-                </button>
-              </form>
-
-              {authMode === 'signin' && (
-                <button type="button" onClick={handleForgotPassword} className="text-xs text-blue-600 underline">
-                  ลืมรหัสผ่าน?
-                </button>
-              )}
-
-              {resetSent && (
-                <p className="text-xs text-emerald-600">ส่งอีเมลรีเซ็ตรหัสผ่านแล้ว กรุณาตรวจสอบกล่องจดหมายของคุณ</p>
-              )}
-            </div>
-          ) : (
-            <div className="mt-3 space-y-3">
-              <p className="text-sm text-slate-700">
-                ลงชื่อเข้าใช้แล้ว: <span className="font-medium">{user.displayName ?? user.email}</span>
-              </p>
-
-              <label className="flex items-center gap-2 text-sm text-slate-700">
-                <input
-                  type="checkbox"
-                  checked={syncEnabled}
-                  onChange={(e) => setSyncEnabled(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                />
-                เปิดใช้ Cloud Sync
-              </label>
-
-              {syncEnabled && (
-                <p className="text-xs text-slate-500">
-                  สถานะ: <span className="font-medium text-slate-700">{syncStatusLabel[syncStatus]}</span>
-                </p>
-              )}
-
-              {syncError && (
-                <div
-                  role="alert"
-                  className="flex items-start justify-between gap-2 rounded-lg bg-rose-50 p-3 text-sm text-rose-700 ring-1 ring-rose-200"
-                >
-                  <span>{syncError}</span>
-                  <button type="button" onClick={clearSyncError} className={dangerLinkButtonClass}>
-                    ปิด
-                  </button>
-                </div>
-              )}
-
-              <button type="button" onClick={signOutUser} className={`w-full ${secondaryButtonClass}`}>
-                ออกจากระบบ
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
 
       <Footer />
     </main>
